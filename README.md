@@ -1,15 +1,8 @@
 # talkwithtiles
 
-| | |
-| --- | --- |
-| Build and Test | [![Build and Test](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/build-and-test.yml) |
-| Code Quality | [![Code Quality](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml) |
-| Copilot Setup Steps | [![Copilot Setup Steps](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/copilot-setup-steps.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/copilot-setup-steps.yml) |
-| Dependabot Auto-Merge | [![Dependabot Auto-Merge](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/dependabot-automerge.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/dependabot-automerge.yml) |
-
-## Documentation
-
-Additional documentation can be found in the [docs](./docs) folder.
+[![Code Quality](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml)
+[![Copilot Setup Steps](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/copilot-setup-steps.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/copilot-setup-steps.yml)
+[![Dependabot Auto-Merge](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/dependabot-automerge.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/dependabot-automerge.yml)
 
 ## Overview
 
@@ -17,8 +10,8 @@ TalkWithTiles is a platform that allows users to play online games of Scrabble a
 
 ## Contributing
 
-Please refer to the [CONTRIBUTING](CONTRIBUTING.md) file for information on how to contribute to this project.
+Please read the [contributing](CONTRIBUTING.md) guidance; this is a learning and development project.
 
 ## Security
 
-Please refer to the [SECURITY](SECURITY.md) file for information on how to report security vulnerabilities.
+Please read the [security](SECURITY.md) guidance; I am always open to security feedback through email or opening an issue.
