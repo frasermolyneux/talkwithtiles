@@ -3,6 +3,10 @@ resource "azuread_application" "web" {
   description      = "Talk With Tiles web front-end"
   sign_in_audience = "AzureADandPersonalMicrosoftAccount"
 
+  api {
+    requested_access_token_version = 2
+  }
+
   app_role {
     allowed_member_types = ["User"]
     description          = "Administrators can manage games and view analytics."
