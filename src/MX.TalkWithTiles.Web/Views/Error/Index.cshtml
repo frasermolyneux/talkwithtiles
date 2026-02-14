@@ -13,6 +13,24 @@
     </p>
 }
 
+@if (Model.ShowExceptionDetail)
+{
+    <div class="alert alert-danger mt-3">
+        <h4>Exception Details</h4>
+        @if (!string.IsNullOrEmpty(Model.ExceptionPath))
+        {
+            <p><strong>Path:</strong> <code>@Model.ExceptionPath</code></p>
+        }
+        <p><strong>Exception:</strong></p>
+        <pre><code>@Model.ExceptionMessage</code></pre>
+        @if (!string.IsNullOrEmpty(Model.ExceptionStackTrace))
+        {
+            <p><strong>Stack Trace:</strong></p>
+            <pre><code>@Model.ExceptionStackTrace</code></pre>
+        }
+    </div>
+}
+
 <h3>Oops! Something went wrong!</h3>
 
 <p>Unfortunately things go wrong from time to time - it's just something we have to deal with. Hopefully it doesn't happen too often though!</p>

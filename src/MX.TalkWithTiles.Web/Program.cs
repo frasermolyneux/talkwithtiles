@@ -49,7 +49,11 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Error/Index");
     app.UseHsts();
