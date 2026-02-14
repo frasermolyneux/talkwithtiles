@@ -1,42 +1,24 @@
 # Talk With Tiles
 
-An online Scrabble-like word game platform built with ASP.NET Core 9 and deployed to Azure.
+[![Build and Test](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/build-and-test.yml)
+[![Code Quality](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml)
+[![PR Verify](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/pr-verify.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/pr-verify.yml)
+[![Deploy Dev](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/deploy-dev.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/deploy-dev.yml)
+[![Deploy Prd](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/deploy-prd.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/deploy-prd.yml)
 
-## Architecture
+## Documentation
 
-- **Web Application**: ASP.NET Core 9 MVC with Entra External ID authentication
-- **Data Storage**: Azure Table Storage (game state, tiles, invites, contacts)
-- **Infrastructure**: Terraform on shared Azure App Service Plan
-- **CI/CD**: GitHub Actions with automated dev/prd deployment pipeline
+* [Architecture Overview](docs/architecture-overview.md)
+* [Development Workflows](docs/development-workflows.md)
 
-## Project Structure
+## Overview
 
-```
-src/
-├── MX.TalkWithTiles.Common/          # Shared utilities
-├── MX.TalkWithTiles.Contracts/       # DTOs, interfaces, models
-├── MX.TalkWithTiles.CoreEngine/      # Generic game engine
-├── MX.TalkWithTiles.CoreEngine.Tests/ # Game engine unit tests
-├── MX.TalkWithTiles.Repository/      # Azure Table Storage data access
-├── MX.TalkWithTiles.Scrabble/        # Scrabble game logic
-├── MX.TalkWithTiles.Scrabble.Tests/  # Scrabble unit tests
-├── MX.TalkWithTiles.Web/             # ASP.NET Core MVC web app
-└── MX.TalkWithTiles.sln
-terraform/                            # Azure infrastructure (Terraform)
-```
-
-## Local Development
-
-1. Install [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
-2. Configure user secrets for Entra ID and Storage settings
-3. Build: `dotnet build src/MX.TalkWithTiles.sln`
-4. Run: `dotnet run --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj`
-5. Test: `dotnet test src/MX.TalkWithTiles.sln`
+Talk With Tiles (MX.TalkWithTiles) is an online tile-based word game platform built with ASP.NET Core 9 MVC and deployed to Azure. Players can create and join Scrabble-style games, manage contacts, and send game invitations. The application uses Microsoft Entra ID for authentication supporting multi-tenant and personal Microsoft accounts, Azure Table Storage for persisting game state, and Application Insights for telemetry. Infrastructure is managed with Terraform and deployed via GitHub Actions to Azure App Service on a shared hosting plan.
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
+Please read the [contributing](CONTRIBUTING.md) guidance; this is a learning and development project.
 
 ## Security
 
-Please see [SECURITY.md](SECURITY.md) for reporting vulnerabilities.
+Please read the [security](SECURITY.md) guidance; I am always open to security feedback through email or opening an issue.

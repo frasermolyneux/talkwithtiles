@@ -1,15 +1,72 @@
 # Copilot Instructions
 
-- **Stack & auth**: ASP.NET Core 9 MVC (`src/MX.TalkWithTiles.Web`) with Microsoft.Identity.Web for Entra External ID. Game controllers require authentication; Home, About, Health, Error are anonymous.
-- **Data**: Azure Table Storage via `TableServiceClient` + `DefaultAzureCredential`. Game state, tiles, invites, and contacts stored in separate tables. Configuration in `appsettings.json` `Storage` section.
-- **Architecture**: Multi-project .NET solution with separation of concerns:
-  - `MX.TalkWithTiles.Contracts` - DTOs, interfaces, models
-  - `MX.TalkWithTiles.Common` - Shared utilities
-  - `MX.TalkWithTiles.CoreEngine` - Generic game engine (board, players, moves, scoring)
-  - `MX.TalkWithTiles.Scrabble` - Scrabble-specific game logic
-  - `MX.TalkWithTiles.Repository` - Azure Table Storage data access
-  - `MX.TalkWithTiles.Web` - ASP.NET Core MVC web application
-- **Local dev loop**: `dotnet build src/MX.TalkWithTiles.sln` then `dotnet run --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj`. Ensure `Storage:TableEndpoint` and Entra settings are configured.
-- **Testing**: `dotnet test src/MX.TalkWithTiles.sln` runs CoreEngine and Scrabble unit tests (NUnit + FakeItEasy + FluentAssertions).
-- **Infra**: Terraform under `terraform/` builds App Service (on shared platform-hosting plan), Storage, DNS, Entra ID app, Application Insights (per-environment tfvars/backends). GitHub Actions workflows cover build/test, codequality, PR verify, deploy-dev/prd, destroy-development/environment, dependabot-automerge, and copilot-setup-steps.
-- **Configuration**: `appsettings.json` holds `AzureAd`, `Storage`, `ApplicationInsights`. Keep secrets out of source; use user-secrets locally.
+## Architecture
+
+This is an ASP.NET Core 9 MVC web application (`src/MX.TalkWithTiles.Web`) for playing tile-based word games. The solution is split into multiple projects:
+
+- `MX.TalkWithTiles.Web` - ASP.NET Core MVC app with controllers, views, and DI setup
+- `MX.TalkWithTiles.CoreEngine` - Game engine orchestration using `GameEngine` and `IManagerFactory`
+- `MX.TalkWithTiles.Scrabble` - Scrabble-specific game rules and logic
+- `MX.TalkWithTiles.Repository` - Azure Table Storage data access with `ITableEntity` cloud entities
+- `MX.TalkWithTiles.Contracts` - DTOs, interfaces, state models (`GameStateModel`, `BoardStateModel`, etc.), constants
+- `MX.TalkWithTiles.Common` - Shared utility extensions
+
+## Key Patterns
+
+- **GameEngine + ManagerFactory**: `GameEngine` receives `IManagerFactory` via primary constructor and lazily creates managers (`BoardManager`, `BagManager`, `PlayerManager`, `EndGameManager`, `ChallengeManager`, `PlayerMoveManager`). Each manager owns a state model. `GameStateModel` aggregates all manager states.
+- **Factory hierarchy**: `IGameEngineFactory`, `IManagerFactory`, `ITileFactory`, `IPlayerFactory` — all registered as scoped services.
+- **Repository pattern**: `AppDataRepository` base class holds `TableClient` instances for five tables (Scrabble, ScrabbleIndex, ScrabbleTiles, GameInvites, Contacts). Repositories like `GameStateRepository` inherit from it and implement interfaces (e.g. `IGameStateRepository`). Cloud entities implement `ITableEntity` with `PartitionKey`/`RowKey` mapping.
+- **State models**: Simple POCOs in `MX.TalkWithTiles.Contracts/StateModels/` — `GameStateModel`, `BoardStateModel`, `BagStateModel`, `PlayersStateModel`, `PlayerStateModel`, `PlayerMoveStateModel`, `ChallengeStateModel`, `EndGameStateModel`.
+
+## Authentication
+
+Microsoft Entra ID via `Microsoft.Identity.Web` with `TenantId: common` (multi-tenant + personal Microsoft accounts). Game controllers require `[Authorize]`; Home, About, Health, Error are anonymous. Configuration in `appsettings.json` under `AzureAd`.
+
+## Data Storage
+
+Azure Table Storage via `Azure.Data.Tables` SDK with `DefaultAzureCredential`. Configuration under `AppData` section in `appsettings.json` (table endpoint and table names). Repositories registered as singletons in DI.
+
+## Build and Test
+
+- Build: `dotnet build src/MX.TalkWithTiles.sln`
+- Run: `dotnet run --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj`
+- Test: `dotnet test src/MX.TalkWithTiles.sln`
+- Test projects: `MX.TalkWithTiles.CoreEngine.Tests` and `MX.TalkWithTiles.Scrabble.Tests`
+- Test stack: xUnit 2.9.3, Moq 4.20.72, Microsoft.NET.Test.Sdk 17.12.0
+- Tests use `[Theory]`/`[InlineData]` with extensive mocking of manager interfaces
+
+## Infrastructure
+
+Terraform under `terraform/` with per-environment configs:
+- Backends: `backends/dev.backend.hcl`, `backends/prd.backend.hcl`
+- Variables: `tfvars/dev.tfvars`, `tfvars/prd.tfvars`
+- Key resources: App Service (Linux .NET 9.0 on shared `platform-hosting` plan), Storage Account with five tables, Entra ID app registration, Application Insights, DNS records
+- Providers: AzureRM 4.59.0, AzureAD 2.50.0
+
+## C# Conventions
+
+- All projects target .NET 9, C# 13 (`<LangVersion>13.0</LangVersion>`)
+- File-scoped namespaces throughout (`namespace MX.TalkWithTiles.X;`)
+- Primary constructors used extensively for DI injection
+- Nullable reference types enabled (`<Nullable>enable</Nullable>`)
+- Implicit usings enabled in the web project
+
+## Key Files
+
+- `src/MX.TalkWithTiles.Web/Program.cs` - DI registration, auth config, middleware pipeline
+- `src/MX.TalkWithTiles.CoreEngine/GameEngine.cs` - Core game orchestration
+- `src/MX.TalkWithTiles.CoreEngine/ManagerFactory.cs` - Manager creation with game type switching
+- `src/MX.TalkWithTiles.Repository/GameStateRepository.cs` - Primary data access
+- `src/MX.TalkWithTiles.Contracts/StateModels/` - All game state models
+- `terraform/web_app.tf` - App Service definition with app settings
+- `terraform/locals.tf` - Computed names and table definitions
+
+## CI/CD
+
+GitHub Actions workflows in `.github/workflows/`:
+- `build-and-test.yml` - Runs on feature/bugfix/hotfix branch pushes
+- `pr-verify.yml` - Build + Terraform plan on pull requests
+- `deploy-prd.yml` - Full pipeline on main push (dev → prd)
+- `deploy-dev.yml` - Manual dev deployment
+- `codequality.yml` - Weekly code quality analysis
+- Uses reusable actions from `frasermolyneux/actions/` with OIDC authentication
