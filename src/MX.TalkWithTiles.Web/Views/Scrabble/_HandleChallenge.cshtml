@@ -1,0 +1,44 @@
+@using MX.TalkWithTiles.Web.Extensions
+@model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
+
+<div class="row">
+    <div class="card">
+        <div class="card-header">
+            Challenge Response
+        </div>
+        <div class="card-body">
+            <p><strong>@Model.ChallengerName()</strong> has challenged your last move <strong>@Model.LastMoveAndScore()</strong> with the reason '@Model.ScrabbleChallengeReason()'</p>
+
+            @if (!string.IsNullOrWhiteSpace(Model.ChallengeStateModel.ChallengeText))
+            {
+                <p>They have provided an additional comment with the challenge:</p>
+                <div class="shadow-none p-3 mb-5 bg-light rounded">
+                    @Model.ChallengeStateModel.ChallengeText
+                </div>
+            }
+
+            @if (Model.ChallengeStateModel.CanOverrideChallengeOutcome)
+            {
+                <p>You can now choose to accept/reject the challenge.</p>
+
+                <div>
+                    <partial name="_ResolveChallengeForm" model="new ResolveChallengeModel {Id = Model.GameId, Accept = true, AllowOverride = true, GameChallengeResultOverride = Model.ScrabbleChallengeResultForReason(Model.ScrabbleChallengeReason())}"/>
+                    <partial name="_ResolveChallengeForm" model="new ResolveChallengeModel {Id = Model.GameId, Accept = false}"/>
+                </div>
+            }
+            else
+            {
+                <p>You can now choose to accept/reject the challenge.</p>
+
+                <div>
+                    <partial name="_ResolveChallengeForm" model="new ResolveChallengeModel {Id = Model.GameId, Accept = true, AllowOverride = false}"/>
+                    <partial name="_ResolveChallengeForm" model="new ResolveChallengeModel {Id = Model.GameId, Accept = false, AllowOverride = false}"/>
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+
+</div>

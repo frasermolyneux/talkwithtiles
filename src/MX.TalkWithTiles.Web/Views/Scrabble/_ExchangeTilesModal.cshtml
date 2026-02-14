@@ -1,0 +1,46 @@
+@using MX.TalkWithTiles.Web.Extensions
+@model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
+
+<div id="exchangeTilesModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form asp-controller="Scrabble" asp-action="ExchangeTiles" asp-antiforgery="true" method="post">
+                <div class="modal-header">
+                    <h5 class="modal-title">Exchange Tiles</h5>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>
+                        Select the tiles that you wish to exchange from the list below. You will then be given new tiles and these added back to the bag.
+                    </p>
+                    <div class="form-group">
+
+                        @{
+                            var userTiles = Model.UserTiles(User);
+                        }
+                        @for (var i = 0; i < userTiles.Count; i++)
+                        {
+                            <div class="form-check-inline">
+                                <input id="ExchangeTiles_@(i)__TileId" name="ExchangeTiles[@(i)].TileId" value="@userTiles[i].TileId" type="hidden"/>
+                                <input id="ExchangeTiles_@(i)__Exchange" name="ExchangeTiles[@(i)].Exchange" class="form-check-input" type="checkbox" value="true">
+                                <label class="form-check-label" for="ExchangeTiles_@(i)__Exchange">
+                                    @userTiles[i].Letter
+                                </label>
+                            </div>
+                        }
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                    <input name="id" type="hidden" value="@Model.GameId"/>
+                    <button type="submit" class="btn btn-primary">Confirm Exchange Tiles</button>
+
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

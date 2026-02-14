@@ -1,0 +1,35 @@
+﻿@model Feedback
+
+@{
+    ViewBag.Title = "Feedback";
+    Layout = "_Layout";
+}
+
+<div class="row">
+    <h2>Feedback</h2>
+    <p>
+        Talk With Tiles is still under development and there are expected to be bugs and features missing.
+        Building a successful games platform cannot be done alone and your feedback is needed and encouraged.
+        To make it easy to provide feedback you can use the form below.
+    </p>
+    <p>
+        We may contact you via email to respond to your comments or get more information.
+    </p>
+</div>
+
+<div class="row">
+
+    <form asp-action="SubmitFeedback" asp-antiforgery="true">
+
+        <div class="form-group">
+            @Html.TextAreaFor(model => model.FeedbackText, new { @class = "form-control", rows = 15, cols = 80, placeholder = "Provide your feedback here..." })
+            @Html.ValidationMessageFor(model => model.FeedbackText, "", new { @class = "text-danger" })
+        </div>
+
+        <div class="form-group">
+            <input type="submit" value="Submit Feedback" class="btn btn-primary" />
+        </div>
+
+    </form>
+
+</div>

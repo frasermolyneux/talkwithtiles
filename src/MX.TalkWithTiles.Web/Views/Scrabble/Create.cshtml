@@ -1,0 +1,197 @@
+@using MX.TalkWithTiles.Web.Extensions
+@using MX.TalkWithTiles.Contracts.Constants
+@using ChallengeResult = MX.TalkWithTiles.Contracts.Constants.GameChallengeResult
+@model MX.TalkWithTiles.Web.Models.CreateScrabbleGameModel
+
+@{
+    ViewData["Title"] = "Create Scrabble Game";
+}
+
+<div class="row">
+    <h1>Create Scrabble Game</h1>
+</div>
+
+<hr/>
+<form asp-action="Create" asp-antiforgery="true">
+
+    <div class="row">
+
+        <div class="card col-sm-8 w-100 border-0">
+            <div class="card-header">
+                Players
+            </div>
+            <div class="card-body">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <label>Enter the <strong>usernames</strong> or <strong>emails</strong> of the players below (up to four including yourself):</label>
+                <label>If you do not know the player's username, use their email address to add them to the game.</label>
+
+                <div class="form-group">
+                    <input value="@User.Identity?.Name" class="form-control" readonly="readonly"/>
+                    <small>You are already in the game so do not need to add your details.</small>
+                </div>
+
+                @Html.EditorFor(model => model.PlayerModels)
+
+                <div id="additionalPlayers"></div>
+
+                <div id="addAdditionalPlayers" class="form-group">
+                    <button class="btn btn-secondary" type="button" onclick="addAdditionalPlayer()"><i class="fas fa-plus"></i> Add Additional Player</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="card col-sm-4 w-100 border-0">
+            <div class="card-header">
+                Privacy
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <div class="form-check">
+                        @Html.CheckBoxFor(model => model.PublicGame, new {@class = "form-check-input"})
+                        @Html.LabelFor(model => model.PublicGame, new {@class = "form-check-label"})
+                    </div>
+                    @Html.ValidationMessageFor(model => model.PublicGame)
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="card col-sm-12 w-100 border-0">
+            <div class="card-header">
+                Game Options
+            </div>
+            <div class="card-body">
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.GameType)
+                    @Html.DropDownListFor(model => model.GameType, Html.GetEnumSelectList<GameType>(), new {@class = "form-control"})
+                    @Html.ValidationMessageFor(model => model.GameType)
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.TileBagVisibilityOption)
+                    @Html.DropDownListFor(model => model.TileBagVisibilityOption, Html.GetEnumSelectList<TileBagVisibilityOption>(), new {@class = "form-control"})
+                    @Html.ValidationMessageFor(model => model.TileBagVisibilityOption)
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+
+    <div class="row">
+        <div id="accordion" class="card col-sm-12 w-100 border-0">
+            <div class="card-header panel-title">
+                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                    <i class="fas fa-plus"></i> Advanced Challenge Options
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordion">
+                    <div class="card-body">
+                        <p>Players make mistakes, sometimes they make up words. These options allow you to tweak how competitive the game should be and what outcomes there are to challenges.</p>
+                        <p>The default options below make for a friendly game. We suggest playing with these settings before you change these values (hence 'Advanced').</p>
+
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Challenge</th>
+                                <th>Outcome</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.ThatsNotAWordGameChallengeResult)
+                                </td>
+                                <td>
+                                    <div class="form-group">
+                                        @Html.DropDownListFor(model => model.ThatsNotAWordGameChallengeResult, Html.GetEnumSelectList<ChallengeResult>(), new {@class = "form-control"})
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.ThatsNotAValidTurnGameChallengeResult)
+                                </td>
+                                <td>
+                                    <div class="form-group">
+                                        @Html.DropDownListFor(model => model.ThatsNotAValidTurnGameChallengeResult, Html.GetEnumSelectList<ChallengeResult>(), new {@class = "form-control"})
+                                    </div>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    @Html.LabelFor(model => model.CatchallGameChallengeResult)
+                                </td>
+                                <td>
+                                    <div class="form-group">
+                                        @Html.DropDownListFor(model => model.CatchallGameChallengeResult, Html.GetEnumSelectList<ChallengeResult>(), new {@class = "form-control"})
+                                    </div>
+                                </td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="form-group">
+                            <div class="form-check">
+                                @Html.CheckBoxFor(model => model.CanOverrideChallengeOutcome, new {@class = "form-check-input"})
+                                @Html.LabelFor(model => model.CanOverrideChallengeOutcome, new {@class = "form-check-label"})
+                            </div>
+                            @Html.ValidationMessageFor(model => model.CanOverrideChallengeOutcome)
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="card col-12 w-100 border-0">
+            <div class="card-header">
+                Game Summary
+            </div>
+            <div class="card-body">
+                <ul>
+                    <li>Once created you can access your games from the <strong>Scrabble</strong> > <strong>My Games</strong> menu</li>
+                    <li>Any players that do not have an account will be sent an invitation link</li>
+                </ul>
+                <div class="form-group">
+                    <input type="submit" value="Create Game" class="btn btn-primary"/>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</form>
+
+@section Styles
+{
+    <link href="~/css/scrabble-create.css" rel="stylesheet" asp-append-version="true"/>
+}
+
+@section Scripts {
+    <script src="~/js/scrabble-create.js" asp-append-version="true"></script>
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+
+    <script type="text/javascript">
+
+        const contacts = [
+            @foreach (var contact in (Model.ContactDtos ?? []))
+            {
+                <text>"@contact.Name",</text>
+            }
+        ];
+
+        $("#PlayerModels_0__Identifier").autocomplete({
+            source: contacts
+        });
+
+    </script>
+}

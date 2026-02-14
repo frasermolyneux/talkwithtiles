@@ -1,0 +1,48 @@
+﻿<div class="row">
+
+    <div class="gameControls">
+        <button id="seeControlsKey" class="btn btn-link" data-toggle="modal" data-target="#controlsModal" title="See an overview of the game controls" type="button">
+            <i class="fas fa-info-circle"></i> Controls
+        </button>
+    </div>
+
+</div>
+
+<div id="controlsModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Controls</h5>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <ul style="list-style-type: none;">
+                    <li>
+                        <img src="~/img/control-tilebag.PNG"/> If enabled in your game you can click this to see the remaining tiles.
+                        <hr/>
+                    </li>
+                    <li>
+                        <img src="~/img/control-recalltiles.PNG"/> This button will recall your tiles from the board to your rack.
+                        <hr/>
+                    </li>
+                    <li>
+                        <img src="~/img/control-shuffle.PNG"/> This button will shuffle the tiles in your rack.
+                        <hr/>
+                    </li>
+                    <li>
+                        <img src="~/img/control-skipturn.PNG"/> This button will skip your turn. You will be asked to confirm the action when clicking.
+                        <hr/>
+                    </li>
+                    <li>
+                        <img src="~/img/control-exchangetiles.PNG"/> This button will allow you to exchange tiles. You will be asked to confirm the action when clicking.
+                    </li>
+                </ul>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

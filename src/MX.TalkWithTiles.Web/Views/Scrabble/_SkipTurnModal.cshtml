@@ -1,0 +1,24 @@
+@model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
+
+<div id="skipTurnModal" class="modal fade" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Skip Turn?</h5>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to skip your turn? you can exchange tiles if needed.
+            </div>
+            <div class="modal-footer">
+                <form asp-controller="Scrabble" asp-action="SkipTurn" asp-antiforgery="true" method="post">
+                    <input name="id" type="hidden" value="@Model.GameId"/>
+                    <button type="submit" class="btn btn-primary">Confirm Skip Turn</button>
+                </form>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,6 @@
+﻿@model CreatePlayerModel
+
+<div class="form-group">
+    @Html.TextBoxFor(model => model.Identifier, new {@class = "form-control test", placeholder = "Enter your opponents username or email here"})
+    @Html.ValidationMessageFor(model => model.Identifier, "", new {@class = "text-danger"})
+</div>

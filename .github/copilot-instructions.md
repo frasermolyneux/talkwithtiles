@@ -1,42 +1,72 @@
-# Copilot Instructions for talkwithtiles
+# Copilot Instructions
 
-## Project Overview
+## Architecture
 
-TalkWithTiles is an online Scrabble-like game platform. The infrastructure is provisioned using Terraform and deployed to Azure through GitHub Actions workflows.
+This is an ASP.NET Core 9 MVC web application (`src/MX.TalkWithTiles.Web`) for playing tile-based word games. The solution is split into multiple projects:
 
-## Repository Structure
+- `MX.TalkWithTiles.Web` - ASP.NET Core MVC app with controllers, views, and DI setup
+- `MX.TalkWithTiles.CoreEngine` - Game engine orchestration using `GameEngine` and `IManagerFactory`
+- `MX.TalkWithTiles.Scrabble` - Scrabble-specific game rules and logic
+- `MX.TalkWithTiles.Repository` - Azure Table Storage data access with `ITableEntity` cloud entities
+- `MX.TalkWithTiles.Contracts` - DTOs, interfaces, state models (`GameStateModel`, `BoardStateModel`, etc.), constants
+- `MX.TalkWithTiles.Common` - Shared utility extensions
 
-- `terraform/` - Terraform configuration files for Azure infrastructure provisioning
-- `.github/workflows/` - GitHub Actions workflow definitions for CI/CD
-- `docs/` - Additional project documentation
+## Key Patterns
 
-## Technology Stack
+- **GameEngine + ManagerFactory**: `GameEngine` receives `IManagerFactory` via primary constructor and lazily creates managers (`BoardManager`, `BagManager`, `PlayerManager`, `EndGameManager`, `ChallengeManager`, `PlayerMoveManager`). Each manager owns a state model. `GameStateModel` aggregates all manager states.
+- **Factory hierarchy**: `IGameEngineFactory`, `IManagerFactory`, `ITileFactory`, `IPlayerFactory` — all registered as scoped services.
+- **Repository pattern**: `AppDataRepository` base class holds `TableClient` instances for five tables (Scrabble, ScrabbleIndex, ScrabbleTiles, GameInvites, Contacts). Repositories like `GameStateRepository` inherit from it and implement interfaces (e.g. `IGameStateRepository`). Cloud entities implement `ITableEntity` with `PartitionKey`/`RowKey` mapping.
+- **State models**: Simple POCOs in `MX.TalkWithTiles.Contracts/StateModels/` — `GameStateModel`, `BoardStateModel`, `BagStateModel`, `PlayersStateModel`, `PlayerStateModel`, `PlayerMoveStateModel`, `ChallengeStateModel`, `EndGameStateModel`.
 
-- **Infrastructure as Code**: Terraform
-- **Cloud Provider**: Azure (using OIDC-based authentication)
-- **CI/CD**: GitHub Actions
-- **Dependency Management**: Dependabot with auto-merge support
+## Authentication
 
-## Development Guidelines
+Microsoft Entra ID via `Microsoft.Identity.Web` with `TenantId: common` (multi-tenant + personal Microsoft accounts). Game controllers require `[Authorize]`; Home, About, Health, Error are anonymous. Configuration in `appsettings.json` under `AzureAd`.
 
-- Follow existing code patterns and conventions in the repository.
-- Terraform code should use variable files (`tfvars/`) and backend configurations (`backends/`).
-- All infrastructure changes should be validated with a `terraform plan` before applying.
-- Keep GitHub Actions workflows minimal and leverage reusable actions from `frasermolyneux/actions`.
+## Data Storage
 
-## Workflow Overview
+Azure Table Storage via `Azure.Data.Tables` SDK with `DefaultAzureCredential`. Configuration under `AppData` section in `appsettings.json` (table endpoint and table names). Repositories registered as singletons in DI.
 
-- **Build and Test**: Runs Terraform plan on feature, bugfix, and hotfix branches against the development environment.
-- **Code Quality**: Runs security scanning and dependency review on pushes to `main` and pull requests.
-- **Copilot Setup Steps**: Configures the environment for GitHub Copilot coding agent.
-- **Dependabot Auto-Merge**: Automatically merges Dependabot PRs via squash merge.
+## Build and Test
 
-## Security and Permissions
+- Build: `dotnet build src/MX.TalkWithTiles.sln`
+- Run: `dotnet run --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj`
+- Test: `dotnet test src/MX.TalkWithTiles.sln`
+- Test projects: `MX.TalkWithTiles.CoreEngine.Tests` and `MX.TalkWithTiles.Scrabble.Tests`
+- Test stack: xUnit 2.9.3, Moq 4.20.72, Microsoft.NET.Test.Sdk 17.12.0
+- Tests use `[Theory]`/`[InlineData]` with extensive mocking of manager interfaces
 
-- Workflows follow the principle of least privilege with explicitly scoped permissions.
-- Azure authentication uses OpenID Connect (OIDC) with `id-token: write` permission.
-- Secrets and credentials must never be hardcoded; use GitHub Actions secrets and variables.
+## Infrastructure
 
-## Contributing
+Terraform under `terraform/` with per-environment configs:
+- Backends: `backends/dev.backend.hcl`, `backends/prd.backend.hcl`
+- Variables: `tfvars/dev.tfvars`, `tfvars/prd.tfvars`
+- Key resources: App Service (Linux .NET 9.0 on shared `platform-hosting` plan), Storage Account with five tables, Entra ID app registration, Application Insights, DNS records
+- Providers: AzureRM 4.59.0, AzureAD 2.50.0
 
-This is a personal learning project. Contributions are not actively sought, but constructive feedback and issue reports are welcome.
+## C# Conventions
+
+- All projects target .NET 9, C# 13 (`<LangVersion>13.0</LangVersion>`)
+- File-scoped namespaces throughout (`namespace MX.TalkWithTiles.X;`)
+- Primary constructors used extensively for DI injection
+- Nullable reference types enabled (`<Nullable>enable</Nullable>`)
+- Implicit usings enabled in the web project
+
+## Key Files
+
+- `src/MX.TalkWithTiles.Web/Program.cs` - DI registration, auth config, middleware pipeline
+- `src/MX.TalkWithTiles.CoreEngine/GameEngine.cs` - Core game orchestration
+- `src/MX.TalkWithTiles.CoreEngine/ManagerFactory.cs` - Manager creation with game type switching
+- `src/MX.TalkWithTiles.Repository/GameStateRepository.cs` - Primary data access
+- `src/MX.TalkWithTiles.Contracts/StateModels/` - All game state models
+- `terraform/web_app.tf` - App Service definition with app settings
+- `terraform/locals.tf` - Computed names and table definitions
+
+## CI/CD
+
+GitHub Actions workflows in `.github/workflows/`:
+- `build-and-test.yml` - Runs on feature/bugfix/hotfix branch pushes
+- `pr-verify.yml` - Build + Terraform plan on pull requests
+- `deploy-prd.yml` - Full pipeline on main push (dev → prd)
+- `deploy-dev.yml` - Manual dev deployment
+- `codequality.yml` - Weekly code quality analysis
+- Uses reusable actions from `frasermolyneux/actions/` with OIDC authentication

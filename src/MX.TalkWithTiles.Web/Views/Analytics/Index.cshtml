@@ -1,0 +1,48 @@
+﻿@model AnalyticsIndexModel
+
+@{
+    ViewData["Title"] = "Analytics";
+}
+
+<div class="row">
+    <div class="col-12">
+        <div id="activeGames"></div>
+    </div>
+    
+</div>
+
+@section Scripts{
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        google.charts.load('current', { 'packages': ['corechart'] });
+        google.charts.setOnLoadCallback(drawGameStatesChart);
+
+        function drawGameStatesChart() {
+
+            var data = new google.visualization.DataTable();
+            data.addColumn('date', 'Date');
+            data.addColumn('number', 'Active Games');
+
+            @foreach (var gameState in Model.GameStates.GroupBy(gs => new DateTime(gs.LastUpdated.Year, gs.LastUpdated.Month, gs.LastUpdated.Day, 0, 0, 0, DateTimeKind.Utc)).OrderByDescending(gs => gs.Key))
+            {
+                <text>
+                    data.addRow([
+                        new Date("@gameState.Key.ToString("yyyy-MM-dd")"),
+                        @gameState.Count()
+                    ]);
+                </text>
+            }
+
+            const options = {
+                title: 'Active Games',
+                height: 500,
+                curveType: 'function',
+                legend: { position: 'bottom' }
+            };
+
+            const chart = new google.visualization.ColumnChart(document.getElementById('activeGames'));
+
+            chart.draw(data, options);
+        }
+    </script>
+}

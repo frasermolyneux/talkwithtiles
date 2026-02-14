@@ -1,0 +1,59 @@
+@model List<MX.TalkWithTiles.Repository.Dtos.ContactDto>
+
+@{
+    ViewBag.Title = "Contacts";
+    Layout = "_Layout";
+}
+
+<div class="row">
+    <div class="col-12">
+
+        <div class="card">
+            <div class="card-header">
+                Contacts
+            </div>
+            <div class="card-body">
+                <p>
+                    These are the players that you have been in games with. At this point the list is purely to allow for the auto complete feature when creating a game.
+                </p>
+                <p>Perhaps this could drive other features in the future though should as stats? if you would like to see something like that then please give us feedback.</p>
+            </div>
+        </div>
+
+    </div>
+
+</div>
+
+<hr class="featurette-divider">
+
+<table class="table table-bordered">
+
+    <thead>
+    <tr>
+        <th>
+            Name
+        </th>
+        <th>
+            Last Played With
+        </th>
+        <th>
+
+        </th>
+    </tr>
+    </thead>
+    <tbody>
+
+    @foreach (var contact in Model)
+    {
+        <tr>
+            <td>@contact.Name</td>
+            <td>@contact.LastPlayed</td>
+            <td>
+                <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-contactId="@contact.Id">Delete Contact</a>
+            </td>
+        </tr>
+    }
+
+    </tbody>
+
+</table>

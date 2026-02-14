@@ -1,0 +1,14 @@
+@model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
+
+@{
+    ViewBag.Title = "Delete Game";
+    Layout = "_Layout";
+}
+
+<h2>Are you sure you want to delete the game?</h2>
+
+<form asp-action="ConfirmDelete" asp-antiforgery="true" asp-route-id="@Model.GameId">
+    <div class="form-group">
+        <input type="submit" value="Confirm" class="btn btn-danger"/>
+    </div>
+</form>

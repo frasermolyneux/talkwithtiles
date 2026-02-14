@@ -1,0 +1,119 @@
+@using MX.TalkWithTiles.Web.Extensions
+@using MX.TalkWithTiles.Contracts.Constants
+@model List<MX.TalkWithTiles.Contracts.StateModels.GameStateModel>
+
+@{
+    ViewData["Title"] = "My Scrabble Games";
+}
+
+<h4>Active Games</h4>
+
+<div class="row">
+    <table class="table table-bordered table-responsive-sm">
+        <thead>
+        <tr>
+            <td>
+                Players
+            </td>
+            <td>
+                Privacy
+            </td>
+            <td>
+                Board Type
+            </td>
+            <td>
+                Current Player
+            </td>
+            <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var gameStateModel in Model.Where(g => g.EndGameStateModel.GameStateType == GameStateType.InProgress).OrderByDescending(g => g.LastUpdated))
+        {
+            <tr>
+                <td>
+                    @string.Join(", ", gameStateModel.Players().Select(p => p.PlayerName))
+                </td>
+                <td>@gameStateModel.GamePrivacyType</td>
+                <td>@gameStateModel.GameType</td>
+                <td>
+                    @if (gameStateModel.IsCurrentPlayer(User))
+                    {
+                        <strong>You</strong>
+                    }
+                    else
+                    {
+                        <strong>@gameStateModel.CurrentPlayerName()</strong>
+                    }
+                </td>
+                <td>
+                    @Html.ActionLink("Play Game", "Play", "Scrabble", new {id = gameStateModel.GameId})
+                    |
+                    @Html.ActionLink("Play in Popup", "Play", "Scrabble", new {id = gameStateModel.GameId, hideScreenClutter = true}, new {onclick = "openPlayGamePopup(this.href);return false"})
+                    |
+                    @Html.ActionLink("Abandon Game", "Abandon", "Scrabble", new {id = gameStateModel.GameId})
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+</div>
+
+<hr/>
+
+<h4>Completed / Abandoned Games</h4>
+
+<div class="row">
+    <table class="table table-bordered table-responsive-sm">
+        <thead>
+        <tr>
+            <td>Players</td>
+            <td>Privacy</td>
+            <td>State</td>
+            <td>Result</td>
+            <td>Board Type</td>
+            <td></td>
+        </tr>
+        </thead>
+        <tbody>
+        @foreach (var gameStateModel in Model.Where(g => g.EndGameStateModel.GameStateType != GameStateType.InProgress))
+        {
+            <tr>
+                <td>
+                    @string.Join(", ", gameStateModel.Players().Select(p => p.PlayerName))
+                </td>
+                <td>@gameStateModel.GamePrivacyType</td>
+                <td>@gameStateModel.EndGameStateModel.GameStateType</td>
+                <td>
+                    @switch (gameStateModel.EndGameStateModel.GameStateType)
+                    {
+                        case GameStateType.Completed:
+                            var winningIds = gameStateModel.EndGameStateModel.Winners;
+                            var winningPlayerStateModels = gameStateModel.Players().Where(p => winningIds.Contains(p.PlayerId)).ToList();
+
+                            <text>Winner(s): @(string.Join(", ", winningPlayerStateModels.Select(p => p.PlayerName)))</text>
+                            break;
+                        case GameStateType.Abandoned:
+                            var abandonedBy = gameStateModel.Players().Single(p => p.PlayerId == gameStateModel.EndGameStateModel.AbandoningPlayerId);
+
+                            <text>Abandoned By: @abandonedBy.PlayerName</text>
+                            break;
+                    }
+                </td>
+                <td>@gameStateModel.GameType</td>
+                <td>
+                    @Html.ActionLink("View Game", "Play", "Scrabble", new {id = gameStateModel.GameId})
+                    |
+                    @Html.ActionLink("Delete Game", "Delete", "Scrabble", new {id = gameStateModel.GameId})
+                </td>
+            </tr>
+        }
+        </tbody>
+    </table>
+
+    <p>
+        <strong>Abandoned games will be deleted after 14 days and completed games will be deleted after 30 days (TODO)</strong>
+    </p>
+
+</div>

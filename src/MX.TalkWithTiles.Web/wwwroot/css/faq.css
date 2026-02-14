@@ -1,0 +1,12 @@
+﻿.accordion-section .panel-default > .panel-heading {
+    background: #f4f4f4;
+    border: 0;
+    padding: 0;
+}
+
+.accordion-section .panel-default .panel-title a {
+    display: block;
+    font-size: 1.5rem;
+}
+
+.accordion-section .panel-default .panel-body { font-size: 1.2rem; }

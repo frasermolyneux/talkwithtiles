@@ -1,0 +1,141 @@
+@using MX.TalkWithTiles.Web.Extensions
+@using MX.TalkWithTiles.Contracts.Constants
+@model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
+@{
+    ViewData["Title"] = "Play Scrabble Game";
+}
+
+@if (!Model.IsGameInProgress())
+{
+    <partial name="_GameStateBanner"/>
+}
+
+<partial name="_PlayerSummary"/>
+
+<partial name="_ScrabbleBoard"/>
+
+@if (Model.IsGameInProgress())
+{
+    if (Model.IsUserInGame(User))
+    {
+        <partial name="_ScrabbleRack"/>
+
+        <div class="row">
+
+            <div class="turnScore">
+                <div id="turnScore"></div>
+            </div>
+
+        </div>
+    }
+
+    @if (Model.IsCurrentPlayer(User) && !Model.IsGameInChallenge())
+    {
+        <div class="row">
+
+            <div class="gameControls">
+                <button id="skipTurn" class="btn btn-primary" data-toggle="modal" data-target="#skipTurnModal" title="Skip your turn" type="button">
+                    <i class="fas fa-forward"></i>
+                </button>
+
+                <button id="exchangeTiles" class="btn btn-primary" data-toggle="modal" data-target="#exchangeTilesModal" title="Exchange your tiles (you will be asked for your selection)" type="button">
+                    <i class="fas fa-exchange-alt"></i>
+                </button>
+
+                <button id="submitTurn" class="btn btn-primary" onclick="submitPlayerMove()">Submit</button>
+            </div>
+
+        </div>
+    }
+
+    if (Model.CanIssueChallenge(User))
+    {
+        <div class="row">
+
+            <div class="gameControls">
+                <button id="issueChallenge" class="btn btn-warning" data-toggle="modal" data-target="#issueChallengeModal" type="button">
+                    <i class="fas fa-exclamation-triangle"></i> Challenge
+                </button>
+            </div>
+
+        </div>
+    }
+    else if (Model.CanUndoLastTurn(User))
+    {
+        <div class="row">
+
+            <div class="gameControls">
+                <button id="undoLastTurn" class="btn btn-warning" data-toggle="modal" data-target="#undoLastTurnModal" type="button">
+                    <i class="fas fa-exclamation-triangle"></i> Undo Your Turn
+                </button>
+            </div>
+
+        </div>
+    }
+
+    @if (Model.IsGameInChallenge() && Model.IsChallengedPlayer(User))
+    {
+        <partial name="_HandleChallenge"/>
+    }
+
+
+    @if (Model.ShowRemainingTiles(User))
+    {
+        <partial name="_RemainingTilesModal"/>
+    }
+
+    @if (Model.IsCurrentPlayer(User))
+    {
+        <partial name="_SkipTurnModal"/>
+        <partial name="_ExchangeTilesModal"/>
+    }
+
+    @if (Model.IsLastPlayer(User) && !Model.IsGameInChallenge())
+    {
+        <partial name="_UndoLastTurnModal"/>
+    }
+
+    @if (Model.CanIssueChallenge(User))
+    {
+        <partial name="_IssueChallengeModal"/>
+    }
+
+    <partial name="_ControlsReadme"/>
+}
+
+@section Styles
+{
+    <link href="~/css/scrabble.css" rel="stylesheet" asp-append-version="true"/>
+}
+
+@section Scripts
+{
+    <script src="~/js/scrabble-play.js" asp-append-version="true"></script>
+
+    @if (Model.EndGameStateModel.GameStateType == GameStateType.InProgress)
+    {
+        <script type="text/javascript">
+
+            InitGameGlobals("@Model.GameId", "@User.GetUserGuid()", "@Model.CurrentPlayerId()", @Model.GameEtag);
+
+            @foreach (var tile in Model.UserTiles(User))
+            {
+                <text>
+                    var toAdd = {
+                        tileId: "@tile.TileId.ToString()",
+                        letter: "@tile.Letter",
+                        rackPosition: @tile.RackPosition,
+                        posX: 0,
+                        posY: 0
+                    };
+                    userTiles.push(toAdd);
+                </text>
+            }
+            console.log(userTiles);
+
+            InitTileRack();
+            InitBoard();
+            InitSizes();
+        </script>
+    }
+}

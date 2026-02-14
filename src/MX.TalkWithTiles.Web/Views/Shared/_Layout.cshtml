@@ -1,0 +1,118 @@
+@using Microsoft.AspNetCore.Antiforgery
+@using System.Text.Json
+@inject IAntiforgery Antiforgery
+@inject Microsoft.Extensions.Configuration.IConfiguration Configuration
+@{
+    var aiClientConnection = Configuration["ApplicationInsights:ClientConnectionString"];
+    var aiClientConnectionJson = string.IsNullOrWhiteSpace(aiClientConnection)
+        ? null
+        : JsonSerializer.Serialize(aiClientConnection);
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Play online Scrabble and other word games for free with friends and family supporting up to four players." />
+    <meta name="keywords" content="scrabble games, free scrabble games, scrabble games online, scrabble game, scrabble solver, play scrabble game, scrabble online, play scrabble, scrabble finder">
+
+    <title>@ViewData["Title"] - Talk With Tiles</title>
+
+    <link rel="canonical" href="https://www.talkwithtiles.molyneux.me">
+    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
+    <link rel="stylesheet" href="~/lib/jquery-ui/themes/base/jquery-ui.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" />
+    @await RenderSectionAsync("Styles", false)
+</head>
+<body>
+@{
+    bool hideClutter = ViewBag.HideScreenClutter ?? false;
+}
+@if (!hideClutter)
+{
+    <header>
+        <partial name="_Navigation"/>
+    </header>
+}
+
+@{
+    var padding = hideClutter ? "0px" : "60px";
+}
+
+<div class="container" style="padding-top: @padding">
+    <div style="padding-top: 10px">
+        <alerts></alerts>
+    </div>
+    <main id="mainContainer" role="main" class="pb-3">
+        @RenderBody()
+    </main>
+</div>
+
+@if (!hideClutter)
+{
+    <footer class="border-top footer text-muted">
+        <div class="container">
+            <p>
+                &copy; @DateTime.Now.Year - <a href="https://www.molyneux-consulting.co.uk/" target="_blank">Molyneux Consulting Ltd</a> - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a> - <a asp-area="" asp-controller="Home" asp-action="Cookies">Cookies Notice</a>
+            </p>
+            <p>
+                SCRABBLE® is a registered trademark. All intellectual property rights in and to the game are owned in the U.S.A and Canada by Hasbro Inc., and throughout the rest of the world by J.W. Spear & Sons Limited of Maidenhead, Berkshire, England, a subsidiary of Mattel Inc. Mattel and Spear are not affiliated with Hasbro. Words with Friends is a trademark of Zynga with Friends.
+            </p>
+            <p>
+                Talk With Tiles is not affiliated with SCRABBLE®, Mattel Inc, Hasbro Inc, Zynga with Friends or Zynga Inc in any way.
+            </p>
+        </div>
+    </footer>
+}
+
+<script src="~/lib/jquery/dist/jquery.min.js"></script>
+<script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+
+<script>
+    @{
+        var antiforgeryToken = Antiforgery.GetAndStoreTokens(Context);
+    }
+    const antiforgeryToken = "@antiforgeryToken.RequestToken";
+</script>
+
+@if (aiClientConnectionJson is not null)
+{
+    <script type="text/javascript">
+        (function (win, doc) {
+            var appInsights = win.appInsights || function (config) {
+                function addMethod(name) {
+                    if (!name) { return; }
+                    app[name] = function () {
+                        var args = arguments;
+                        app.queue.push(function () { app[name].apply(app, args); });
+                    };
+                }
+                var app = { config: config }, script = doc.createElement("script");
+                app.queue = [];
+                script.src = config.url || "https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js";
+                doc.getElementsByTagName("head")[0].appendChild(script);
+                addMethod("trackEvent");
+                addMethod("trackPageView");
+                addMethod("trackException");
+                addMethod("trackTrace");
+                addMethod("trackDependencyData");
+                addMethod("flush");
+                return app;
+            }({ connectionString: @Html.Raw(aiClientConnectionJson) });
+
+            win.appInsights = appInsights;
+            appInsights.trackPageView();
+        })(window, document);
+    </script>
+}
+
+@await RenderSectionAsync("Scripts", false)
+</body>
+</html>

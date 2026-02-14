@@ -1,12 +1,19 @@
-# talkwithtiles
+# Talk With Tiles
 
+[![Build and Test](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/build-and-test.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/build-and-test.yml)
 [![Code Quality](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml)
-[![Copilot Setup Steps](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/copilot-setup-steps.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/copilot-setup-steps.yml)
-[![Dependabot Auto-Merge](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/dependabot-automerge.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/dependabot-automerge.yml)
+[![PR Verify](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/pr-verify.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/pr-verify.yml)
+[![Deploy Dev](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/deploy-dev.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/deploy-dev.yml)
+[![Deploy Prd](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/deploy-prd.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/deploy-prd.yml)
+
+## Documentation
+
+* [Architecture Overview](docs/architecture-overview.md)
+* [Development Workflows](docs/development-workflows.md)
 
 ## Overview
 
-TalkWithTiles is a platform that allows users to play online games of Scrabble against each other. The infrastructure is managed through Terraform and deployed via GitHub Actions workflows. The project includes code quality checks, dependency review, and automated Dependabot pull request merging. It is deployed to Azure with environment-specific configurations for development and other stages.
+Talk With Tiles (MX.TalkWithTiles) is an online tile-based word game platform built with ASP.NET Core 9 MVC and deployed to Azure. Players can create and join Scrabble-style games, manage contacts, and send game invitations. The application uses Microsoft Entra ID for authentication supporting multi-tenant and personal Microsoft accounts, Azure Table Storage for persisting game state, and Application Insights for telemetry. Infrastructure is managed with Terraform and deployed via GitHub Actions to Azure App Service on a shared hosting plan.
 
 ## Contributing
 

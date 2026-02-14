@@ -1,0 +1,37 @@
+@using ChallengeResult = MX.TalkWithTiles.Contracts.Constants.GameChallengeResult
+@model ResolveChallengeModel
+
+<form asp-action="ResolveChallenge" asp-antiforgery="true">
+    <input type="hidden" asp-for="Id"/>
+    <input type="hidden" asp-for="Accept"/>
+
+    <div class="form-group form-inline">
+
+        @if (Model.AllowOverride && Model.Accept)
+        {
+            <label>You can override the challenge result using this dropdown: </label>
+            <select style="margin-left: 5px" asp-for="@Model.GameChallengeResultOverride" asp-items="@Html.GetEnumSelectList<ChallengeResult>()" class="form-control"></select>
+        }
+        else
+        {
+            if (Model.Accept)
+            {
+                <label>Accept the challenge: </label>
+            }
+            else
+            {
+                <label>Reject the challenge: </label>
+            }
+        }
+
+        @if (Model.Accept)
+        {
+            <input type="submit" style="margin-left: 5px" class="btn btn-primary" value="Accept Challenge"/>
+        }
+        else
+        {
+            <input type="submit" style="margin-left: 5px" class="btn btn-danger" value="Reject Challenge"/>
+        }
+    </div>
+
+</form>

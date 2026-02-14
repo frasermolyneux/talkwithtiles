@@ -1,0 +1,139 @@
+﻿.btn { padding: 5px; }
+
+.scrabbleBoard {
+    border: solid 5px black;
+    display: flex;
+    flex-direction: column;
+    height: 450px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 450px;
+}
+
+.scrabbleBoardRow {
+    display: flex;
+    flex: 1;
+    flex-direction: row;
+}
+
+.scrabbleBoardCell { flex: 1; }
+
+.availableBoardCell { }
+
+.StandardTile {
+    background: #f3dbbb;
+    border: solid 1px white;
+}
+
+.DoubleLetterScoreTile {
+    background: url("../img/double_letter.png");
+    background-size: contain;
+    border: solid 1px white;
+}
+
+.TripleLetterScoreTile {
+    background: url("../img/triple_letter.png");
+    background-size: contain;
+    border: solid 1px white;
+}
+
+.DoubleWordScoreTile {
+    background: url("../img/double_word.png");
+    background-size: contain;
+    border: solid 1px white;
+}
+
+.TripleWordScoreTile {
+    background: url("../img/triple_word.png");
+    background-size: contain;
+    border: solid 1px white;
+}
+
+.CentreTile {
+    background: url("../img/star.png");
+    background-size: contain;
+    border: solid 1px white;
+}
+
+.scrabbleTile {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 85%;
+    z-index: 100;
+}
+
+.rackScrabbleTile { }
+
+.scrabbleRackContainer {
+    display: flex;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.scrabbleRack {
+    background: url("../img/rack.png");
+    background-size: cover;
+    display: flex;
+    flex-direction: row;
+    margin-top: 10px;
+    padding: 10px;
+}
+
+.scrabbleRackControls {
+    margin: auto;
+    padding: 5px;
+}
+
+.scrabbleRackCell {
+    border: solid 1px black;
+    flex: 1;
+    margin: 1px;
+}
+
+.playerSummaryContainer {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px;
+    text-align: center;
+    width: 100%;
+}
+
+.gameControls {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px;
+    text-align: center;
+    width: 50%;
+}
+
+.turnScore {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px;
+    text-align: center;
+    width: 85%;
+}
+
+input[type=checkbox] {
+    -moz-transform: scale(2);
+    -ms-transform: scale(2);
+    -o-transform: scale(2);
+    -webkit-transform: scale(2);
+    padding: 10px;
+}
+
+.form-check-label { margin-left: 5px; }
+
+.selectedTile {
+    border-color: red;
+    border-style: solid;
+}
+
+.selectedTileMessage {
+    margin-left: auto;
+    margin-right: auto;
+    padding: 5px;
+    text-align: center;
+    width: 85%;
+}
