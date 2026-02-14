@@ -1,0 +1,55 @@
+﻿@{
+    ViewData["Title"] = "Getting Started";
+}
+
+<h1>Getting Started</h1>
+
+<p>Here's a brief run through of our website and how to get playing games with your friends.</p>
+
+<ul>
+    <li><a href="#basics">Basics</a></li>
+    <li><a href="#creating_a_game">Creating a Game</a></li>
+    <li><a href="#playing_a_game">Playing a Game</a></li>
+</ul>
+
+<hr/>
+<h2 id="basics">Basics</h2>
+<p>
+    This website allows you to play Scrabble (in various forms) against your friends/family/contacts. It works by you creating a Scrabble game with configurable options with a set of opponents. When you and your opponents access a game you can then each play in turn.
+</p>
+<p>
+    When you have a game loaded you can see your tiles and the current board, you can move your tiles around and place them on the board to see potential scores etc. Your opponents cannot see this. At the point that the current player has played their turn your board will automatically refresh.
+</p>
+
+<hr/>
+<h2 id="creating_a_game">Creating a Game</h2>
+<p>
+    The first thing you need when creating a game is someone to play with (hopefully you have this!). On the create game page you can add up to four players using either their username on Talk With Tiles (if known) or their email:
+</p>
+<p>
+    <img src="~/img/create-game-players.PNG" alt="create game players" style="border: 2px solid black;" />
+</p>
+<p>
+    You can then select the privacy and game options for the game you want to play. You can see more information on the game types <a asp-controller="About" asp-action="ScrabbleGames">here</a>.
+</p>
+<p>
+    When you create the game it will appear on each of the players <a asp-controller="Scrabble" asp-action="Index">my games</a> pages.
+</p>
+
+<hr/>
+<h2 id="playing_a_game">Playing a Game</h2>
+<p>
+    Your games can be accessed from the navigation menu by clicking Scrabble > <a asp-controller="Scrabble" asp-action="Index">My Games</a>. You can choose to play the game in a popup window to remove the clutter from the page and allow you to split your screen easily.
+</p>
+<p>
+    There is a full breakdown of the controls on the page <a asp-controller="About" asp-action="GameControls">here</a>. The basics however are:
+</p>
+<ul>
+    <li>You can click (or tap) on a tile in your rack to select it. Once selected it will be highlighted with a red border. You can then click (or tap) on an available space on the board.</li>
+    <li>Alternatively; if you use a mouse you can drag and drop tiles to and from the board.</li>
+    <li>While you have tiles in the rack you can move them around and place them on the board to see yur potential score. You can only submit your move if it is currently your turn.</li>
+    <li>You have the ability to shuffle, recall and exchange your tiles.</li>
+</ul>
+<p>
+    A game status message will always display at the top of the game with the current player, previous player and previous move information.
+</p>

@@ -1,0 +1,44 @@
+@using MX.TalkWithTiles.CoreEngine.Helpers
+@using MX.TalkWithTiles.Web.Extensions
+@model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
+
+@{
+    var boardSize = BoardSizeHelper.GetSize(Model.GameType);
+}
+
+<div class="row">
+
+    <div id="scrabbleBoard" class="scrabbleBoard">
+        @for (var i = 0; i < boardSize.Height; i++)
+        {
+            <div class="scrabbleBoardRow">
+                @for (var j = 0; j < boardSize.Width; j++)
+                {
+                    var tile = Model.BoardStateModel.Tiles[j, i];
+
+                    @if (tile.LetterSet)
+                    {
+                        @if (Model.IsTileInLastMove(tile))
+                        {
+                            <div id="cell_@j-@i" class="scrabbleBoardCell @tile.TileType">
+                                <img src="/img/tiles/@{ @tile.Letter }.jpg" class="scrabbleTile" alt="@tile.Letter" style="border-color: green; border-style: dashed">
+                            </div>
+                        }
+                        else
+                        {
+                            <div id="cell_@j-@i" class="scrabbleBoardCell @tile.TileType">
+                                <img src="/img/tiles/@{ @tile.Letter }.jpg" class="scrabbleTile" alt="@tile.Letter" style="padding: 3px;">
+                            </div>
+                        }
+
+                    }
+                    else
+                    {
+                        <div id="cell_@j-@i" class="scrabbleBoardCell availableBoardCell @tile.TileType"></div>
+                    }
+                }
+            </div>
+        }
+    </div>
+
+</div>

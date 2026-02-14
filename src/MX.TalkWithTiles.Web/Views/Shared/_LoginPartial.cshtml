@@ -1,0 +1,23 @@
+<ul class="navbar-nav">
+    @if (User.Identity?.IsAuthenticated == true)
+    {
+        <li class="nav-item dropdown">
+            <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                @User.Identity.Name
+            </a>
+            <div class="dropdown-menu" aria-labelledby="navbarDropdown">
+                <a class="dropdown-item nav-link text-dark" asp-area="" asp-controller="Contacts" asp-action="Index"><i class="fas fa-users"></i> Contacts</a>
+                <div class="dropdown-divider"></div>
+                <div class="dropdown-item">
+                    <a class="nav-link btn btn-link text-dark" asp-controller="Account" asp-action="SignOut"><i class="fas fa-sign-out-alt"></i> Sign out</a>
+                </div>
+            </div>
+        </li>
+    }
+    else
+    {
+        <li class="nav-item">
+            <a class="nav-link text-dark" asp-controller="Account" asp-action="SignIn">Sign in</a>
+        </li>
+    }
+</ul>

@@ -1,42 +1,15 @@
-# Copilot Instructions for talkwithtiles
+# Copilot Instructions
 
-## Project Overview
-
-TalkWithTiles is an online Scrabble-like game platform. The infrastructure is provisioned using Terraform and deployed to Azure through GitHub Actions workflows.
-
-## Repository Structure
-
-- `terraform/` - Terraform configuration files for Azure infrastructure provisioning
-- `.github/workflows/` - GitHub Actions workflow definitions for CI/CD
-- `docs/` - Additional project documentation
-
-## Technology Stack
-
-- **Infrastructure as Code**: Terraform
-- **Cloud Provider**: Azure (using OIDC-based authentication)
-- **CI/CD**: GitHub Actions
-- **Dependency Management**: Dependabot with auto-merge support
-
-## Development Guidelines
-
-- Follow existing code patterns and conventions in the repository.
-- Terraform code should use variable files (`tfvars/`) and backend configurations (`backends/`).
-- All infrastructure changes should be validated with a `terraform plan` before applying.
-- Keep GitHub Actions workflows minimal and leverage reusable actions from `frasermolyneux/actions`.
-
-## Workflow Overview
-
-- **Build and Test**: Runs Terraform plan on feature, bugfix, and hotfix branches against the development environment.
-- **Code Quality**: Runs security scanning and dependency review on pushes to `main` and pull requests.
-- **Copilot Setup Steps**: Configures the environment for GitHub Copilot coding agent.
-- **Dependabot Auto-Merge**: Automatically merges Dependabot PRs via squash merge.
-
-## Security and Permissions
-
-- Workflows follow the principle of least privilege with explicitly scoped permissions.
-- Azure authentication uses OpenID Connect (OIDC) with `id-token: write` permission.
-- Secrets and credentials must never be hardcoded; use GitHub Actions secrets and variables.
-
-## Contributing
-
-This is a personal learning project. Contributions are not actively sought, but constructive feedback and issue reports are welcome.
+- **Stack & auth**: ASP.NET Core 9 MVC (`src/MX.TalkWithTiles.Web`) with Microsoft.Identity.Web for Entra External ID. Game controllers require authentication; Home, About, Health, Error are anonymous.
+- **Data**: Azure Table Storage via `TableServiceClient` + `DefaultAzureCredential`. Game state, tiles, invites, and contacts stored in separate tables. Configuration in `appsettings.json` `Storage` section.
+- **Architecture**: Multi-project .NET solution with separation of concerns:
+  - `MX.TalkWithTiles.Contracts` - DTOs, interfaces, models
+  - `MX.TalkWithTiles.Common` - Shared utilities
+  - `MX.TalkWithTiles.CoreEngine` - Generic game engine (board, players, moves, scoring)
+  - `MX.TalkWithTiles.Scrabble` - Scrabble-specific game logic
+  - `MX.TalkWithTiles.Repository` - Azure Table Storage data access
+  - `MX.TalkWithTiles.Web` - ASP.NET Core MVC web application
+- **Local dev loop**: `dotnet build src/MX.TalkWithTiles.sln` then `dotnet run --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj`. Ensure `Storage:TableEndpoint` and Entra settings are configured.
+- **Testing**: `dotnet test src/MX.TalkWithTiles.sln` runs CoreEngine and Scrabble unit tests (NUnit + FakeItEasy + FluentAssertions).
+- **Infra**: Terraform under `terraform/` builds App Service (on shared platform-hosting plan), Storage, DNS, Entra ID app, Application Insights (per-environment tfvars/backends). GitHub Actions workflows cover build/test, codequality, PR verify, deploy-dev/prd, destroy-development/environment, dependabot-automerge, and copilot-setup-steps.
+- **Configuration**: `appsettings.json` holds `AzureAd`, `Storage`, `ApplicationInsights`. Keep secrets out of source; use user-secrets locally.

@@ -1,17 +1,42 @@
-# talkwithtiles
+# Talk With Tiles
 
-[![Code Quality](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/codequality.yml)
-[![Copilot Setup Steps](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/copilot-setup-steps.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/copilot-setup-steps.yml)
-[![Dependabot Auto-Merge](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/dependabot-automerge.yml/badge.svg)](https://github.com/frasermolyneux/talkwithtiles/actions/workflows/dependabot-automerge.yml)
+An online Scrabble-like word game platform built with ASP.NET Core 9 and deployed to Azure.
 
-## Overview
+## Architecture
 
-TalkWithTiles is a platform that allows users to play online games of Scrabble against each other. The infrastructure is managed through Terraform and deployed via GitHub Actions workflows. The project includes code quality checks, dependency review, and automated Dependabot pull request merging. It is deployed to Azure with environment-specific configurations for development and other stages.
+- **Web Application**: ASP.NET Core 9 MVC with Entra External ID authentication
+- **Data Storage**: Azure Table Storage (game state, tiles, invites, contacts)
+- **Infrastructure**: Terraform on shared Azure App Service Plan
+- **CI/CD**: GitHub Actions with automated dev/prd deployment pipeline
+
+## Project Structure
+
+```
+src/
+├── MX.TalkWithTiles.Common/          # Shared utilities
+├── MX.TalkWithTiles.Contracts/       # DTOs, interfaces, models
+├── MX.TalkWithTiles.CoreEngine/      # Generic game engine
+├── MX.TalkWithTiles.CoreEngine.Tests/ # Game engine unit tests
+├── MX.TalkWithTiles.Repository/      # Azure Table Storage data access
+├── MX.TalkWithTiles.Scrabble/        # Scrabble game logic
+├── MX.TalkWithTiles.Scrabble.Tests/  # Scrabble unit tests
+├── MX.TalkWithTiles.Web/             # ASP.NET Core MVC web app
+└── MX.TalkWithTiles.sln
+terraform/                            # Azure infrastructure (Terraform)
+```
+
+## Local Development
+
+1. Install [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+2. Configure user secrets for Entra ID and Storage settings
+3. Build: `dotnet build src/MX.TalkWithTiles.sln`
+4. Run: `dotnet run --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj`
+5. Test: `dotnet test src/MX.TalkWithTiles.sln`
 
 ## Contributing
 
-Please read the [contributing](CONTRIBUTING.md) guidance; this is a learning and development project.
+Please see [CONTRIBUTING.md](CONTRIBUTING.md) for details.
 
 ## Security
 
-Please read the [security](SECURITY.md) guidance; I am always open to security feedback through email or opening an issue.
+Please see [SECURITY.md](SECURITY.md) for reporting vulnerabilities.

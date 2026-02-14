@@ -5,3 +5,15 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+
+  - package-ecosystem: "nuget"
+    assignees: ["frasermolyneux"]
+    directory: "/src"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "terraform"
+    assignees: ["frasermolyneux"]
+    directory: "/terraform"
+    schedule:
+      interval: "daily"

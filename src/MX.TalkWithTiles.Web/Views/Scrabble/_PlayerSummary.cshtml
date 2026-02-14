@@ -1,0 +1,37 @@
+@using MX.TalkWithTiles.Web.Extensions
+@model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
+
+<div class="row">
+
+    <div class="playerSummaryContainer">
+        @foreach (var player in Model.Players())
+        {
+            @if (player.PlayerId == Model.CurrentPlayerId())
+            {
+                <span class="badge badge-primary" style="margin: 5px">
+                    @player.PlayerName : @player.Score
+
+                    @if (!Model.BagStateModel.Tiles.Any())
+                    {
+                        <br/>
+                        <text>@(player.Tiles.Count) remaining tiles</text>
+                    }
+
+                </span>
+            }
+            else
+            {
+                <span class="badge badge-secondary" style="margin: 5px">
+                    @player.PlayerName : @player.Score
+
+                    @if (!Model.BagStateModel.Tiles.Any())
+                    {
+                        <br/>
+                        <text>@(player.Tiles.Count) remaining tiles</text>
+                    }
+                </span>
+            }
+        }
+    </div>
+
+</div>
