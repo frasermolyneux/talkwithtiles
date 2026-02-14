@@ -10,12 +10,15 @@ public class CreateScrabbleGameModel
     public List<CreatePlayerModel> PlayerModels { get; set; } = [];
 
     [DisplayName("Should this game be publicly listed?")]
+    [Required]
     public bool PublicGame { get; set; }
 
     [DisplayName("What Scrabble board do you want to use?")]
+    [Required]
     public GameType GameType { get; set; }
 
     [DisplayName("When should we display remaining tiles?")]
+    [Required]
     public TileBagVisibilityOption TileBagVisibilityOption { get; set; }
 
     [DisplayName("The default challenge outcome can be overridden at game time")]

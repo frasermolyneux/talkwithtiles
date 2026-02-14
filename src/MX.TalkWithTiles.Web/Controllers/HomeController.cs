@@ -5,6 +5,7 @@ using MX.TalkWithTiles.Web.Models;
 
 namespace MX.TalkWithTiles.Web.Controllers;
 
+[Route("")]
 public class HomeController(ILogger<HomeController> logger) : Controller
 {
     [Route("")]

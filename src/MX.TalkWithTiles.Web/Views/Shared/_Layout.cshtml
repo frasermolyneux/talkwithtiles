@@ -29,7 +29,7 @@
     @await RenderSectionAsync("Styles", false)
 </head>
 <body>
-@if (ViewBag.HideScreenClutter != true)
+@if (!(ViewBag.HideScreenClutter is true))
 {
     <header>
         <partial name="_Navigation"/>
@@ -38,7 +38,7 @@
 
 @{
     var padding = "60px";
-    if (ViewBag.HideScreenClutter == true)
+    if (ViewBag.HideScreenClutter is true)
     {
         padding = "0px";
     }
@@ -53,7 +53,7 @@
     </main>
 </div>
 
-@if (ViewBag.HideScreenClutter != true)
+@if (!(ViewBag.HideScreenClutter is true))
 {
     <footer class="border-top footer text-muted">
         <div class="container">

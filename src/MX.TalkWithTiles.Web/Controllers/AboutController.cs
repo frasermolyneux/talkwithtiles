@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace MX.TalkWithTiles.Web.Controllers;
 
+[Route("")]
 public class AboutController : Controller
 {
         [Route("scrabble-games")]

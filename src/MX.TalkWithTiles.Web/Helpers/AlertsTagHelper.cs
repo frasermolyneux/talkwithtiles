@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -23,16 +24,16 @@ public class AlertsTagHelper : TagHelper
 
         var alerts = JsonSerializer.Deserialize<ICollection<Alert>>(TempData[AlertKey]!.ToString()!);
 
-        var html = string.Empty;
+        var sb = new StringBuilder();
 
         foreach (var alert in alerts!)
-            html += $"<div class='alert {alert.Type}' id='inner-alert' role='alert' style='padding-top:10px'>" +
-                    "<button type='button' class='close' data-dismiss='alert' aria-label='Close'>" +
-                    "<span aria-hidden='true'>&times;</span>" +
-                    "</button>" +
-                    $"{alert.Message}" +
-                    "</div>";
+            sb.Append($"<div class='alert {alert.Type}' id='inner-alert' role='alert' style='padding-top:10px'>")
+              .Append("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>")
+              .Append("<span aria-hidden='true'>&times;</span>")
+              .Append("</button>")
+              .Append(alert.Message)
+              .Append("</div>");
 
-        output.Content.SetHtmlContent(html);
+        output.Content.SetHtmlContent(sb.ToString());
     }
 }

@@ -3,7 +3,7 @@ resource "azurerm_storage_account" "data" {
   resource_group_name             = data.azurerm_resource_group.rg.name
   location                        = data.azurerm_resource_group.rg.location
   account_tier                    = "Standard"
-  account_replication_type        = "LRS"
+  account_replication_type        = "ZRS"
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
   tags                            = var.tags

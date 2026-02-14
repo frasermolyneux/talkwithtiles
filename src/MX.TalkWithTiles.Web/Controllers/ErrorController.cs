@@ -42,6 +42,6 @@ public class ErrorController(ILogger<ErrorController> logger) : Controller
     [HttpGet]
     public IActionResult CauseError()
     {
-        throw new Exception("This is an error");
+        throw new InvalidOperationException("This is a test error");
     }
 }

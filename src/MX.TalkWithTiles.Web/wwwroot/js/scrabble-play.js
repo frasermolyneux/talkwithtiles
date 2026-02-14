@@ -276,22 +276,25 @@ function updateMoveScore() {
             console.log(response);
 
             const wordsAndPoints = response.wordsAndPoints;
-            var scoreString = "<strong>Score: </strong>";
 
             var i;
-            for (i = 0; i < wordsAndPoints.length; i++) {
-                scoreString = scoreString + wordsAndPoints[i].word + " (" + wordsAndPoints[i].score + ") ";
-            }
-            scoreString += `= ${response.points}`;
+            var turnScoreEl = document.getElementById("turnScore");
+            turnScoreEl.textContent = "";
 
-            console.log(scoreString);
+            var strong = document.createElement("strong");
+            strong.textContent = "Score: ";
+            turnScoreEl.appendChild(strong);
+
+            for (i = 0; i < wordsAndPoints.length; i++) {
+                turnScoreEl.appendChild(document.createTextNode(wordsAndPoints[i].word + " (" + wordsAndPoints[i].score + ") "));
+            }
+            turnScoreEl.appendChild(document.createTextNode("= " + response.points));
 
             tilesOnBoard = userTiles.find((o) => { return o["rackPosition"] === -1 });
             if (!tilesOnBoard) {
                 $("#turnScore").hide();
             } else {
                 $("#turnScore").show();
-                $("#turnScore").html(scoreString);
             }
         }
     });

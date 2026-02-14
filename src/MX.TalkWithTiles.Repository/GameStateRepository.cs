@@ -34,13 +34,13 @@ public class GameStateRepository(IOptions<AppDataOptions> options, ILogger<GameS
 
             if (!skipTileFetch)
             {
-                if (gameStateModelCloudEntity.BagStateModel?.Tiles == null)
+                if (gameStateModelCloudEntity.BagStateModel is { Tiles: null } bagState)
                 {
                     var bagTiles = await GetTiles($"{gameId}-bag");
-                    gameStateModelCloudEntity.BagStateModel.Tiles = bagTiles;
+                    bagState.Tiles = bagTiles;
                 }
 
-                if (gameStateModelCloudEntity.BoardStateModel?.Tiles == null)
+                if (gameStateModelCloudEntity.BoardStateModel is { Tiles: null } boardState)
                 {
                     var boardTileList = await GetTiles($"{gameId}-board");
 
@@ -49,7 +49,7 @@ public class GameStateRepository(IOptions<AppDataOptions> options, ILogger<GameS
 
                     foreach (var tile in boardTileList) boardTiles[tile.PosX, tile.PosY] = tile;
 
-                    gameStateModelCloudEntity.BoardStateModel.Tiles = boardTiles;
+                    boardState.Tiles = boardTiles;
                 }
             }
 
@@ -145,50 +145,42 @@ public class GameStateRepository(IOptions<AppDataOptions> options, ILogger<GameS
 
         private async Task SaveTiles(string partitionKey, IEnumerable<Tile> tiles)
         {
-            try
+            // Delete existing tiles in batches
+            var entitiesToDelete = new List<TableEntity>();
+            await foreach (var entity in TilesTable.QueryAsync<TableEntity>(x => x.PartitionKey == partitionKey, select: new[] { "PartitionKey", "RowKey" }))
             {
-                // Delete existing tiles in batches
-                var entitiesToDelete = new List<TableEntity>();
-                await foreach (var entity in TilesTable.QueryAsync<TableEntity>(x => x.PartitionKey == partitionKey, select: new[] { "PartitionKey", "RowKey" }))
-                {
-                    entitiesToDelete.Add(entity);
-                }
-
-                var deleteBatches = entitiesToDelete.Batch(100);
-                foreach (var deleteBatch in deleteBatches)
-                {
-                    var batch = new List<TableTransactionAction>();
-                    foreach (var entity in deleteBatch)
-                    {
-                        batch.Add(new TableTransactionAction(TableTransactionActionType.Delete, entity, ETag.All));
-                    }
-                    await TilesTable.SubmitTransactionAsync(batch);
-                }
-
-                // Insert new tiles in batches
-                var bagTileBatches = tiles.Batch(100);
-                foreach (var bagTileBatch in bagTileBatches)
-                {
-                    var batch = new List<TableTransactionAction>();
-
-                    foreach (var tile in bagTileBatch)
-                    {
-                        var tileEntity = new TileCloudEntity(tile)
-                        {
-                            PartitionKey = partitionKey,
-                            RowKey = Guid.NewGuid().ToString()
-                        };
-
-                        batch.Add(new TableTransactionAction(TableTransactionActionType.UpsertReplace, tileEntity));
-                    }
-
-                    await TilesTable.SubmitTransactionAsync(batch);
-                }
+                entitiesToDelete.Add(entity);
             }
-            catch (Exception e)
+
+            var deleteBatches = entitiesToDelete.Batch(100);
+            foreach (var deleteBatch in deleteBatches)
             {
-                logger.LogError(e, "Failed to save tiles for partition {PartitionKey}", partitionKey);
-                throw;
+                var batch = new List<TableTransactionAction>();
+                foreach (var entity in deleteBatch)
+                {
+                    batch.Add(new TableTransactionAction(TableTransactionActionType.Delete, entity, ETag.All));
+                }
+                await TilesTable.SubmitTransactionAsync(batch);
+            }
+
+            // Insert new tiles in batches
+            var bagTileBatches = tiles.Batch(100);
+            foreach (var bagTileBatch in bagTileBatches)
+            {
+                var batch = new List<TableTransactionAction>();
+
+                foreach (var tile in bagTileBatch)
+                {
+                    var tileEntity = new TileCloudEntity(tile)
+                    {
+                        PartitionKey = partitionKey,
+                        RowKey = Guid.NewGuid().ToString()
+                    };
+
+                    batch.Add(new TableTransactionAction(TableTransactionActionType.UpsertReplace, tileEntity));
+                }
+
+                await TilesTable.SubmitTransactionAsync(batch);
             }
         }
 }

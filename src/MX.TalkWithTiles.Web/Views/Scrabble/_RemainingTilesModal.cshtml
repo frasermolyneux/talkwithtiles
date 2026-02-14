@@ -10,7 +10,7 @@
                 </button>
             </div>
             <div class="modal-body">
-                @foreach (var letter in Model.BagStateModel.Tiles.GroupBy(t => t.Letter)
+                @foreach (var letter in (Model.BagStateModel.Tiles ?? []).GroupBy(t => t.Letter)
                     .Select(group => new {Letter = group.Key, Count = group.Count()})
                     .OrderBy(t => t.Letter))
                 {

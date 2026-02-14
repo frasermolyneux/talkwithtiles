@@ -183,7 +183,7 @@
     <script type="text/javascript">
 
         const contacts = [
-            @foreach (var contact in Model.ContactDtos)
+            @foreach (var contact in (Model.ContactDtos ?? []))
             {
                 <text>"@contact.Name",</text>
             }

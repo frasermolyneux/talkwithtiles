@@ -93,89 +93,44 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
 
     private void ScoreHorizontal(IReadOnlyCollection<Tile> tiles, ref PlayerMoveResult playerMoveResult)
     {
-        for (var i = 0; i < BoardSize.Height; i++)
-        {
-            var wordBuilder = new StringBuilder();
-            var userHasContributedToWord = false;
-            var wordScore = 0;
-            var wordScoreMultiplier = 1;
-
-            for (var j = 0; j < BoardSize.Width; j++)
-            {
-                var tile = Tiles![j, i];
-
-                if (tile.LetterSet)
-                {
-                    wordBuilder.Append(tile.Letter);
-
-                    var isUsersPlacedTile = tiles.Any(t => t.PosX == j && t.PosY == i);
-
-                    if (!userHasContributedToWord && isUsersPlacedTile)
-                        userHasContributedToWord = true;
-
-                    if (isUsersPlacedTile)
-                    {
-                        wordScore += LetterValue(tile.Letter!) * GetLetterMultiplier(j, i);
-                        wordScoreMultiplier = GetWordMultiplier(wordScoreMultiplier, j, i);
-                    }
-                    else
-                    {
-                        wordScore += LetterValue(tile.Letter!);
-                    }
-                }
-                else
-                {
-                    if (userHasContributedToWord && wordBuilder.Length > 1)
-                    {
-                        var pointsToAward = wordScore * wordScoreMultiplier;
-                        playerMoveResult.Points += pointsToAward;
-                        playerMoveResult.WordsAndPoints.Add(new WordAndScore
-                            { Word = wordBuilder.ToString(), Score = pointsToAward });
-                    }
-
-                    wordBuilder.Clear();
-                    userHasContributedToWord = false;
-                    wordScore = 0;
-                    wordScoreMultiplier = 1;
-                }
-            }
-
-            if (userHasContributedToWord && wordBuilder.Length > 1)
-            {
-                var pointsToAward = wordScore * wordScoreMultiplier;
-                playerMoveResult.Points += pointsToAward;
-                playerMoveResult.WordsAndPoints.Add(new WordAndScore
-                    { Word = wordBuilder.ToString(), Score = pointsToAward });
-            }
-        }
+        ScoreWords(ref playerMoveResult, tiles, BoardSize.Height, BoardSize.Width,
+            (i, j) => Tiles![j, i], (i, j) => (j, i));
     }
 
     private void ScoreVertical(IReadOnlyCollection<Tile> tiles, ref PlayerMoveResult playerMoveResult)
     {
-        for (var i = 0; i < BoardSize.Width; i++)
+        ScoreWords(ref playerMoveResult, tiles, BoardSize.Width, BoardSize.Height,
+            (i, j) => Tiles![i, j], (i, j) => (i, j));
+    }
+
+    private void ScoreWords(ref PlayerMoveResult playerMoveResult, IReadOnlyCollection<Tile> tiles,
+        int outerMax, int innerMax, Func<int, int, Tile> getTile, Func<int, int, (int x, int y)> getPosition)
+    {
+        for (var i = 0; i < outerMax; i++)
         {
             var wordBuilder = new StringBuilder();
             var userHasContributedToWord = false;
             var wordScore = 0;
             var wordScoreMultiplier = 1;
 
-            for (var j = 0; j < BoardSize.Height; j++)
+            for (var j = 0; j < innerMax; j++)
             {
-                var tile = Tiles![i, j];
+                var tile = getTile(i, j);
+                var (x, y) = getPosition(i, j);
 
                 if (tile.LetterSet)
                 {
                     wordBuilder.Append(tile.Letter);
 
-                    var isUsersPlacedTile = tiles.Any(t => t.PosX == i && t.PosY == j);
+                    var isUsersPlacedTile = tiles.Any(t => t.PosX == x && t.PosY == y);
 
                     if (!userHasContributedToWord && isUsersPlacedTile)
                         userHasContributedToWord = true;
 
                     if (isUsersPlacedTile)
                     {
-                        wordScore += LetterValue(tile.Letter!) * GetLetterMultiplier(i, j);
-                        wordScoreMultiplier = GetWordMultiplier(wordScoreMultiplier, i, j);
+                        wordScore += LetterValue(tile.Letter!) * GetLetterMultiplier(x, y);
+                        wordScoreMultiplier = GetWordMultiplier(wordScoreMultiplier, x, y);
                     }
                     else
                     {

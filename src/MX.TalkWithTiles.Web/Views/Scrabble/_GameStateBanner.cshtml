@@ -30,7 +30,7 @@
                     <dd style="margin-bottom: 15px">
                         @if (player.Tiles.Any())
                         {
-                            var leftoverTilePoints = player.Tiles.Sum(t => ScrabbleTileScoreHelper.GetTileScore(t.Letter));
+                            var leftoverTilePoints = player.Tiles.Sum(t => ScrabbleTileScoreHelper.GetTileScore(t.Letter!));
                             var originalPoints = player.Score + leftoverTilePoints;
 
                             <text>@originalPoints - </text>
@@ -44,7 +44,7 @@
                         else
                         {
                             var additionalPoints = Model.Players().Where(p => p.PlayerId != player.PlayerId)
-                                .Sum(p => p.Tiles.Sum(t => ScrabbleTileScoreHelper.GetTileScore(t.Letter)));
+                                .Sum(p => p.Tiles.Sum(t => ScrabbleTileScoreHelper.GetTileScore(t.Letter!)));
 
                             var playerScore = player.Score - additionalPoints;
 

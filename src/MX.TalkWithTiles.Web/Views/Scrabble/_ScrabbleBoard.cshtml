@@ -14,7 +14,7 @@
             <div class="scrabbleBoardRow">
                 @for (var j = 0; j < boardSize.Width; j++)
                 {
-                    var tile = Model.BoardStateModel.Tiles[j, i];
+                    var tile = Model.BoardStateModel.Tiles![j, i];
 
                     @if (tile.LetterSet)
                     {

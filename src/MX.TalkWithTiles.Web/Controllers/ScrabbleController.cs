@@ -117,9 +117,13 @@ public class ScrabbleController(
 
             // Update the contacts for all the players
             foreach (var playerStateModel in gameStateModel.Players())
-            foreach (var stateModel in gameStateModel.Players().Where(p => p.PlayerId != playerStateModel.PlayerId))
-                await contactsRepository.UpdateContact(playerStateModel.PlayerId, stateModel.PlayerId,
-                    stateModel.PlayerName);
+            {
+                foreach (var stateModel in gameStateModel.Players().Where(p => p.PlayerId != playerStateModel.PlayerId))
+                {
+                    await contactsRepository.UpdateContact(playerStateModel.PlayerId, stateModel.PlayerId,
+                        stateModel.PlayerName);
+                }
+            }
 
             return RedirectToAction("Play", new {id = gameStateModel.GameId});
         }
@@ -154,6 +158,8 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetPlayerMoveResult(Guid id, [FromBody] PlayerMove playerMove)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var gameStateModel = await gameStateRepository.GetGameState(id);
 
             if (gameStateModel == null)
@@ -171,6 +177,8 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitPlayerMove(Guid id, [FromBody] PlayerMove playerMove)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var gameStateModel = await gameStateRepository.GetGameState(id);
 
             if (gameStateModel == null)
@@ -257,6 +265,8 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ExchangeTiles(ExchangeTilesModel exchangeTilesModel)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var gameStateModel = await gameStateRepository.GetGameState(exchangeTilesModel.Id);
 
             if (gameStateModel == null)
@@ -285,6 +295,8 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SubmitChallenge(IssueChallengeModel issueChallengeModel)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var gameStateModel = await gameStateRepository.GetGameState(issueChallengeModel.GameId);
 
             if (gameStateModel == null)
@@ -310,14 +322,7 @@ public class ScrabbleController(
         [HttpGet]
         public async Task<IActionResult> Abandon(Guid id)
         {
-            var gameStateModel = await gameStateRepository.GetGameState(id, true);
-
-            if (gameStateModel == null)
-                return NotFound();
-
-            if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
-
-            return View(gameStateModel);
+            return await GetGameForConfirmation(id, "Abandon");
         }
 
         [HttpPost]
@@ -344,14 +349,7 @@ public class ScrabbleController(
         [HttpGet]
         public async Task<IActionResult> Delete(Guid id)
         {
-            var gameStateModel = await gameStateRepository.GetGameState(id, true);
-
-            if (gameStateModel == null)
-                return NotFound();
-
-            if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
-
-            return View(gameStateModel);
+            return await GetGameForConfirmation(id, "Delete");
         }
 
         [HttpPost]
@@ -376,6 +374,8 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ResolveChallenge(ResolveChallengeModel model)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
+
             var gameStateModel = await gameStateRepository.GetGameState(model.Id);
 
             if (gameStateModel == null)
@@ -479,6 +479,14 @@ public class ScrabbleController(
 
             return $"<strong>{model.ChallengerName()}</strong> has challenged <strong>{model.ChallengedName()}'s</strong> last move of <strong>{model.LastMoveAndScore()}</strong> with '<strong>{model.ScrabbleChallengeReason()}</strong>'. " +
                    $"<strong>{model.ChallengedName()}</strong> needs to accept/reject the challenge for the game to continue.";
+        }
+
+        private async Task<IActionResult> GetGameForConfirmation(Guid id, string viewName)
+        {
+            var gameStateModel = await gameStateRepository.GetGameState(id, true);
+            if (gameStateModel == null) return NotFound();
+            if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+            return View(viewName, gameStateModel);
         }
 
         private bool HideScreenClutterForGame(Guid id)

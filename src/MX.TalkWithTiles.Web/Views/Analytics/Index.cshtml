@@ -30,7 +30,7 @@
             data.addColumn('date', 'Date');
             data.addColumn('number', 'Active Games');
 
-            @foreach (var gameState in Model.GameStates.GroupBy(gs => new DateTime(gs.LastUpdated.Year, gs.LastUpdated.Month, gs.LastUpdated.Day)).OrderByDescending(gs => gs.Key))
+            @foreach (var gameState in Model.GameStates.GroupBy(gs => new DateTime(gs.LastUpdated.Year, gs.LastUpdated.Month, gs.LastUpdated.Day, 0, 0, 0, DateTimeKind.Utc)).OrderByDescending(gs => gs.Key))
             {
                 <text>
                     data.addRow([

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MX.TalkWithTiles.Web.Controllers;
 
 [AllowAnonymous]
+[Route("")]
 public class AccountController : Controller
 {
         [Route("sign-in")]
