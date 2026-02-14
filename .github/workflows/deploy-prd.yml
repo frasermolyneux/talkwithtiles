@@ -50,7 +50,7 @@ jobs:
         run: |
           cd terraform
           echo "web_app_name=$(terraform output -raw web_app_name)" >> $GITHUB_OUTPUT
-          echo "web_app_resource_group=$(terraform output -raw web_app_resource_group)" >> $GITHUB_OUTPUT
+          echo "web_app_resource_group=$(terraform output -raw web_app_resource_group_name)" >> $GITHUB_OUTPUT
         env:
           ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
@@ -105,7 +105,7 @@ jobs:
         run: |
           cd terraform
           echo "web_app_name=$(terraform output -raw web_app_name)" >> $GITHUB_OUTPUT
-          echo "web_app_resource_group=$(terraform output -raw web_app_resource_group)" >> $GITHUB_OUTPUT
+          echo "web_app_resource_group=$(terraform output -raw web_app_resource_group_name)" >> $GITHUB_OUTPUT
         env:
           ARM_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
           ARM_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
