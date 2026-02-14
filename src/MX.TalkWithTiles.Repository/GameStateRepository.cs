@@ -34,13 +34,13 @@ public class GameStateRepository(IOptions<AppDataOptions> options, ILogger<GameS
 
             if (!skipTileFetch)
             {
-                if (gameStateModelCloudEntity.BagStateModel.Tiles == null)
+                if (gameStateModelCloudEntity.BagStateModel?.Tiles == null)
                 {
                     var bagTiles = await GetTiles($"{gameId}-bag");
                     gameStateModelCloudEntity.BagStateModel.Tiles = bagTiles;
                 }
 
-                if (gameStateModelCloudEntity.BoardStateModel.Tiles == null)
+                if (gameStateModelCloudEntity.BoardStateModel?.Tiles == null)
                 {
                     var boardTileList = await GetTiles($"{gameId}-board");
 
@@ -61,12 +61,12 @@ public class GameStateRepository(IOptions<AppDataOptions> options, ILogger<GameS
                 GameType = gameStateModelCloudEntity.GameType,
                 TileBagVisibilityOption = gameStateModelCloudEntity.TileBagVisibilityOption,
                 GamePrivacyType = gameStateModelCloudEntity.GamePrivacyType,
-                BoardStateModel = gameStateModelCloudEntity.BoardStateModel,
-                BagStateModel = gameStateModelCloudEntity.BagStateModel,
-                EndGameStateModel = gameStateModelCloudEntity.EndGameStateModel,
-                PlayersStateModel = gameStateModelCloudEntity.PlayersStateModel,
-                PlayerMoveStateModel = gameStateModelCloudEntity.PlayerMoveStateModel,
-                ChallengeStateModel = gameStateModelCloudEntity.ChallengeStateModel
+                BoardStateModel = gameStateModelCloudEntity.BoardStateModel ?? new BoardStateModel(),
+                BagStateModel = gameStateModelCloudEntity.BagStateModel ?? new BagStateModel(),
+                EndGameStateModel = gameStateModelCloudEntity.EndGameStateModel ?? new EndGameStateModel(),
+                PlayersStateModel = gameStateModelCloudEntity.PlayersStateModel ?? new PlayersStateModel(),
+                PlayerMoveStateModel = gameStateModelCloudEntity.PlayerMoveStateModel ?? new PlayerMoveStateModel(),
+                ChallengeStateModel = gameStateModelCloudEntity.ChallengeStateModel ?? new ChallengeStateModel()
             };
         }
 
@@ -74,10 +74,10 @@ public class GameStateRepository(IOptions<AppDataOptions> options, ILogger<GameS
         {
             var gameStateCloudEntity = new GameStateCloudEntity(gameId, gameStateModel);
 
-            if (gameStateCloudEntity.BagStateModel.Tiles != null)
+            if (gameStateCloudEntity.BagStateModel?.Tiles != null)
                 await SaveTiles($"{gameStateModel.GameId}-bag", gameStateCloudEntity.BagStateModel.Tiles);
 
-            if (gameStateCloudEntity.BoardStateModel.Tiles != null)
+            if (gameStateCloudEntity.BoardStateModel?.Tiles != null)
                 await SaveTiles($"{gameStateModel.GameId}-board",
                     gameStateCloudEntity.BoardStateModel.Tiles.Cast<Tile>().ToArray());
 
@@ -102,7 +102,7 @@ public class GameStateRepository(IOptions<AppDataOptions> options, ILogger<GameS
 
         public async Task<List<GameStateModel>> GetGameStates(GameStateFilterModel filterModel)
         {
-            if (filterModel == null) throw new NullReferenceException(nameof(filterModel));
+            if (filterModel == null) throw new ArgumentNullException(nameof(filterModel));
 
             var indexResults = new List<GameStateIndexCloudEntity>();
             var filter = GameStateIndexCloudEntityExtensions.BuildFilter(filterModel);

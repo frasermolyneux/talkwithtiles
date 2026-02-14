@@ -8,7 +8,7 @@ namespace MX.TalkWithTiles.CoreEngine.Helpers;
 
 public static class BoardTileHelper
 {
-    public static List<Tile> GetBoardTiles(GameType gameType) => gameType switch
+    public static IReadOnlyList<Tile> GetBoardTiles(GameType gameType) => gameType switch
     {
         GameType.StandardBoard or GameType.SuperSizeBoard or GameType.MiniBoard => ScrabbleBoardTiles.Tiles[gameType],
         _ => throw new ArgumentOutOfRangeException(nameof(gameType), gameType, null)

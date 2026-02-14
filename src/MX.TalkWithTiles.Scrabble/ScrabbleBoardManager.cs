@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using MX.TalkWithTiles.Contracts.Constants;
 using MX.TalkWithTiles.Contracts.Interfaces;
 using MX.TalkWithTiles.Contracts.Models;
@@ -46,7 +46,6 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
         return playerMoveResult;
     }
 
-    //TODO: Support different letter values based on the game type
     public int LetterValue(string letter)
     {
         return ScrabbleTileScoreHelper.GetTileScore(letter);
@@ -68,10 +67,12 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
         Tiles = new Tile[BoardSize.Width, BoardSize.Height];
 
         for (var i = 0; i < BoardSize.Width; i++)
-        for (var j = 0; j < BoardSize.Height; j++)
         {
-            var tile = _tileFactory.CreateTileForPosition(gameType, i, j);
-            Tiles[i, j] = tile;
+            for (var j = 0; j < BoardSize.Height; j++)
+            {
+                var tile = _tileFactory.CreateTileForPosition(gameType, i, j);
+                Tiles[i, j] = tile;
+            }
         }
     }
 
@@ -90,59 +91,11 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
         foreach (var tile in boardStateModel.Tiles) Tiles[tile.PosX, tile.PosY] = tile;
     }
 
-    //TODO: Fix this method
-    private bool InvalidGaps()
-    {
-        var invalidGaps = false;
-
-        for (var x = 0; x <= 14; x++)
-        {
-            var userTileFound = false;
-            var spaceFound = false;
-
-            for (var y = 0; y <= 14; y++)
-            {
-                var tile = Tiles![x, y];
-
-                if (!tile.LetterSet && userTileFound)
-                    spaceFound = true;
-
-                if (tile.LetterSet)
-                {
-                    if (userTileFound && spaceFound) invalidGaps = true;
-                    userTileFound = true;
-                }
-            }
-        }
-
-        for (var y = 0; y <= 14; y++)
-        {
-            var userTileFound = false;
-            var spaceFound = false;
-            for (var x = 0; x <= 14; x++)
-            {
-                var tile = Tiles![x, y];
-
-                if (!tile.LetterSet && userTileFound)
-                    spaceFound = true;
-
-                if (tile.LetterSet)
-                {
-                    if (userTileFound && spaceFound) invalidGaps = true;
-                    userTileFound = true;
-                }
-            }
-        }
-
-        return invalidGaps;
-    }
-
-    //TODO: Improve the logging of this method
     private void ScoreHorizontal(IReadOnlyCollection<Tile> tiles, ref PlayerMoveResult playerMoveResult)
     {
         for (var i = 0; i < BoardSize.Height; i++)
         {
-            var word = string.Empty;
+            var wordBuilder = new StringBuilder();
             var userHasContributedToWord = false;
             var wordScore = 0;
             var wordScoreMultiplier = 1;
@@ -153,7 +106,7 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
 
                 if (tile.LetterSet)
                 {
-                    word += tile.Letter;
+                    wordBuilder.Append(tile.Letter);
 
                     var isUsersPlacedTile = tiles.Any(t => t.PosX == j && t.PosY == i);
 
@@ -172,39 +125,36 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
                 }
                 else
                 {
-                    if (userHasContributedToWord && word.Length > 1)
+                    if (userHasContributedToWord && wordBuilder.Length > 1)
                     {
                         var pointsToAward = wordScore * wordScoreMultiplier;
                         playerMoveResult.Points += pointsToAward;
                         playerMoveResult.WordsAndPoints.Add(new WordAndScore
-                            { Word = word, Score = pointsToAward });
-                        Trace.WriteLine($"Giving {pointsToAward} for {word}");
+                            { Word = wordBuilder.ToString(), Score = pointsToAward });
                     }
 
-                    word = string.Empty;
+                    wordBuilder.Clear();
                     userHasContributedToWord = false;
                     wordScore = 0;
                     wordScoreMultiplier = 1;
                 }
             }
 
-            if (userHasContributedToWord && word.Length > 1)
+            if (userHasContributedToWord && wordBuilder.Length > 1)
             {
                 var pointsToAward = wordScore * wordScoreMultiplier;
                 playerMoveResult.Points += pointsToAward;
                 playerMoveResult.WordsAndPoints.Add(new WordAndScore
-                    { Word = word, Score = pointsToAward });
-                Trace.WriteLine($"Giving {pointsToAward} for {word}");
+                    { Word = wordBuilder.ToString(), Score = pointsToAward });
             }
         }
     }
 
-    //TODO: Improve the logging of this method
     private void ScoreVertical(IReadOnlyCollection<Tile> tiles, ref PlayerMoveResult playerMoveResult)
     {
         for (var i = 0; i < BoardSize.Width; i++)
         {
-            var word = string.Empty;
+            var wordBuilder = new StringBuilder();
             var userHasContributedToWord = false;
             var wordScore = 0;
             var wordScoreMultiplier = 1;
@@ -215,7 +165,7 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
 
                 if (tile.LetterSet)
                 {
-                    word += tile.Letter;
+                    wordBuilder.Append(tile.Letter);
 
                     var isUsersPlacedTile = tiles.Any(t => t.PosX == i && t.PosY == j);
 
@@ -234,29 +184,27 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
                 }
                 else
                 {
-                    if (userHasContributedToWord && word.Length > 1)
+                    if (userHasContributedToWord && wordBuilder.Length > 1)
                     {
                         var pointsToAward = wordScore * wordScoreMultiplier;
                         playerMoveResult.Points += pointsToAward;
                         playerMoveResult.WordsAndPoints.Add(new WordAndScore
-                            { Word = word, Score = pointsToAward });
-                        Trace.WriteLine($"Giving {pointsToAward} for {word}");
+                            { Word = wordBuilder.ToString(), Score = pointsToAward });
                     }
 
-                    word = string.Empty;
+                    wordBuilder.Clear();
                     userHasContributedToWord = false;
                     wordScore = 0;
                     wordScoreMultiplier = 1;
                 }
             }
 
-            if (userHasContributedToWord && word.Length > 1)
+            if (userHasContributedToWord && wordBuilder.Length > 1)
             {
                 var pointsToAward = wordScore * wordScoreMultiplier;
                 playerMoveResult.Points += pointsToAward;
                 playerMoveResult.WordsAndPoints.Add(new WordAndScore
-                    { Word = word, Score = pointsToAward });
-                Trace.WriteLine($"Giving {pointsToAward} for {word}");
+                    { Word = wordBuilder.ToString(), Score = pointsToAward });
             }
         }
     }

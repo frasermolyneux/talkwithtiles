@@ -28,10 +28,11 @@ public class AccountController : Controller
                 "OpenIdConnect");
         }
 
-        [Authorize]
         [Route("sign-out")]
         public new IActionResult SignOut()
         {
+            if (User.Identity?.IsAuthenticated != true)
+                return RedirectToAction("SignIn");
             return RedirectToAction("SignOut", "Account", new { area = "MicrosoftIdentity" });
         }
 }

@@ -85,7 +85,7 @@ public static class GameStateModelExtensions
                 TileBagVisibilityOption.ShowRemainingTiles => true,
                 TileBagVisibilityOption.ShowAfterFirstTurns => model.PlayerMoveStateModel.TurnsTaken >=
                                                                model.PlayersStateModel.Players.Count,
-                TileBagVisibilityOption.ShowNearEndGame => model.BagStateModel.Tiles.Count <=
+                TileBagVisibilityOption.ShowNearEndGame => (model.BagStateModel.Tiles?.Count ?? 0) <=
                                                            model.PlayersStateModel.Players.Count * 7,
                 TileBagVisibilityOption.OnlyShowRemainingCount => false,
                 TileBagVisibilityOption.DoNotShowRemainingTiles => false,

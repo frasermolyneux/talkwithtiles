@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using System.Collections.Generic;
 using MX.TalkWithTiles.Contracts.Constants;
 using MX.TalkWithTiles.Contracts.Models;
@@ -6,7 +7,7 @@ namespace MX.TalkWithTiles.Scrabble.Constants;
 
 public static class ScrabbleBoardTiles
 {
-    public static readonly Dictionary<GameType, List<Tile>> Tiles = new()
+    public static readonly FrozenDictionary<GameType, IReadOnlyList<Tile>> Tiles = new Dictionary<GameType, List<Tile>>
     {
             {
                 GameType.MiniBoard, new List<Tile>
@@ -238,5 +239,5 @@ public static class ScrabbleBoardTiles
                     new Tile {PosX = 18, PosY = 18, TileType = TileType.TripleWordScoreTile}
                 }
             }
-        };
+        }.ToFrozenDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<Tile>)kvp.Value);
 }

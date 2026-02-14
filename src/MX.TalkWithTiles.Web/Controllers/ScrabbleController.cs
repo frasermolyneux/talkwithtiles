@@ -295,7 +295,7 @@ public class ScrabbleController(
             var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
             gameEngine.IssuePlayerChallenge(User.GetUserGuid(), issueChallengeModel.GameChallengeReason,
-                issueChallengeModel.ChallengeText);
+                issueChallengeModel.ChallengeText ?? string.Empty);
 
             await gameStateRepository.UpdateGameState(issueChallengeModel.GameId, gameEngine.GameStateModel);
 
@@ -398,8 +398,8 @@ public class ScrabbleController(
 
             await gameStateRepository.UpdateGameState(model.Id, gameEngine.GameStateModel);
 
-            if (model.Accept)
-                switch (gameEngine.GameStateModel.ChallengeStateModel.PlayerChallengeResult.GameChallengeResult)
+            if (model.Accept && gameEngine.GameStateModel.ChallengeStateModel.PlayerChallengeResult is { } challengeResult)
+                switch (challengeResult.GameChallengeResult)
                 {
                     case GameChallengeResult.RetryPlayerMove:
                         this.AddAlertSuccess("You have resolved the challenge and will now have to redo your go.");

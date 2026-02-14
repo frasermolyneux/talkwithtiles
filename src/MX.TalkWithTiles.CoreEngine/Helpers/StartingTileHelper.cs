@@ -7,7 +7,7 @@ namespace MX.TalkWithTiles.CoreEngine.Helpers;
 
 public static class StartingTileHelper
 {
-    public static Dictionary<string, int> GetStartingTiles(GameType gameType) => gameType switch
+    public static IReadOnlyDictionary<string, int> GetStartingTiles(GameType gameType) => gameType switch
     {
         GameType.StandardBoard or GameType.SuperSizeBoard or GameType.MiniBoard => ScrabbleStartingTiles.Tiles[gameType],
         _ => throw new ArgumentOutOfRangeException(nameof(gameType), gameType, null)

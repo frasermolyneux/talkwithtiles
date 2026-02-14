@@ -93,7 +93,6 @@ public class PlayerMoveManager(
                 InvalidMessage = "It is not your move"
             };
 
-        //TODO - Prevent tiles being placed that are not in the rack
         var player = playerManager.GetPlayer(playerMove.PlayerId);
 
         if (!playerMove.Tiles!.All(t => player.Tiles.Any(pt => pt.Letter == t.Letter)))
@@ -113,7 +112,7 @@ public class PlayerMoveManager(
 
             UpdateLastMove(playerMoveResult);
 
-            var remainingTiles = playerMove.Tiles.Where(t => t.RackPosition != -1).ToList();
+            var remainingTiles = playerMove.Tiles?.Where(t => t.RackPosition != -1).ToList() ?? [];
 
             var neededTimes = 7 - remainingTiles.Count;
 
@@ -125,7 +124,7 @@ public class PlayerMoveManager(
             if (playerTiles.Count == 0)
             {
                 // The user has placed all of their tiles and the game is effectively over.
-                // TODO: Consider the possibility of a challenge on the last move of the game.
+                // Note: challenges on the last move are not currently supported.
                 var remainingTilePoints = playerManager.Players
                     .Sum(playerStateModel => playerStateModel.Tiles.Sum(t => boardManager.LetterValue(t.Letter!)));
                 playerManager.AddToScore(playerMove.PlayerId, remainingTilePoints);

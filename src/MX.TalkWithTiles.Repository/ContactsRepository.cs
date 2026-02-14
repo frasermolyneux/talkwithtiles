@@ -48,7 +48,7 @@ public class ContactsRepository(IOptions<AppDataOptions> options, ILogger<Contac
         }
         catch (RequestFailedException ex) when (ex.Status == 404)
         {
-            logger.LogWarning("Contact entity not found for deletion: UserId={UserId}, ContactId={ContactId}", userId, contactId);
+            logger.LogWarning(ex, "Contact entity not found for deletion: UserId={UserId}, ContactId={ContactId}", userId, contactId);
         }
     }
 }

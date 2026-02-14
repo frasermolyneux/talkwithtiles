@@ -6,7 +6,6 @@ using MX.TalkWithTiles.Contracts.StateModels;
 
 namespace MX.TalkWithTiles.CoreEngine.Game;
 
-//TODO: This should be treated more as a model.
 public class Player : IPlayer
 {
     public string? PlayerName { get; private set; }
