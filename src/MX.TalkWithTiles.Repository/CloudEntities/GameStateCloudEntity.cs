@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using Azure;
 using Azure.Data.Tables;
@@ -36,6 +37,8 @@ public class GameStateCloudEntity : ITableEntity
 
     // Enum properties stored as strings
     public string? GamePrivacyTypeValue { get; set; }
+
+    [IgnoreDataMember]
     public GamePrivacyType GamePrivacyType
     {
         get => Enum.TryParse<GamePrivacyType>(GamePrivacyTypeValue, out var val) ? val : default;
@@ -43,6 +46,8 @@ public class GameStateCloudEntity : ITableEntity
     }
 
     public string? GameTypeValue { get; set; }
+
+    [IgnoreDataMember]
     public GameType GameType
     {
         get => Enum.TryParse<GameType>(GameTypeValue, out var val) ? val : default;
@@ -50,6 +55,8 @@ public class GameStateCloudEntity : ITableEntity
     }
 
     public string? TileBagVisibilityOptionValue { get; set; }
+
+    [IgnoreDataMember]
     public TileBagVisibilityOption TileBagVisibilityOption
     {
         get => Enum.TryParse<TileBagVisibilityOption>(TileBagVisibilityOptionValue, out var val) ? val : default;
@@ -58,6 +65,8 @@ public class GameStateCloudEntity : ITableEntity
 
     // JSON-serialized complex properties
     public string? BoardStateModelJson { get; set; }
+
+    [IgnoreDataMember]
     public BoardStateModel? BoardStateModel
     {
         get => string.IsNullOrEmpty(BoardStateModelJson) ? null : JsonSerializer.Deserialize<BoardStateModel>(BoardStateModelJson);
@@ -65,6 +74,8 @@ public class GameStateCloudEntity : ITableEntity
     }
 
     public string? BagStateModelJson { get; set; }
+
+    [IgnoreDataMember]
     public BagStateModel? BagStateModel
     {
         get => string.IsNullOrEmpty(BagStateModelJson) ? null : JsonSerializer.Deserialize<BagStateModel>(BagStateModelJson);
@@ -72,6 +83,8 @@ public class GameStateCloudEntity : ITableEntity
     }
 
     public string? PlayersStateModelJson { get; set; }
+
+    [IgnoreDataMember]
     public PlayersStateModel? PlayersStateModel
     {
         get => string.IsNullOrEmpty(PlayersStateModelJson) ? null : JsonSerializer.Deserialize<PlayersStateModel>(PlayersStateModelJson);
@@ -79,6 +92,8 @@ public class GameStateCloudEntity : ITableEntity
     }
 
     public string? EndGameStateModelJson { get; set; }
+
+    [IgnoreDataMember]
     public EndGameStateModel? EndGameStateModel
     {
         get => string.IsNullOrEmpty(EndGameStateModelJson) ? null : JsonSerializer.Deserialize<EndGameStateModel>(EndGameStateModelJson);
@@ -86,6 +101,8 @@ public class GameStateCloudEntity : ITableEntity
     }
 
     public string? PlayerMoveStateModelJson { get; set; }
+
+    [IgnoreDataMember]
     public PlayerMoveStateModel? PlayerMoveStateModel
     {
         get => string.IsNullOrEmpty(PlayerMoveStateModelJson) ? null : JsonSerializer.Deserialize<PlayerMoveStateModel>(PlayerMoveStateModelJson);
@@ -93,6 +110,8 @@ public class GameStateCloudEntity : ITableEntity
     }
 
     public string? ChallengeStateModelJson { get; set; }
+
+    [IgnoreDataMember]
     public ChallengeStateModel? ChallengeStateModel
     {
         get => string.IsNullOrEmpty(ChallengeStateModelJson) ? null : JsonSerializer.Deserialize<ChallengeStateModel>(ChallengeStateModelJson);

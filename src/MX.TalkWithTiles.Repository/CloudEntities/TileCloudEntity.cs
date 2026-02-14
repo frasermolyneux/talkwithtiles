@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 using System.Text.Json;
 using Azure;
 using Azure.Data.Tables;
@@ -24,6 +25,7 @@ public class TileCloudEntity : ITableEntity
 
     public string? TileJson { get; set; }
 
+    [IgnoreDataMember]
     public Tile? Tile
     {
         get => string.IsNullOrEmpty(TileJson) ? null : JsonSerializer.Deserialize<Tile>(TileJson);
