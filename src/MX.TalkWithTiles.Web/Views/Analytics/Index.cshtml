@@ -12,13 +12,6 @@
 </div>
 
 @section Scripts{
-    <environment names="Development">
-        <script src="~/lib/moment/moment.js"></script>
-    </environment>
-    <environment names="Staging,Production">
-        <script src="~/lib/moment/min/moment.min.js"></script>
-    </environment>
-
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
     <script type="text/javascript">
         google.charts.load('current', { 'packages': ['corechart'] });
@@ -34,7 +27,7 @@
             {
                 <text>
                     data.addRow([
-                        moment("@gameState.Key.ToString("yyyy/MM/dd")").toDate(),
+                        new Date("@gameState.Key.ToString("yyyy-MM-dd")"),
                         @gameState.Count()
                     ]);
                 </text>
