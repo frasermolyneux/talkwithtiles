@@ -21,18 +21,17 @@ function addAdditionalPlayer() {
         playerCount}].Identifier" data-valmsg-replace="true"></span>
                         </div>`);
 
-    $(`#removeAdditionalPlayer-${playerCount}`).on("click",
+    const removeButtonId = playerCount;
+    $(`#removeAdditionalPlayer-${removeButtonId}`).on("click",
         function() {
-
             this.parentNode.parentNode.remove();
-            playerCount--;
 
-            if (playerCount < 2) {
+            if (document.querySelectorAll('[id^="removeAdditionalPlayer-"]').length < 2) {
                 $("#addAdditionalPlayers").show();
             }
         });
 
-    $(`#PlayerModels_${playerCount}__PlayerName`).prop("required", true);
+    $(`#PlayerModels_${playerCount}__Identifier`).prop("required", true);
 
     $(`#PlayerModels_${playerCount}__Identifier`).autocomplete({
         source: contacts

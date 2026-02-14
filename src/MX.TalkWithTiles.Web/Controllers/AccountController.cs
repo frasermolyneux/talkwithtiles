@@ -13,7 +13,7 @@ public class AccountController : Controller
         {
             if (User.Identity?.IsAuthenticated == true)
             {
-                return Redirect(returnUrl ?? "/");
+                return LocalRedirect(returnUrl ?? "/");
             }
 
             ViewData["ReturnUrl"] = returnUrl;
@@ -23,7 +23,7 @@ public class AccountController : Controller
         [Route("sign-in/microsoft")]
         public IActionResult SignInMicrosoft(string? returnUrl = null)
         {
-            var redirectUrl = returnUrl ?? "/";
+            var redirectUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : "/";
             return Challenge(
                 new AuthenticationProperties { RedirectUri = redirectUrl },
                 "OpenIdConnect");

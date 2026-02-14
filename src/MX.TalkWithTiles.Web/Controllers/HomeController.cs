@@ -63,7 +63,7 @@ public class HomeController(ILogger<HomeController> logger) : Controller
         if (!ModelState.IsValid)
             return View("Feedback", model);
 
-        logger.LogInformation("User {User} has submitted feedback: {Feedback}", User.GetUserName(), model.FeedbackText);
+        logger.LogInformation("User {User} has submitted feedback", User.GetUserName());
 
         this.AddAlertSuccess("Thanks for your feedback - we will take a look!");
 

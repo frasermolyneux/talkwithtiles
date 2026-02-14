@@ -142,9 +142,9 @@ public class PlayerMoveManagerTests
         _mockBagManager.Verify(x => x.ReturnTilesToBag(It.IsAny<List<Tile>>()), Times.Once);
 
         Assert.Equal(3, player.Tiles.Count);
-        Assert.False(player.Tiles.Any(t => t.Letter == "A" || t.Letter == "B"));
+        Assert.DoesNotContain(player.Tiles, t => t.Letter == "A" || t.Letter == "B");
         Assert.Equal(2, player.Tiles.Count(t => t.Letter == "D" || t.Letter == "E"));
-        Assert.False(player.Tiles.Any(t => exchangedTilesIds.Contains(t.TileId)));
+        Assert.DoesNotContain(player.Tiles, t => exchangedTilesIds.Contains(t.TileId));
 
         Assert.Equal(_playerTwoId, result.CurrentPlayerId);
     }

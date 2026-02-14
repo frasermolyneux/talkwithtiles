@@ -26,6 +26,18 @@ resource "azurerm_linux_web_app" "app" {
     health_check_eviction_time_in_min = 5
   }
 
+  logs {
+    detailed_error_messages = true
+    failed_request_tracing  = true
+
+    http_logs {
+      file_system {
+        retention_in_days = 7
+        retention_in_mb   = 35
+      }
+    }
+  }
+
   app_settings = {
     "APPLICATIONINSIGHTS_CONNECTION_STRING"       = azurerm_application_insights.ai.connection_string
     "ApplicationInsights__ClientConnectionString" = azurerm_application_insights.ai.connection_string

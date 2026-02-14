@@ -9,9 +9,8 @@
         {
             <div class="scrabbleRackControls">
                 <button class="btn btn-primary" data-toggle="modal" data-target="#remainingTilesModal" type="button">
-                    <image id="bagImage" src="/img/bag.svg" width="20px" height="20px">
-                        <span>@(Model.BagStateModel.Tiles?.Count ?? 0)</span>
-                    </image>
+                    <img id="bagImage" src="/img/bag.svg" width="20" height="20" alt="Tile bag" />
+                    <span>@(Model.BagStateModel.Tiles?.Count ?? 0)</span>
                 </button>
             </div>
         }
@@ -20,9 +19,8 @@
         {
             <div class="scrabbleRackControls">
                 <button class="btn btn-primary" type="button" title="You can only see the remaining tile count for this game">
-                    <image id="bagImage" src="/img/bag.svg" width="20px" height="20px">
-                        <span>@(Model.BagStateModel.Tiles?.Count ?? 0)</span>
-                    </image>
+                    <img id="bagImageCount" src="/img/bag.svg" width="20" height="20" alt="Tile bag" />
+                    <span>@(Model.BagStateModel.Tiles?.Count ?? 0)</span>
                 </button>
             </div>
         }

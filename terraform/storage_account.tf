@@ -7,6 +7,20 @@ resource "azurerm_storage_account" "data" {
   min_tls_version                 = "TLS1_2"
   allow_nested_items_to_be_public = false
   tags                            = var.tags
+
+  sas_policy {
+    expiration_period = "00.01:00:00"
+  }
+
+  blob_properties {
+    delete_retention_policy {
+      days = 7
+    }
+
+    container_delete_retention_policy {
+      days = 7
+    }
+  }
 }
 
 resource "azurerm_storage_table" "tables" {
