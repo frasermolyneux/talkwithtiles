@@ -35,7 +35,7 @@ public class ChallengerManagerTests
         Assert.Equal(Guid.Empty, result.ChallengedPlayerId);
         Assert.Equal(Guid.Empty, result.ChallengerPlayerId);
         Assert.Null(result.ChallengeReason);
-        Assert.Empty(result.ChallengeText);
+        Assert.Empty(result.ChallengeText!);
         Assert.Null(result.PlayerChallengeResult);
     }
 
@@ -57,7 +57,7 @@ public class ChallengerManagerTests
         Assert.Equal(Guid.Empty, result.ChallengedPlayerId);
         Assert.Equal(Guid.Empty, result.ChallengerPlayerId);
         Assert.Null(result.ChallengeReason);
-        Assert.Empty(result.ChallengeText);
+        Assert.Empty(result.ChallengeText!);
         Assert.Null(result.PlayerChallengeResult);
     }
 
@@ -114,7 +114,7 @@ public class ChallengerManagerTests
         Assert.Equal(Guid.Empty, result.ChallengedPlayerId);
         Assert.Equal(Guid.Empty, result.ChallengerPlayerId);
         Assert.Null(result.ChallengeReason);
-        Assert.Empty(result.ChallengeText);
+        Assert.Empty(result.ChallengeText!);
 
         Assert.NotNull(result.PlayerChallengeResult);
         Assert.Equal(lastPlayerId, result.PlayerChallengeResult.ChallengedPlayerId);
@@ -151,7 +151,7 @@ public class ChallengerManagerTests
         Assert.Equal(Guid.Empty, result.ChallengedPlayerId);
         Assert.Equal(Guid.Empty, result.ChallengerPlayerId);
         Assert.Null(result.ChallengeReason);
-        Assert.Empty(result.ChallengeText);
+        Assert.Empty(result.ChallengeText!);
 
         Assert.NotNull(result.PlayerChallengeResult);
         Assert.Equal(lastPlayerId, result.PlayerChallengeResult.ChallengedPlayerId);
@@ -198,7 +198,7 @@ public class ChallengerManagerTests
         Assert.Equal(Guid.Empty, result.ChallengedPlayerId);
         Assert.Equal(Guid.Empty, result.ChallengerPlayerId);
         Assert.Null(result.ChallengeReason);
-        Assert.Empty(result.ChallengeText);
+        Assert.Empty(result.ChallengeText!);
 
         Assert.NotNull(result.PlayerChallengeResult);
         Assert.Equal(lastPlayerId, result.PlayerChallengeResult.ChallengedPlayerId);
@@ -236,7 +236,7 @@ public class ChallengerManagerTests
         Assert.Equal(Guid.Empty, result.ChallengedPlayerId);
         Assert.Equal(Guid.Empty, result.ChallengerPlayerId);
         Assert.Null(result.ChallengeReason);
-        Assert.Empty(result.ChallengeText);
+        Assert.Empty(result.ChallengeText!);
 
         Assert.NotNull(result.PlayerChallengeResult);
         Assert.Equal(lastPlayerId, result.PlayerChallengeResult.ChallengedPlayerId);

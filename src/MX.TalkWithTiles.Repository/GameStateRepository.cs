@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Data.Tables;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using MX.TalkWithTiles.Contracts.Models;
 using MX.TalkWithTiles.Contracts.StateModels;
@@ -17,7 +16,7 @@ using MX.TalkWithTiles.Repository.Models;
 
 namespace MX.TalkWithTiles.Repository;
 
-public class GameStateRepository(IOptions<AppDataOptions> options, ILogger<GameStateRepository> logger) : AppDataRepository(options), IGameStateRepository
+public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepository(options), IGameStateRepository
 {
     public async Task<GameStateModel?> GetGameState(Guid gameId, bool skipTileFetch = false)
         {

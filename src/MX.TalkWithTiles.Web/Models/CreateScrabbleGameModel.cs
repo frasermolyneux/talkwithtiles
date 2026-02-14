@@ -1,5 +1,6 @@
 using System.ComponentModel;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using MX.TalkWithTiles.Contracts.Constants;
 using MX.TalkWithTiles.Repository.Dtos;
 
@@ -10,29 +11,33 @@ public class CreateScrabbleGameModel
     public List<CreatePlayerModel> PlayerModels { get; set; } = [];
 
     [DisplayName("Should this game be publicly listed?")]
-    [Required]
+    [BindRequired]
     public bool PublicGame { get; set; }
 
     [DisplayName("What Scrabble board do you want to use?")]
     [Required]
-    public GameType GameType { get; set; }
+    public GameType? GameType { get; set; }
 
     [DisplayName("When should we display remaining tiles?")]
     [Required]
-    public TileBagVisibilityOption TileBagVisibilityOption { get; set; }
+    public TileBagVisibilityOption? TileBagVisibilityOption { get; set; }
 
     [DisplayName("The default challenge outcome can be overridden at game time")]
+    [BindRequired]
     public bool CanOverrideChallengeOutcome { get; set; } = true;
 
     [DisplayName("\"That's not a word!\"")]
-    public GameChallengeResult ThatsNotAWordGameChallengeResult { get; set; } = GameChallengeResult.RetryPlayerMove;
+    [Required]
+    public GameChallengeResult? ThatsNotAWordGameChallengeResult { get; set; } = GameChallengeResult.RetryPlayerMove;
 
     [DisplayName("\"That's not a valid turn!\"")]
-    public GameChallengeResult ThatsNotAValidTurnGameChallengeResult { get; set; } =
+    [Required]
+    public GameChallengeResult? ThatsNotAValidTurnGameChallengeResult { get; set; } =
         GameChallengeResult.RetryPlayerMove;
 
     [DisplayName("Catchall challenge")]
-    public GameChallengeResult CatchallGameChallengeResult { get; set; } = GameChallengeResult.RetryPlayerMove;
+    [Required]
+    public GameChallengeResult? CatchallGameChallengeResult { get; set; } = GameChallengeResult.RetryPlayerMove;
 
     public List<ContactDto>? ContactDtos { get; set; }
 }

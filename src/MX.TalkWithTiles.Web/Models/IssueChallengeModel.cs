@@ -16,13 +16,12 @@ public class IssueChallengeModel
     }
 
     [Required]
-    public Guid GameId { get; set; }
-
-    [DisplayName("Challenge Reason")]
-    [Required]
-    public GameChallengeReason GameChallengeReason { get; set; }
+    public Guid? GameId { get; set; }
 
     [DataType(DataType.MultilineText)]
     [DisplayName("Challenge Text")]
     public string? ChallengeText { get; set; }
+
+    [Required]
+    public GameChallengeReason? GameChallengeReason { get; set; }
 }

@@ -93,7 +93,7 @@ public class PlayerMoveManagerTests
         Assert.Equal(LastMoveType.UndoTurn, result.LastMoveType);
 
         _mockPlayerManager.Verify(x => x.RemoveFromScore(_playerTwoId,
-            defaultPlayerMoveStateModel.LastMoveResult.Points), Times.Once);
+            defaultPlayerMoveStateModel.LastMoveResult!.Points), Times.Once);
 
         _mockBagManager.Verify(x => x.ReturnTilesToBag(It.IsAny<List<Tile>>()), Times.Once);
 

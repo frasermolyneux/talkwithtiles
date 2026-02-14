@@ -72,16 +72,16 @@ public class ScrabbleController(
 
             var challengeResults = new Dictionary<GameChallengeReason, GameChallengeResult>
             {
-                {GameChallengeReason.Catchall, createScrabbleGameModel.CatchallGameChallengeResult},
-                {GameChallengeReason.ThatsNotAWord, createScrabbleGameModel.ThatsNotAWordGameChallengeResult},
+                {GameChallengeReason.Catchall, createScrabbleGameModel.CatchallGameChallengeResult!.Value},
+                {GameChallengeReason.ThatsNotAWord, createScrabbleGameModel.ThatsNotAWordGameChallengeResult!.Value},
                 {
                     GameChallengeReason.ThatsNotAValidTurn,
-                    createScrabbleGameModel.ThatsNotAValidTurnGameChallengeResult
+                    createScrabbleGameModel.ThatsNotAValidTurnGameChallengeResult!.Value
                 }
             };
 
-            var gameEngine = gameEngineFactory.CreateNew(privacyOption, createScrabbleGameModel.GameType,
-                createScrabbleGameModel.TileBagVisibilityOption, createScrabbleGameModel.CanOverrideChallengeOutcome,
+            var gameEngine = gameEngineFactory.CreateNew(privacyOption, createScrabbleGameModel.GameType!.Value,
+                createScrabbleGameModel.TileBagVisibilityOption!.Value, createScrabbleGameModel.CanOverrideChallengeOutcome,
                 challengeResults);
 
             gameEngine.AddPlayer(playerId, User.GetUserName());
@@ -116,13 +116,14 @@ public class ScrabbleController(
             logger.LogInformation("User has created a new game of '{GameType}'", createScrabbleGameModel.GameType);
 
             // Update the contacts for all the players
-            foreach (var playerStateModel in gameStateModel.Players())
+            var players = gameStateModel.Players();
+            var contactUpdates = players.SelectMany(
+                player => players.Where(p => p.PlayerId != player.PlayerId),
+                (player, other) => (player.PlayerId, other.PlayerId, other.PlayerName));
+
+            foreach (var (sourcePlayerId, targetPlayerId, targetPlayerName) in contactUpdates)
             {
-                foreach (var stateModel in gameStateModel.Players().Where(p => p.PlayerId != playerStateModel.PlayerId))
-                {
-                    await contactsRepository.UpdateContact(playerStateModel.PlayerId, stateModel.PlayerId,
-                        stateModel.PlayerName);
-                }
+                await contactsRepository.UpdateContact(sourcePlayerId, targetPlayerId, targetPlayerName);
             }
 
             return RedirectToAction("Play", new {id = gameStateModel.GameId});
@@ -131,6 +132,7 @@ public class ScrabbleController(
         [HttpGet]
         public async Task<IActionResult> Play(Guid id, bool hideScreenClutter = false)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var playGameSessionModel =
                 httpContextAccessor.HttpContext?.Session.GetObjectFromJson<PlayGameSessionModel>(
                     PlayerGameSessionModelKey)
@@ -206,6 +208,7 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetGameEtag(Guid id)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var gameStateModel = await gameStateRepository.GetGameState(id, true);
 
             if (gameStateModel == null)
@@ -223,6 +226,7 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> SkipTurn(Guid id)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var gameStateModel = await gameStateRepository.GetGameState(id);
 
             if (gameStateModel == null)
@@ -244,6 +248,7 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> UndoTurn(Guid id)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var gameStateModel = await gameStateRepository.GetGameState(id);
 
             if (gameStateModel == null)
@@ -267,7 +272,7 @@ public class ScrabbleController(
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var gameStateModel = await gameStateRepository.GetGameState(exchangeTilesModel.Id);
+            var gameStateModel = await gameStateRepository.GetGameState(exchangeTilesModel.Id!.Value);
 
             if (gameStateModel == null)
                 return NotFound();
@@ -278,17 +283,17 @@ public class ScrabbleController(
                 return RedirectToAction("Play",
                     new
                     {
-                        id = exchangeTilesModel.Id, hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id)
+                        id = exchangeTilesModel.Id.Value, hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id.Value)
                     });
 
             var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
             gameEngine.ExchangeTiles(User.GetUserGuid(),
                 exchangeTilesModel.ExchangeTiles.Where(t => t.Exchange).Select(e => e.TileId));
 
-            await gameStateRepository.UpdateGameState(exchangeTilesModel.Id, gameEngine.GameStateModel);
+            await gameStateRepository.UpdateGameState(exchangeTilesModel.Id.Value, gameEngine.GameStateModel);
 
             return RedirectToAction("Play",
-                new {id = exchangeTilesModel.Id, hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id)});
+                new {id = exchangeTilesModel.Id.Value, hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id.Value)});
         }
 
         [HttpPost]
@@ -297,7 +302,7 @@ public class ScrabbleController(
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var gameStateModel = await gameStateRepository.GetGameState(issueChallengeModel.GameId);
+            var gameStateModel = await gameStateRepository.GetGameState(issueChallengeModel.GameId!.Value);
 
             if (gameStateModel == null)
                 return NotFound();
@@ -306,16 +311,16 @@ public class ScrabbleController(
 
             var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
-            gameEngine.IssuePlayerChallenge(User.GetUserGuid(), issueChallengeModel.GameChallengeReason,
+            gameEngine.IssuePlayerChallenge(User.GetUserGuid(), issueChallengeModel.GameChallengeReason!.Value,
                 issueChallengeModel.ChallengeText ?? string.Empty);
 
-            await gameStateRepository.UpdateGameState(issueChallengeModel.GameId, gameEngine.GameStateModel);
+            await gameStateRepository.UpdateGameState(issueChallengeModel.GameId.Value, gameEngine.GameStateModel);
 
             return RedirectToAction("Play",
                 new
                 {
-                    id = issueChallengeModel.GameId,
-                    hideScreenClutter = HideScreenClutterForGame(issueChallengeModel.GameId)
+                    id = issueChallengeModel.GameId.Value,
+                    hideScreenClutter = HideScreenClutterForGame(issueChallengeModel.GameId.Value)
                 });
         }
 
@@ -329,6 +334,7 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmAbandon(Guid id)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var gameStateModel = await gameStateRepository.GetGameState(id, true);
 
             if (gameStateModel == null)
@@ -356,6 +362,7 @@ public class ScrabbleController(
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ConfirmDelete(Guid id)
         {
+            if (!ModelState.IsValid) return BadRequest(ModelState);
             var gameStateModel = await gameStateRepository.GetGameState(id, true);
 
             if (gameStateModel == null)
@@ -376,7 +383,7 @@ public class ScrabbleController(
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var gameStateModel = await gameStateRepository.GetGameState(model.Id);
+            var gameStateModel = await gameStateRepository.GetGameState(model.Id!.Value);
 
             if (gameStateModel == null)
                 return NotFound();
@@ -384,19 +391,19 @@ public class ScrabbleController(
             if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
 
             if (!gameStateModel.IsGameInChallenge())
-                return RedirectToAction("Play", new {model.Id, hideScreenClutter = HideScreenClutterForGame(model.Id)});
+                return RedirectToAction("Play", new { id = model.Id.Value, hideScreenClutter = HideScreenClutterForGame(model.Id.Value) });
 
             if (!gameStateModel.IsChallengedPlayer(User))
-                return RedirectToAction("Play", new {model.Id, hideScreenClutter = HideScreenClutterForGame(model.Id)});
+                return RedirectToAction("Play", new { id = model.Id.Value, hideScreenClutter = HideScreenClutterForGame(model.Id.Value) });
 
             var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
             if (gameStateModel.ChallengeStateModel.CanOverrideChallengeOutcome)
-                gameEngine.ResolveChallenge(model.Accept, model.GameChallengeResultOverride);
+                gameEngine.ResolveChallenge(model.Accept, model.GameChallengeResultOverride!.Value);
             else
                 gameEngine.ResolveChallenge(model.Accept, null);
 
-            await gameStateRepository.UpdateGameState(model.Id, gameEngine.GameStateModel);
+            await gameStateRepository.UpdateGameState(model.Id.Value, gameEngine.GameStateModel);
 
             if (model.Accept && gameEngine.GameStateModel.ChallengeStateModel.PlayerChallengeResult is { } challengeResult)
                 switch (challengeResult.GameChallengeResult)
@@ -418,7 +425,7 @@ public class ScrabbleController(
                     "You have rejected the challenge and nothing will happen. Play will proceed to the next player.");
 
 
-            return RedirectToAction("Play", new {model.Id, hideScreenClutter = HideScreenClutterForGame(model.Id)});
+            return RedirectToAction("Play", new { id = model.Id.Value, hideScreenClutter = HideScreenClutterForGame(model.Id.Value) });
         }
 
         private void GenerateStateOfPlayMessage(GameStateModel model)
