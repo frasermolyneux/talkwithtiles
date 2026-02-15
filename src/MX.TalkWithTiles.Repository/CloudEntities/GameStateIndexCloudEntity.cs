@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 using Azure;
 using Azure.Data.Tables;
 using MX.TalkWithTiles.Contracts.Constants;
@@ -31,6 +32,8 @@ internal class GameStateIndexCloudEntity : ITableEntity
     public ETag ETag { get; set; }
 
     public string? GamePrivacyTypeValue { get; set; }
+
+    [IgnoreDataMember]
     public GamePrivacyType GamePrivacyType
     {
         get => Enum.TryParse<GamePrivacyType>(GamePrivacyTypeValue, out var val) ? val : default;
@@ -38,6 +41,8 @@ internal class GameStateIndexCloudEntity : ITableEntity
     }
 
     public string? GameStateTypeValue { get; set; }
+
+    [IgnoreDataMember]
     public GameStateType GameStateType
     {
         get => Enum.TryParse<GameStateType>(GameStateTypeValue, out var val) ? val : default;
@@ -45,6 +50,8 @@ internal class GameStateIndexCloudEntity : ITableEntity
     }
 
     public string? GameTypeValue { get; set; }
+
+    [IgnoreDataMember]
     public GameType GameType
     {
         get => Enum.TryParse<GameType>(GameTypeValue, out var val) ? val : default;

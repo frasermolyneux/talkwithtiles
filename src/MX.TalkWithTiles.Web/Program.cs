@@ -49,21 +49,17 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-if (!app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment())
+{
+    app.UseDeveloperExceptionPage();
+}
+else
 {
     app.UseExceptionHandler("/Error/Index");
     app.UseHsts();
 }
 
-app.Use(async (context, next) =>
-{
-    await next();
-    if (context.Response.StatusCode == 404)
-    {
-        context.Request.Path = "/Error/PageNotFound";
-        await next();
-    }
-});
+app.UseStatusCodePagesWithReExecute("/Error/PageNotFound");
 
 app.UseHttpsRedirection();
 app.UseResponseCompression();

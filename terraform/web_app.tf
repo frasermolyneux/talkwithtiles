@@ -47,16 +47,15 @@ resource "azurerm_linux_web_app" "app" {
     "AzureAd__Instance"                           = "https://login.microsoftonline.com/"
     "AzureAd__Domain"                             = var.tenant_domain
     "AzureAd__TenantId"                           = "common"
-    "AzureAd__ClientId"                           = azuread_application.web.application_id
+    "AzureAd__ClientId"                           = azuread_application.web.client_id
     "AzureAd__ClientSecret"                       = azuread_application_password.web.value
     "AzureAd__CallbackPath"                       = "/signin-oidc"
-    "Storage__AccountName"                        = azurerm_storage_account.data.name
-    "Storage__TableEndpoint"                      = azurerm_storage_account.data.primary_table_endpoint
-    "Storage__Tables__Scrabble"                   = azurerm_storage_table.tables["scrabble"].name
-    "Storage__Tables__ScrabbleIndex"              = azurerm_storage_table.tables["scrabbleindex"].name
-    "Storage__Tables__ScrabbleTiles"              = azurerm_storage_table.tables["scrabbletiles"].name
-    "Storage__Tables__GameInvites"                = azurerm_storage_table.tables["gameinvites"].name
-    "Storage__Tables__Contacts"                   = azurerm_storage_table.tables["contacts"].name
+    "AppData__StorageAccountUri"                   = azurerm_storage_account.data.primary_table_endpoint
+    "AppData__GameStateTableName"                  = azurerm_storage_table.tables["scrabble"].name
+    "AppData__GameStateIndexTableName"             = azurerm_storage_table.tables["scrabbleindex"].name
+    "AppData__TilesTableName"                      = azurerm_storage_table.tables["scrabbletiles"].name
+    "AppData__GameInviteTableName"                 = azurerm_storage_table.tables["gameinvites"].name
+    "AppData__ContactsTableName"                   = azurerm_storage_table.tables["contacts"].name
   }
 }
 

@@ -71,17 +71,19 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
 
         public async Task UpdateGameState(Guid gameId, GameStateModel gameStateModel)
         {
-            var gameStateCloudEntity = new GameStateCloudEntity(gameId, gameStateModel);
+            // Save tiles separately before constructing cloud entity to avoid
+            // serializing Tile[,] which System.Text.Json does not support.
+            if (gameStateModel.BagStateModel.Tiles != null)
+                await SaveTiles($"{gameStateModel.GameId}-bag", gameStateModel.BagStateModel.Tiles);
 
-            if (gameStateCloudEntity.BagStateModel?.Tiles != null)
-                await SaveTiles($"{gameStateModel.GameId}-bag", gameStateCloudEntity.BagStateModel.Tiles);
-
-            if (gameStateCloudEntity.BoardStateModel?.Tiles != null)
+            if (gameStateModel.BoardStateModel.Tiles != null)
                 await SaveTiles($"{gameStateModel.GameId}-board",
-                    gameStateCloudEntity.BoardStateModel.Tiles.Cast<Tile>().ToArray());
+                    gameStateModel.BoardStateModel.Tiles.Cast<Tile>().ToArray());
 
             gameStateModel.BagStateModel.Tiles = null;
             gameStateModel.BoardStateModel.Tiles = null;
+
+            var gameStateCloudEntity = new GameStateCloudEntity(gameId, gameStateModel);
 
             await GameStateTable.UpsertEntityAsync(gameStateCloudEntity, TableUpdateMode.Merge);
 
