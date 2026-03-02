@@ -4,7 +4,6 @@
     <TargetFramework>net9.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <LangVersion>13.0</LangVersion>
     <CopyRefAssembliesToPublishDirectory>false</CopyRefAssembliesToPublishDirectory>
     <UserSecretsId>a3f2c8e7-91d4-4b6a-bf05-7e8d3c1a9f42</UserSecretsId>
   </PropertyGroup>

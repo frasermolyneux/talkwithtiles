@@ -3,7 +3,6 @@
   <PropertyGroup>
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
-    <LangVersion>13.0</LangVersion>
     <AssemblyName>MX.TalkWithTiles.Contracts</AssemblyName>
     <RootNamespace>MX.TalkWithTiles.Contracts</RootNamespace>
   </PropertyGroup>

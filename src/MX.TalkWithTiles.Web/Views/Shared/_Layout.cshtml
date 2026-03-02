@@ -52,10 +52,17 @@
     </main>
 </div>
 
+@{
+    var entryAssembly = System.Reflection.Assembly.GetEntryAssembly();
+    var informationalVersion = entryAssembly?.GetCustomAttribute<System.Reflection.AssemblyInformationalVersionAttribute>()?.InformationalVersion ?? "unknown";
+    var buildVersion = informationalVersion.Split('+')[0];
+    var assemblyVersion = entryAssembly?.GetName().Version?.ToString() ?? "unknown";
+}
 @if (!hideClutter)
 {
     <footer class="border-top footer text-muted">
         <div class="container">
+            <span class="float-end small" title="Full: @informationalVersion&#10;Assembly: @assemblyVersion">v@(buildVersion)</span>
             <p>
                 &copy; @DateTime.Now.Year - <a href="https://www.molyneux-consulting.co.uk/" target="_blank">Molyneux Consulting Ltd</a> - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy Policy</a> - <a asp-area="" asp-controller="Home" asp-action="Cookies">Cookies Notice</a>
             </p>

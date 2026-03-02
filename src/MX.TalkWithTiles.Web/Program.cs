@@ -5,6 +5,7 @@ using MX.TalkWithTiles.CoreEngine.Factories;
 using MX.TalkWithTiles.Repository;
 using MX.TalkWithTiles.Repository.Config;
 using MX.TalkWithTiles.Repository.Interfaces;
+using MX.TalkWithTiles.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -70,6 +71,7 @@ app.UseAuthorization();
 app.UseSession();
 
 app.MapHealthChecks("/api/health").AllowAnonymous();
+app.MapInfoEndpoint();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
 
