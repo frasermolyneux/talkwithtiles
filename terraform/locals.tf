@@ -15,10 +15,15 @@ locals {
   storage_account_prefix = substr(replace(var.workload, "-", ""), 0, 8)
   storage_account_name   = lower("st${local.storage_account_prefix}${var.environment}${random_id.storage.hex}")
   storage_table_names = {
-    scrabble       = "Scrabble"
-    scrabbleindex  = "ScrabbleIndex"
-    scrabbletiles  = "ScrabbleTiles"
-    gameinvites    = "GameInvites"
-    contacts       = "Contacts"
+    scrabble      = "Scrabble"
+    scrabbleindex = "ScrabbleIndex"
+    scrabbletiles = "ScrabbleTiles"
+    gameinvites   = "GameInvites"
+    contacts      = "Contacts"
+  }
+
+  app_insights_sampling_percentage = {
+    dev = 25
+    prd = 75
   }
 }
