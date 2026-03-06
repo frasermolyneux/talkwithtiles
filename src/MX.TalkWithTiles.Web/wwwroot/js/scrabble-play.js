@@ -166,7 +166,7 @@ function addTileToBoard(tile, position) {
     const cell = $(`#${position}`);
     console.log(`Adding '${tile.letter}' to board in postion ${position}`);
     cell.append(
-        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter}.jpg" class="scrabbleTile" alt="${tile.letter
+        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter.toLowerCase()}.jpg" class="scrabbleTile" alt="${tile.letter
         }" style="width:${tileWidth}px; height:${tileWidth}px; padding:3px;">`);
 
     const cellRegex = new RegExp("^cell_([0-9]{1,2})-([0-9]{1,2})$");
@@ -211,7 +211,7 @@ function addTileToRack(tile, position) {
     const rackCell = $(`#${position}`);
     console.log(`Adding '${tile.letter}' to rack in postion ${tile.rackPosition}`);
     rackCell.append(
-        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter}.jpg" class="rackScrabbleTile" alt="${tile.letter
+        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter.toLowerCase()}.jpg" class="rackScrabbleTile" alt="${tile.letter
         }" style="width:${tileWidth}px; height:${tileWidth}px">`);
 
     const rackRegex = new RegExp("^rack_([0-9]{1,2})$");
