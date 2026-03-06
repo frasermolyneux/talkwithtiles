@@ -6,39 +6,39 @@
     var boardSize = BoardSizeHelper.GetSize(Model.GameType);
 }
 
-<div class="row">
-
-    <div id="scrabbleBoard" class="scrabbleBoard">
-        @if (Model.BoardStateModel.Tiles != null)
+<div id="scrabbleBoard" class="scrabbleBoard" style="grid-template-columns: repeat(@boardSize.Width, 1fr); grid-template-rows: repeat(@boardSize.Height, 1fr);">
+    @if (Model.BoardStateModel.Tiles != null)
+    {
+        @for (var i = 0; i < boardSize.Height; i++)
         {
-            @for (var i = 0; i < boardSize.Height; i++)
+            @for (var j = 0; j < boardSize.Width; j++)
             {
-                @for (var j = 0; j < boardSize.Width; j++)
-                {
-                    var tile = Model.BoardStateModel.Tiles[j, i];
+                var tile = Model.BoardStateModel.Tiles[j, i];
 
-                    @if (tile.LetterSet)
+                @if (tile == null)
+                {
+                    <div id="cell_@j-@i" class="scrabbleBoardCell availableBoardCell StandardTile"></div>
+                }
+                else if (tile.LetterSet)
+                {
+                    @if (Model.IsTileInLastMove(tile))
                     {
-                        @if (Model.IsTileInLastMove(tile))
-                        {
-                            <div id="cell_@j-@i" class="scrabbleBoardCell @tile.TileType">
-                                <img src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" class="scrabbleTile scrabbleTile--lastMove" alt="@tile.Letter">
-                            </div>
-                        }
-                        else
-                        {
-                            <div id="cell_@j-@i" class="scrabbleBoardCell @tile.TileType">
-                                <img src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" class="scrabbleTile scrabbleTile--placed" alt="@tile.Letter">
-                            </div>
-                        }
+                        <div id="cell_@j-@i" class="scrabbleBoardCell @tile.TileType">
+                            <img src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" class="scrabbleTile scrabbleTile--lastMove" alt="@tile.Letter">
+                        </div>
                     }
                     else
                     {
-                        <div id="cell_@j-@i" class="scrabbleBoardCell availableBoardCell @tile.TileType"></div>
+                        <div id="cell_@j-@i" class="scrabbleBoardCell @tile.TileType">
+                            <img src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" class="scrabbleTile scrabbleTile--placed" alt="@tile.Letter">
+                        </div>
                     }
+                }
+                else
+                {
+                    <div id="cell_@j-@i" class="scrabbleBoardCell availableBoardCell @tile.TileType"></div>
                 }
             }
         }
-    </div>
-
+    }
 </div>

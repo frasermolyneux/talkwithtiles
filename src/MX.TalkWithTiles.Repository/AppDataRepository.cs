@@ -14,9 +14,16 @@ public class AppDataRepository : IAppDataRepository
 
     public AppDataRepository(IOptions<AppDataOptions> options)
     {
-        _tableServiceClient = new TableServiceClient(
-            new Uri(options.Value.StorageAccountUri),
-            new DefaultAzureCredential());
+        if (!string.IsNullOrEmpty(options.Value.StorageConnectionString))
+        {
+            _tableServiceClient = new TableServiceClient(options.Value.StorageConnectionString);
+        }
+        else
+        {
+            _tableServiceClient = new TableServiceClient(
+                new Uri(options.Value.StorageAccountUri),
+                new DefaultAzureCredential());
+        }
 
         ContactsTable = _tableServiceClient.GetTableClient(options.Value.ContactsTableName);
         GameInviteTable = _tableServiceClient.GetTableClient(options.Value.GameInviteTableName);

@@ -31,17 +31,20 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
                 return null;
             }
 
+            // Read computed properties once — each getter access deserializes
+            // from JSON, so repeated access creates new throwaway objects.
+            var bagStateModel = gameStateModelCloudEntity.BagStateModel ?? new BagStateModel();
+            var boardStateModel = gameStateModelCloudEntity.BoardStateModel ?? new BoardStateModel();
+
             if (!skipTileFetch)
             {
-                gameStateModelCloudEntity.BagStateModel ??= new BagStateModel();
-                if (gameStateModelCloudEntity.BagStateModel.Tiles == null)
+                if (bagStateModel.Tiles == null)
                 {
                     var bagTiles = await GetTiles($"{gameId}-bag");
-                    gameStateModelCloudEntity.BagStateModel.Tiles = bagTiles;
+                    bagStateModel.Tiles = bagTiles;
                 }
 
-                gameStateModelCloudEntity.BoardStateModel ??= new BoardStateModel();
-                if (gameStateModelCloudEntity.BoardStateModel.Tiles == null)
+                if (boardStateModel.Tiles == null)
                 {
                     var boardTileList = await GetTiles($"{gameId}-board");
 
@@ -50,7 +53,7 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
 
                     foreach (var tile in boardTileList) boardTiles[tile.PosX, tile.PosY] = tile;
 
-                    gameStateModelCloudEntity.BoardStateModel.Tiles = boardTiles;
+                    boardStateModel.Tiles = boardTiles;
                 }
             }
 
@@ -62,8 +65,8 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
                 GameType = gameStateModelCloudEntity.GameType,
                 TileBagVisibilityOption = gameStateModelCloudEntity.TileBagVisibilityOption,
                 GamePrivacyType = gameStateModelCloudEntity.GamePrivacyType,
-                BoardStateModel = gameStateModelCloudEntity.BoardStateModel ?? new BoardStateModel(),
-                BagStateModel = gameStateModelCloudEntity.BagStateModel ?? new BagStateModel(),
+                BoardStateModel = boardStateModel,
+                BagStateModel = bagStateModel,
                 EndGameStateModel = gameStateModelCloudEntity.EndGameStateModel ?? new EndGameStateModel(),
                 PlayersStateModel = gameStateModelCloudEntity.PlayersStateModel ?? new PlayersStateModel(),
                 PlayerMoveStateModel = gameStateModelCloudEntity.PlayerMoveStateModel ?? new PlayerMoveStateModel(),

@@ -17,6 +17,14 @@
 *.nupkg
 **/packages/
 
+# Azurite
+__blobstorage__/
+__queuestorage__/
+__tablestorage__/
+__azurite_db_blob*.json
+__azurite_db_queue*.json
+__azurite_db_table*.json
+
 # Terraform
 **/.terraform/
 *.tfstate

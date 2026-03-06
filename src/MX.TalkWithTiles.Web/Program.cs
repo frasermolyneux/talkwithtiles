@@ -9,15 +9,23 @@ using MX.TalkWithTiles.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Application Insights
-builder.Services.AddApplicationInsightsTelemetry();
+// Application Insights (skip when no connection string is configured)
+var aiConnectionString = builder.Configuration["ApplicationInsights:ConnectionString"];
+if (!string.IsNullOrEmpty(aiConnectionString))
+{
+    builder.Services.AddApplicationInsightsTelemetry();
+}
 
 // Entra External ID authentication
 builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration, "AzureAd");
 
 // MVC
-builder.Services.AddControllersWithViews()
+var mvcBuilder = builder.Services.AddControllersWithViews()
     .AddMicrosoftIdentityUI();
+if (builder.Environment.IsDevelopment())
+{
+    mvcBuilder.AddRazorRuntimeCompilation();
+}
 builder.Services.AddRazorPages();
 
 // Response compression
@@ -69,6 +77,12 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseSession();
+
+if (app.Environment.IsDevelopment())
+{
+    var repository = app.Services.GetRequiredService<IAppDataRepository>();
+    await repository.CreateTablesIfNotExist();
+}
 
 app.MapHealthChecks("/api/health").AllowAnonymous();
 app.MapInfoEndpoint();
