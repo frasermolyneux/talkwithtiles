@@ -13,33 +13,30 @@
         {
             @for (var i = 0; i < boardSize.Height; i++)
             {
-                <div class="scrabbleBoardRow">
-                    @for (var j = 0; j < boardSize.Width; j++)
-                    {
-                        var tile = Model.BoardStateModel.Tiles[j, i];
+                @for (var j = 0; j < boardSize.Width; j++)
+                {
+                    var tile = Model.BoardStateModel.Tiles[j, i];
 
                     @if (tile.LetterSet)
                     {
                         @if (Model.IsTileInLastMove(tile))
                         {
                             <div id="cell_@j-@i" class="scrabbleBoardCell @tile.TileType">
-                                <img src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" class="scrabbleTile" alt="@tile.Letter" style="border-color: green; border-style: dashed">
+                                <img src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" class="scrabbleTile scrabbleTile--lastMove" alt="@tile.Letter">
                             </div>
                         }
                         else
                         {
                             <div id="cell_@j-@i" class="scrabbleBoardCell @tile.TileType">
-                                <img src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" class="scrabbleTile" alt="@tile.Letter" style="padding: 3px;">
+                                <img src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" class="scrabbleTile scrabbleTile--placed" alt="@tile.Letter">
                             </div>
                         }
-
                     }
                     else
                     {
                         <div id="cell_@j-@i" class="scrabbleBoardCell availableBoardCell @tile.TileType"></div>
                     }
                 }
-            </div>
             }
         }
     </div>

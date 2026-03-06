@@ -2,7 +2,7 @@
 <nav class="navbar fixed-top navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
     <div class="container">
         <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Talk With Tiles</a>
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse" aria-controls="navbarSupportedContent"
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
                 aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
@@ -17,25 +17,25 @@
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <li class="nav-item dropdown">
-                        <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                             Scrabble
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="Scrabble" asp-action="Index"><i class="fas fa-list-alt"></i> My Games</a>
-                            <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="Scrabble" asp-action="Create"><i class="fas fa-plus-square"></i> Create Game</a>
+                            <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="Scrabble" asp-action="Index"><i class="fas fa-rectangle-list"></i> My Games</a>
+                            <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="Scrabble" asp-action="Create"><i class="fas fa-square-plus"></i> Create Game</a>
                         </div>
                     </li>
                 }
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link text-dark dropdown-toggle" href="#" id="aboutDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <a class="nav-link text-dark dropdown-toggle" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                         About/Guides
                     </a>
                     <div class="dropdown-menu" aria-labelledby="aboutDropdown">
                         <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="About" asp-action="ScrabbleGames"><i class="fas fa-chess-board"></i> Scrabble Game Types</a>
-                        <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="About" asp-action="GettingStarted"><i class="fas fa-info-circle"></i> Getting Started</a>
+                        <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="About" asp-action="GettingStarted"><i class="fas fa-circle-info"></i> Getting Started</a>
                         <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="About" asp-action="GameControls"><i class="fas fa-gamepad"></i> Game Controls</a>
-                        <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="About" asp-action="Faq"><i class="fas fa-question-circle"></i> FAQ</a>
+                        <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="About" asp-action="Faq"><i class="fas fa-circle-question"></i> FAQ</a>
                     </div>
                 </li>
 

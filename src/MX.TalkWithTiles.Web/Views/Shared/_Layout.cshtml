@@ -20,10 +20,9 @@
     <title>@ViewData["Title"] - Talk With Tiles</title>
 
     <link rel="canonical" href="https://www.talkwithtiles.molyneux.me">
-    <link rel="shortcut icon" type="image/x-icon" href="favicon.ico">
+    <link rel="shortcut icon" type="image/x-icon" href="~/favicon.ico">
 
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" integrity="sha512-+4zCK9k+qNFUR5X+cKL9EIR+ZOhtIloNl9GIKS57V1MyNsYpYcUrUeQc9vNfzsWfV28IaLL3i96P9sdNyeRssA==" crossorigin="anonymous" />
-    <link rel="stylesheet" href="~/lib/jquery-ui/themes/base/jquery-ui.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" />
     @await RenderSectionAsync("Styles", false)
@@ -39,12 +38,9 @@
     </header>
 }
 
-@{
-    var padding = hideClutter ? "0px" : "60px";
-}
 
-<div class="container" style="padding-top: @padding">
-    <div style="padding-top: 10px">
+<div class="container @(hideClutter ? "" : "mt-5")">
+    <div class="pt-2">
         <alerts></alerts>
     </div>
     <main id="mainContainer" role="main" class="pb-3">
@@ -76,9 +72,6 @@
     </footer>
 }
 
-<script src="~/lib/jquery/dist/jquery.min.js"></script>
-<script src="~/lib/jquery-ui/jquery-ui.min.js"></script>
-
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
 
@@ -91,32 +84,37 @@
 
 @if (aiClientConnectionJson is not null)
 {
+    <script type="text/javascript" src="https://js.monitor.azure.com/scripts/b/ai.3.gbl.min.js"></script>
     <script type="text/javascript">
-        (function (win, doc) {
-            var appInsights = win.appInsights || function (config) {
-                function addMethod(name) {
-                    if (!name) { return; }
-                    app[name] = function () {
-                        var args = arguments;
-                        app.queue.push(function () { app[name].apply(app, args); });
-                    };
-                }
-                var app = { config: config }, script = doc.createElement("script");
-                app.queue = [];
-                script.src = config.url || "https://az416426.vo.msecnd.net/scripts/b/ai.2.min.js";
-                doc.getElementsByTagName("head")[0].appendChild(script);
-                addMethod("trackEvent");
-                addMethod("trackPageView");
-                addMethod("trackException");
-                addMethod("trackTrace");
-                addMethod("trackDependencyData");
-                addMethod("flush");
-                return app;
-            }({ connectionString: @Html.Raw(aiClientConnectionJson) });
-
-            win.appInsights = appInsights;
-            appInsights.trackPageView();
-        })(window, document);
+        var sdkInstance = "appInsightsSDK";
+        window[sdkInstance] = "appInsights";
+        var aiName = window[sdkInstance];
+        var aisdk = window[aiName] || (function (cfg) {
+            var appInsights = {
+                config: cfg,
+                initialize: true,
+                queue: [],
+                sv: "8",
+                version: 2.0
+            };
+            function addMethod(name) {
+                appInsights[name] = function () {
+                    var args = arguments;
+                    appInsights.queue.push(function () { appInsights[name].apply(appInsights, args); });
+                };
+            }
+            var methods = ["Event", "PageView", "Exception", "Trace", "DependencyData", "Metric", "PageViewPerformance"];
+            while (methods.length) { addMethod("track" + methods.pop()); }
+            addMethod("flush");
+            addMethod("setAuthenticatedUserContext");
+            addMethod("clearAuthenticatedUserContext");
+            addMethod("addTelemetryInitializer");
+            return appInsights;
+        })({
+            connectionString: @Html.Raw(aiClientConnectionJson)
+        });
+        window[aiName] = aisdk;
+        aisdk.trackPageView({});
     </script>
 }
 

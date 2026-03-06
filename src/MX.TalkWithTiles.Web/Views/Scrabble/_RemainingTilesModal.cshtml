@@ -5,20 +5,18 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Remaining Tiles</h5>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 @foreach (var letter in (Model.BagStateModel.Tiles ?? []).GroupBy(t => t.Letter)
                     .Select(group => new {Letter = group.Key, Count = group.Count()})
                     .OrderBy(t => t.Letter))
                 {
-                    <span class="badge badge-pill badge-primary">@letter.Letter (@letter.Count)</span>
+                    <span class="badge rounded-pill bg-primary">@letter.Letter (@letter.Count)</span>
                 }
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

@@ -1,8 +1,6 @@
 ﻿.pricing-header { max-width: 700px; }
 
 .bd-placeholder-img {
-    -moz-user-select: none;
-    -webkit-user-select: none;
     font-size: 1.125rem;
     text-anchor: middle;
     user-select: none;

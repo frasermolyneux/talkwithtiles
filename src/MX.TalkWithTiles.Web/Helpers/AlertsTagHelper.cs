@@ -29,9 +29,7 @@ public class AlertsTagHelper : TagHelper
 
         foreach (var alert in alerts)
             sb.Append($"<div class='alert {alert.Type}' id='inner-alert' role='alert' style='padding-top:10px'>")
-              .Append("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>")
-              .Append("<span aria-hidden='true'>&times;</span>")
-              .Append("</button>")
+              .Append("<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>")
               .Append(alert.Message)
               .Append("</div>");
 

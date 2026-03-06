@@ -1,69 +1,86 @@
-﻿.btn { padding: 5px; }
+﻿:root {
+    --board-size: min(450px, 100%);
+    --board-cols: 15;
+    --cell-gap: 1px;
+}
+
+.btn { padding: 5px; }
 
 .scrabbleBoard {
+    aspect-ratio: 1;
     border: solid 5px black;
-    display: flex;
-    flex-direction: column;
-    height: 450px;
+    display: grid;
+    grid-template-columns: repeat(var(--board-cols), 1fr);
+    grid-template-rows: repeat(var(--board-cols), 1fr);
     margin-left: auto;
     margin-right: auto;
-    width: 450px;
+    max-width: var(--board-size);
+    width: 100%;
 }
 
-.scrabbleBoardRow {
-    display: flex;
-    flex: 1;
-    flex-direction: row;
+.scrabbleBoardCell {
+    aspect-ratio: 1;
+    overflow: hidden;
+    position: relative;
 }
-
-.scrabbleBoardCell { flex: 1; }
-
-.availableBoardCell { }
 
 .StandardTile {
     background: #f3dbbb;
-    border: solid 1px white;
+    border: solid var(--cell-gap) white;
 }
 
 .DoubleLetterScoreTile {
     background: url("../img/double_letter.png");
     background-size: contain;
-    border: solid 1px white;
+    border: solid var(--cell-gap) white;
 }
 
 .TripleLetterScoreTile {
     background: url("../img/triple_letter.png");
     background-size: contain;
-    border: solid 1px white;
+    border: solid var(--cell-gap) white;
 }
 
 .DoubleWordScoreTile {
     background: url("../img/double_word.png");
     background-size: contain;
-    border: solid 1px white;
+    border: solid var(--cell-gap) white;
 }
 
 .TripleWordScoreTile {
     background: url("../img/triple_word.png");
     background-size: contain;
-    border: solid 1px white;
+    border: solid var(--cell-gap) white;
 }
 
 .CentreTile {
     background: url("../img/star.png");
     background-size: contain;
-    border: solid 1px white;
+    border: solid var(--cell-gap) white;
 }
 
 .scrabbleTile {
     display: block;
+    height: auto;
     margin-left: auto;
     margin-right: auto;
     width: 85%;
     z-index: 100;
 }
 
-.rackScrabbleTile { }
+.scrabbleTile--lastMove {
+    border-color: green;
+    border-style: dashed;
+}
+
+.scrabbleTile--placed {
+    padding: 3px;
+}
+
+.rackScrabbleTile {
+    height: 100%;
+    width: 100%;
+}
 
 .scrabbleRackContainer {
     display: flex;
@@ -86,9 +103,10 @@
 }
 
 .scrabbleRackCell {
+    aspect-ratio: 1;
     border: solid 1px black;
-    flex: 1;
     margin: 1px;
+    width: 30px;
 }
 
 .playerSummaryContainer {
@@ -116,11 +134,8 @@
 }
 
 input[type=checkbox] {
-    -moz-transform: scale(2);
-    -ms-transform: scale(2);
-    -o-transform: scale(2);
-    -webkit-transform: scale(2);
     padding: 10px;
+    transform: scale(2);
 }
 
 .form-check-label { margin-left: 5px; }

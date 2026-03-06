@@ -86,7 +86,7 @@
     <div class="row">
         <div id="accordion" class="card col-sm-12 w-100 border-0">
             <div class="card-header panel-title">
-                <button class="btn btn-link" type="button" data-toggle="collapse" data-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
                     <i class="fas fa-plus"></i> Advanced Challenge Options
                 </button>
             </div>
@@ -189,9 +189,12 @@
             }
         ];
 
-        $("#PlayerModels_0__Identifier").autocomplete({
-            source: contacts
-        });
+        (function () {
+            const input = document.getElementById("PlayerModels_0__Identifier");
+            if (input && typeof setupAutocomplete === "function") {
+                setupAutocomplete(input);
+            }
+        })();
 
     </script>
 }

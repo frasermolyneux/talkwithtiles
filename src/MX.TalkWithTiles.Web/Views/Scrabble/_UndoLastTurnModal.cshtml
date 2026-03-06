@@ -5,9 +5,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Undo Last Turn?</h5>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">
-                    <i class="fas fa-times"></i>
-                </button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 Are you sure you want to undo your turn? Your new tiles will be returned to the bag and you can retry your go.
@@ -17,7 +15,7 @@
                     <input name="id" type="hidden" value="@Model.GameId"/>
                     <button type="submit" class="btn btn-primary">Confirm Undo Turn</button>
                 </form>
-                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

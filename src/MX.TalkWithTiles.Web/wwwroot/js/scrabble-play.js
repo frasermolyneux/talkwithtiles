@@ -1,10 +1,10 @@
 ﻿let userTiles = [];
-let tileWidth;
 let gameId;
 let playerId;
 let currentPlayerId;
 let gameEtag;
 let selectedTile;
+let draggedTileId = null;
 
 function InitGameGlobals(theGameId, thePlayerId, theCurrentPlayerId, theGameEtag) {
     gameId = theGameId;
@@ -14,48 +14,47 @@ function InitGameGlobals(theGameId, thePlayerId, theCurrentPlayerId, theGameEtag
 
     setInterval(checkForMovePlayed, 5000);
 
-    $("#recallTiles").click(recallTiles);
-    $("#shuffleTiles").click(shuffleTiles);
-
-    $(window).on("resize",
-        function() {
-            InitSizes();
-        });
+    document.getElementById("recallTiles").addEventListener("click", recallTiles);
+    document.getElementById("shuffleTiles").addEventListener("click", shuffleTiles);
 }
 
 function InitTileRack() {
-    var i;
-    for (i = 0; i < userTiles.length; i++) {
+    for (let i = 0; i < userTiles.length; i++) {
         const tile = userTiles[i];
-
         addTileToRack(tile, `rack_${tile.rackPosition}`);
     }
 
-    $(".scrabbleRackCell").droppable({
-        drop: function(event, ui) {
-            const rackId = $(this).attr("id");
-            const tileId = $(ui.draggable).attr("id");
-            const tile = userTiles.find((o) => { return o["tileId"] === tileId });
+    document.querySelectorAll(".scrabbleRackCell").forEach(function (cell) {
+        cell.addEventListener("dragover", function (e) {
+            e.preventDefault();
+        });
+
+        cell.addEventListener("drop", function (e) {
+            e.preventDefault();
+            const tileId = e.dataTransfer.getData("text/plain");
+            if (!tileId) return;
+
+            const rackId = this.id;
+            const tile = userTiles.find(function (o) { return o.tileId === tileId; });
+            if (!tile) return;
 
             console.log(`Tile ${tileId} has been dropped onto ${rackId}`);
 
             removeDraggableTile(tile);
             addTileToRack(tile, rackId);
             clearSelectedTile();
-        }
-    });
+        });
 
-    $(".scrabbleRackCell").on("click touch",
-        function(event, ui) {
-            if ($(this).children().length > 0) {
+        cell.addEventListener("click", function () {
+            if (this.children.length > 0) {
                 return;
             }
 
             if (selectedTile != null) {
-
-                const rackId = $(this).attr("id");
-                const tileId = selectedTile.attr("id");
-                const tile = userTiles.find((o) => { return o["tileId"] === tileId });
+                const rackId = this.id;
+                const tileId = selectedTile.id;
+                const tile = userTiles.find(function (o) { return o.tileId === tileId; });
+                if (!tile) return;
 
                 console.log(`Tile ${tileId} has been dropped onto ${rackId}`);
 
@@ -64,34 +63,41 @@ function InitTileRack() {
                 clearSelectedTile();
             }
         });
+    });
 }
 
 function InitBoard() {
-    $(".availableBoardCell").droppable({
-        drop: function(event, ui) {
-            const cellId = $(this).attr("id");
-            const tileId = $(ui.draggable).attr("id");
-            const tile = userTiles.find((o) => { return o["tileId"] === tileId });
+    document.querySelectorAll(".availableBoardCell").forEach(function (cell) {
+        cell.addEventListener("dragover", function (e) {
+            e.preventDefault();
+        });
+
+        cell.addEventListener("drop", function (e) {
+            e.preventDefault();
+            const tileId = e.dataTransfer.getData("text/plain");
+            if (!tileId) return;
+
+            const cellId = this.id;
+            const tile = userTiles.find(function (o) { return o.tileId === tileId; });
+            if (!tile) return;
 
             console.log(`Tile ${tileId} has been dropped onto ${cellId}`);
 
             removeDraggableTile(tile);
             addTileToBoard(tile, cellId);
             clearSelectedTile();
-        }
-    });
+        });
 
-    $(".availableBoardCell").on("click touch",
-        function(event, ui) {
-            if ($(this).children().length > 0) {
+        cell.addEventListener("click", function () {
+            if (this.children.length > 0) {
                 return;
             }
 
             if (selectedTile != null) {
-
-                const cellId = $(this).attr("id");
-                const tileId = selectedTile.attr("id");
-                const tile = userTiles.find((o) => { return o["tileId"] === tileId });
+                const cellId = this.id;
+                const tileId = selectedTile.id;
+                const tile = userTiles.find(function (o) { return o.tileId === tileId; });
+                if (!tile) return;
 
                 console.log(`Tile ${tileId} has been dropped onto ${cellId}`);
 
@@ -100,74 +106,60 @@ function InitBoard() {
                 clearSelectedTile();
             }
         });
+    });
 }
 
 function InitSizes() {
-    if ($(window).width() < 768) {
-        var mainContainerWidth = $(window).width();
-
-        var board = $("#scrabbleBoard");
-        var boardWidth = (mainContainerWidth * 95) * 0.01;
-
-        board.width(boardWidth);
-        board.height($("#scrabbleBoard").width());
-    } else if ($(window).width() > 1200) {
-        var mainContainerWidth = $("#mainContainer").width();
-
-        var board = $("#scrabbleBoard");
-        var boardWidth = (mainContainerWidth * 50) * 0.01;
-
-        board.width(boardWidth);
-        board.height($("#scrabbleBoard").width());
-    } else {
-        var mainContainerWidth = $("#mainContainer").width();
-
-        var board = $("#scrabbleBoard");
-        var boardWidth = (mainContainerWidth * 65) * 0.01;
-
-        board.width(boardWidth);
-        board.height($("#scrabbleBoard").width());
-    }
-
-    tileWidth = $("#cell_0-0").width();
-    console.log(`The global tile width is: ${tileWidth}`);
-
-    $(".scrabbleRackCell").width(tileWidth);
-    $(".scrabbleRackCell").height(tileWidth);
-
-    $(".rackScrabbleTile").width(tileWidth);
-    $(".rackScrabbleTile").height(tileWidth);
-
-    $(".scrabbleTile").width(tileWidth - 6);
-    $(".scrabbleTile").height(tileWidth - 6);
+    // Board sizing is now handled by CSS (aspect-ratio + max-width).
+    // This function is kept as a no-op for backward compatibility.
 }
 
 function clearSelectedTile() {
     if (selectedTile != null) {
-        selectedTile.removeClass("selectedTile");
+        selectedTile.classList.remove("selectedTile");
         selectedTile = null;
-        $(".selectedTileMessage").hide();
+        document.querySelectorAll(".selectedTileMessage").forEach(function (el) {
+            el.style.display = "none";
+        });
     }
 }
 
 function setSelectedTile(element) {
     selectedTile = element;
-    selectedTile.addClass("selectedTile");
-    $(".selectedTileMessage").show();
+    selectedTile.classList.add("selectedTile");
+    document.querySelectorAll(".selectedTileMessage").forEach(function (el) {
+        el.style.display = "";
+    });
 }
 
 function removeDraggableTile(tile) {
-    const rackTile = $(`#${tile.tileId}`);
-    rackTile.draggable("destroy");
-    rackTile.remove();
+    const rackTile = document.getElementById(tile.tileId);
+    if (rackTile) {
+        rackTile.remove();
+    }
+}
+
+function makeTileDraggable(tileEl) {
+    tileEl.setAttribute("draggable", "true");
+
+    tileEl.addEventListener("dragstart", function (e) {
+        draggedTileId = this.id;
+        e.dataTransfer.setData("text/plain", this.id);
+        e.dataTransfer.effectAllowed = "move";
+        this.style.opacity = "0.5";
+    });
+
+    tileEl.addEventListener("dragend", function () {
+        this.style.opacity = "1";
+        draggedTileId = null;
+    });
 }
 
 function addTileToBoard(tile, position) {
-    const cell = $(`#${position}`);
+    const cell = document.getElementById(position);
     console.log(`Adding '${tile.letter}' to board in postion ${position}`);
-    cell.append(
-        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter.toLowerCase()}.jpg" class="scrabbleTile" alt="${tile.letter
-        }" style="width:${tileWidth}px; height:${tileWidth}px; padding:3px;">`);
+    cell.insertAdjacentHTML("beforeend",
+        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter.toLowerCase()}.jpg" class="scrabbleTile scrabbleTile--placed" alt="${tile.letter}" draggable="true">`);
 
     const cellRegex = new RegExp("^cell_([0-9]{1,2})-([0-9]{1,2})$");
     const match = cellRegex.exec(position);
@@ -179,40 +171,20 @@ function addTileToBoard(tile, position) {
 
     updateMoveScore();
 
-    $(`#${tile.tileId}`).draggable({
-        opacity: 0.8,
-        revert: "invalid",
-        start: function(event, ui) {
-            $(ui.helper).css("width", "50%");
-            $(ui.helper).css("height", "50%");
-        },
-        stop: function(event, ui) {
-            $(ui.helper).css("width", "100%");
-            $(ui.helper).css("height", "100%");
-        }
-    });
+    const tileEl = document.getElementById(tile.tileId);
+    makeTileDraggable(tileEl);
 
-    $(`#${tile.tileId}`).droppable({
-        greedy: true,
-        tolerance: "touch",
-        drop: function(event, ui) {
-            ui.draggable.draggable("option", "revert", true);
-        }
+    tileEl.addEventListener("click", function () {
+        clearSelectedTile();
+        setSelectedTile(this);
     });
-
-    $(`#${tile.tileId}`).on("click touch",
-        function() {
-            clearSelectedTile();
-            setSelectedTile($(this));
-        });
 }
 
 function addTileToRack(tile, position) {
-    const rackCell = $(`#${position}`);
+    const rackCell = document.getElementById(position);
     console.log(`Adding '${tile.letter}' to rack in postion ${tile.rackPosition}`);
-    rackCell.append(
-        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter.toLowerCase()}.jpg" class="rackScrabbleTile" alt="${tile.letter
-        }" style="width:${tileWidth}px; height:${tileWidth}px">`);
+    rackCell.insertAdjacentHTML("beforeend",
+        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter.toLowerCase()}.jpg" class="rackScrabbleTile" alt="${tile.letter}" draggable="true">`);
 
     const rackRegex = new RegExp("^rack_([0-9]{1,2})$");
     const match = rackRegex.exec(position);
@@ -224,139 +196,139 @@ function addTileToRack(tile, position) {
 
     updateMoveScore();
 
-    $(`#${tile.tileId}`).draggable({
-        opacity: 0.8,
-        revert: "invalid",
-        start: function(event, ui) {
-            $(ui.helper).css("width", "50%");
-            $(ui.helper).css("height", "50%");
-        },
-        stop: function(event, ui) {
-            $(ui.helper).css("width", "100%");
-            $(ui.helper).css("height", "100%");
-        }
-    });
+    const tileEl = document.getElementById(tile.tileId);
+    makeTileDraggable(tileEl);
 
-    $(`#${tile.tileId}`).droppable({
-        greedy: true,
-        tolerance: "touch",
-        drop: function(event, ui) {
-            ui.draggable.draggable("option", "revert", true);
-        }
+    tileEl.addEventListener("click", function () {
+        clearSelectedTile();
+        setSelectedTile(this);
     });
-
-    $(`#${tile.tileId}`).on("click touch",
-        function() {
-            clearSelectedTile();
-            setSelectedTile($(this));
-        });
 }
 
-function updateMoveScore() {
-    var tilesOnBoard = userTiles.find((o) => { return o["rackPosition"] === -1 });
+async function updateMoveScore() {
+    const tilesOnBoard = userTiles.find(function (o) { return o.rackPosition === -1; });
+    const turnScoreEl = document.getElementById("turnScore");
 
     if (!tilesOnBoard) {
-        $("#turnScore").hide();
+        turnScoreEl.style.display = "none";
         return;
     }
 
-    $.ajax({
-        url: `/Scrabble/GetPlayerMoveResult/${gameId}`,
-        headers: {
-            'RequestVerificationToken': antiforgeryToken
-        },
-        type: "POST",
-        data: JSON.stringify({
-            "PlayerId": playerId,
-            "Tiles": userTiles
-        }),
-        dataType: "JSON",
-        contentType: "application/json; charset=utf-8",
-        success: function(response) {
-            console.log(response);
+    try {
+        const response = await fetch(`/Scrabble/GetPlayerMoveResult/${gameId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "RequestVerificationToken": antiforgeryToken
+            },
+            body: JSON.stringify({
+                "PlayerId": playerId,
+                "Tiles": userTiles
+            })
+        });
 
-            const wordsAndPoints = response.wordsAndPoints;
-
-            var i;
-            var turnScoreEl = document.getElementById("turnScore");
-            turnScoreEl.textContent = "";
-
-            var strong = document.createElement("strong");
-            strong.textContent = "Score: ";
-            turnScoreEl.appendChild(strong);
-
-            for (i = 0; i < wordsAndPoints.length; i++) {
-                turnScoreEl.appendChild(document.createTextNode(wordsAndPoints[i].word + " (" + wordsAndPoints[i].score + ") "));
-            }
-            turnScoreEl.appendChild(document.createTextNode("= " + response.points));
-
-            tilesOnBoard = userTiles.find((o) => { return o["rackPosition"] === -1 });
-            if (!tilesOnBoard) {
-                $("#turnScore").hide();
-            } else {
-                $("#turnScore").show();
-            }
+        if (!response.ok) {
+            console.error("Failed to get move score:", response.status);
+            return;
         }
-    });
+
+        const result = await response.json();
+        console.log(result);
+
+        const wordsAndPoints = result.wordsAndPoints;
+
+        turnScoreEl.textContent = "";
+
+        const strong = document.createElement("strong");
+        strong.textContent = "Score: ";
+        turnScoreEl.appendChild(strong);
+
+        for (let i = 0; i < wordsAndPoints.length; i++) {
+            turnScoreEl.appendChild(document.createTextNode(wordsAndPoints[i].word + " (" + wordsAndPoints[i].score + ") "));
+        }
+        turnScoreEl.appendChild(document.createTextNode("= " + result.points));
+
+        const stillOnBoard = userTiles.find(function (o) { return o.rackPosition === -1; });
+        if (!stillOnBoard) {
+            turnScoreEl.style.display = "none";
+        } else {
+            turnScoreEl.style.display = "";
+        }
+    } catch (err) {
+        console.error("Failed to update move score:", err);
+    }
 }
 
-function submitPlayerMove() {
-    const tilesOnBoard = userTiles.find((o) => { return o["rackPosition"] === -1 });
+async function submitPlayerMove() {
+    const tilesOnBoard = userTiles.find(function (o) { return o.rackPosition === -1; });
 
     if (!tilesOnBoard)
         return;
 
-    $.ajax({
-        url: `/Scrabble/SubmitPlayerMove/${gameId}`,
-        headers: {
-            'RequestVerificationToken': antiforgeryToken
-        },
-        type: "POST",
-        data: JSON.stringify({
-            "PlayerId": playerId,
-            "Tiles": userTiles
-        }),
-        dataType: "JSON",
-        contentType: "application/json; charset=utf-8",
-        success: function(response) {
-            console.log(response);
-            location.reload();
+    try {
+        const response = await fetch(`/Scrabble/SubmitPlayerMove/${gameId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "RequestVerificationToken": antiforgeryToken
+            },
+            body: JSON.stringify({
+                "PlayerId": playerId,
+                "Tiles": userTiles
+            })
+        });
+
+        if (!response.ok) {
+            console.error("Failed to submit move:", response.status);
+            return;
         }
-    });
+
+        const result = await response.json();
+        console.log(result);
+        location.reload();
+    } catch (err) {
+        console.error("Failed to submit player move:", err);
+    }
 }
 
-function checkForMovePlayed() {
+async function checkForMovePlayed() {
     console.log("Checking to see if the other player has made their move");
 
-    $.ajax({
-        url: `/Scrabble/GetGameEtag/${gameId}`,
-        headers: {
-            'RequestVerificationToken': antiforgeryToken
-        },
-        type: "POST",
-        dataType: "JSON",
-        contentType: "application/json; charset=utf-8",
-        success: function(response) {
-            console.log(response);
-
-            if (parseInt(response.gameEtag) !== gameEtag) {
-                location.reload();
+    try {
+        const response = await fetch(`/Scrabble/GetGameEtag/${gameId}`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json; charset=utf-8",
+                "RequestVerificationToken": antiforgeryToken
             }
+        });
+
+        if (!response.ok) {
+            console.error("Failed to check for move:", response.status);
+            return;
         }
-    });
+
+        const result = await response.json();
+        console.log(result);
+
+        if (parseInt(result.gameEtag) !== gameEtag) {
+            location.reload();
+        }
+    } catch (err) {
+        console.error("Failed to check for move played:", err);
+    }
 }
 
 function recallTiles() {
-    var i;
-    for (i = 0; i < userTiles.length; i++) {
+    for (let i = 0; i < userTiles.length; i++) {
         const tile = userTiles[i];
 
         if (tile.rackPosition === -1) {
-            $(`#${tile.tileId}`).remove();
+            const tileEl = document.getElementById(tile.tileId);
+            if (tileEl) tileEl.remove();
 
-            var j;
-            for (j = 0; j < 8; j++) {
-                if (!userTiles.find((o) => { return o["rackPosition"] === j })) {
+            for (let j = 0; j < 8; j++) {
+                if (!userTiles.find(function (o) { return o.rackPosition === j; })) {
                     addTileToRack(tile, `rack_${j}`);
                     break;
                 }
@@ -368,7 +340,7 @@ function recallTiles() {
 }
 
 function shuffle(array) {
-    var currentIndex = array.length, temporaryValue, randomIndex;
+    let currentIndex = array.length, temporaryValue, randomIndex;
     while (0 !== currentIndex) {
         randomIndex = Math.floor(Math.random() * currentIndex);
         currentIndex -= 1;
@@ -383,16 +355,15 @@ function shuffle(array) {
 function shuffleTiles() {
     recallTiles();
 
-    var i;
-    for (i = 0; i < userTiles.length; i++) {
+    for (let i = 0; i < userTiles.length; i++) {
         const tile = userTiles[i];
-        $(`#${tile.tileId}`).remove();
+        const tileEl = document.getElementById(tile.tileId);
+        if (tileEl) tileEl.remove();
     }
 
     shuffle(userTiles);
 
-    var j;
-    for (j = 0; j < userTiles.length; j++) {
+    for (let j = 0; j < userTiles.length; j++) {
         const tile = userTiles[j];
         tile.rackPosition = j;
     }
