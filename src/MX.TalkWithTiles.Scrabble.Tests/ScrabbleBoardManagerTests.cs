@@ -277,7 +277,8 @@ public class ScrabbleBoardManagerTests
 
         var result = scrabbleBoardManager.BoardStateModel;
 
-        Assert.Equal("E", result.Tiles![3, 7].Letter);
+        Assert.NotNull(result.Tiles);
+        Assert.Equal("E", result.Tiles[3, 7].Letter);
         Assert.Equal("F", result.Tiles[4, 7].Letter);
         Assert.Equal("G", result.Tiles[5, 7].Letter);
     }
@@ -346,7 +347,8 @@ public class ScrabbleBoardManagerTests
 
         var result = scrabbleBoardManager.BoardStateModel;
 
-        Assert.Equal("E", result.Tiles![3, 7].Letter);
+        Assert.NotNull(result.Tiles);
+        Assert.Equal("E", result.Tiles[3, 7].Letter);
         Assert.Equal("F", result.Tiles[4, 7].Letter);
         Assert.Equal("G", result.Tiles[5, 7].Letter);
 

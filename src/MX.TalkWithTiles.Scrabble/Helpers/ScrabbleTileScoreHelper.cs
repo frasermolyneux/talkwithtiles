@@ -34,6 +34,6 @@ public static class ScrabbleTileScoreHelper
 
     public static int GetTileScore(string letter)
     {
-        return ScoreMapping[letter];
+        return ScoreMapping.GetValueOrDefault(letter, 0);
     }
 }

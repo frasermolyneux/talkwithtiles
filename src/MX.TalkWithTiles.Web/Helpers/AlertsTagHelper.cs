@@ -22,11 +22,12 @@ public class AlertsTagHelper : TagHelper
         if (TempData[AlertKey] == null)
             TempData[AlertKey] = JsonSerializer.Serialize(new HashSet<Alert>());
 
-        var alerts = JsonSerializer.Deserialize<ICollection<Alert>>(TempData[AlertKey]!.ToString()!);
+        var alertsJson = TempData[AlertKey]?.ToString() ?? "[]";
+        var alerts = JsonSerializer.Deserialize<ICollection<Alert>>(alertsJson) ?? [];
 
         var sb = new StringBuilder();
 
-        foreach (var alert in alerts!)
+        foreach (var alert in alerts)
             sb.Append($"<div class='alert {alert.Type}' id='inner-alert' role='alert' style='padding-top:10px'>")
               .Append("<button type='button' class='close' data-dismiss='alert' aria-label='Close'>")
               .Append("<span aria-hidden='true'>&times;</span>")

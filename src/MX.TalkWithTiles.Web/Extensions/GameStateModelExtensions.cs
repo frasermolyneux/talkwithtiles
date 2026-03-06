@@ -139,7 +139,8 @@ public static class GameStateModelExtensions
 
         public static string LastMoveAndScore(this GameStateModel model)
         {
-            var lastTurn = model.PlayerMoveStateModel.LastMoveResult!;
+            if (model.PlayerMoveStateModel.LastMoveResult is not { } lastTurn)
+                throw new InvalidOperationException("Cannot get last move score: no previous move recorded.");
 
             var sb = new StringBuilder();
             foreach (var wordAndPoint in lastTurn.WordsAndPoints)
@@ -213,12 +214,18 @@ public static class GameStateModelExtensions
 
         public static GameChallengeResult ResolvedChallengeResult(this GameStateModel model)
         {
-            return model.ChallengeStateModel.PlayerChallengeResult!.GameChallengeResult;
+            if (model.ChallengeStateModel.PlayerChallengeResult is not { } result)
+                throw new InvalidOperationException("Cannot get resolved challenge result: no challenge result recorded.");
+
+            return result.GameChallengeResult;
         }
 
         public static string ResolvedChallengerName(this GameStateModel model)
         {
-            var playerId = model.ChallengeStateModel.PlayerChallengeResult!.ChallengerPlayerId;
+            if (model.ChallengeStateModel.PlayerChallengeResult is not { } result)
+                throw new InvalidOperationException("Cannot get resolved challenger name: no challenge result recorded.");
+
+            var playerId = result.ChallengerPlayerId;
             var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
 
             return player.PlayerName;
@@ -226,7 +233,10 @@ public static class GameStateModelExtensions
 
         public static string ResolvedChallengedName(this GameStateModel model)
         {
-            var playerId = model.ChallengeStateModel.PlayerChallengeResult!.ChallengedPlayerId;
+            if (model.ChallengeStateModel.PlayerChallengeResult is not { } result)
+                throw new InvalidOperationException("Cannot get resolved challenged name: no challenge result recorded.");
+
+            var playerId = result.ChallengedPlayerId;
             var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
 
             return player.PlayerName;
@@ -246,7 +256,7 @@ public static class GameStateModelExtensions
             if (model.PlayerMoveStateModel.LastMoveResult == null)
                 return false;
 
-            return model.PlayerMoveStateModel.LastMoveResult?.Tiles?.Any(t =>
-                t.Letter == tile.Letter && t.PosX == tile.PosX && t.PosY == tile.PosY) ?? false;
+            return model.PlayerMoveStateModel.LastMoveResult.Tiles.Any(t =>
+                t.Letter == tile.Letter && t.PosX == tile.PosX && t.PosY == tile.PosY);
         }
 }

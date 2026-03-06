@@ -40,7 +40,7 @@ public class BagManager(ITileFactory tileFactory) : IBagManager
 
     public void ReturnTilesToBag(List<Tile> tiles)
     {
-        foreach (var bagTile in tiles.Select(tile => _tileFactory.CreateTileForBag(tile.Letter!)))
+        foreach (var bagTile in tiles.Select(tile => _tileFactory.CreateTileForBag(tile.Letter ?? string.Empty)))
             Tiles.Add(bagTile);
     }
 

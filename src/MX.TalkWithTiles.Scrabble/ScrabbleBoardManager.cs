@@ -16,14 +16,16 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     private readonly ITileFactory _tileFactory = tileFactory ?? throw new ArgumentNullException(nameof(tileFactory));
 
     private GameType GameType { get; set; }
-    private Tile[,]? Tiles { get; set; }
+    private Tile[,]? _tiles;
+    private Tile[,] Tiles => _tiles ?? throw new InvalidOperationException("Board not initialized. Call InitNew or InitFromStateModel first.");
 
-    private BoardSize BoardSize { get; set; } = null!;
+    private BoardSize? _boardSize;
+    private BoardSize BoardSize => _boardSize ?? throw new InvalidOperationException("Board not initialized. Call InitNew or InitFromStateModel first.");
 
     public BoardStateModel BoardStateModel =>
         new()
         {
-            Tiles = Tiles
+            Tiles = _tiles
         };
 
     public PlayerMoveResult MakeMove(PlayerMove playerMove)
@@ -31,9 +33,9 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
         var playerMoveResult = new PlayerMoveResult(playerMove.PlayerId) { Tiles = playerMove.Tiles };
         List<Tile> playerTilesOnBoard = [];
 
-        foreach (var tile in playerMove.Tiles!.Where(t => t.RackPosition == -1))
+        foreach (var tile in playerMove.Tiles.Where(t => t.RackPosition == -1))
         {
-            var tileOnBoard = Tiles![tile.PosX, tile.PosY];
+            var tileOnBoard = Tiles[tile.PosX, tile.PosY];
             tileOnBoard.Letter = tile.Letter;
             playerTilesOnBoard.Add(tileOnBoard);
         }
@@ -55,7 +57,7 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     {
         foreach (var tile in tiles.Where(t => t.RackPosition == -1))
         {
-            var tileOnBoard = Tiles![tile.PosX, tile.PosY];
+            var tileOnBoard = Tiles[tile.PosX, tile.PosY];
             tileOnBoard.Letter = string.Empty;
         }
     }
@@ -63,15 +65,15 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     public void InitNew(GameType gameType)
     {
         GameType = gameType;
-        BoardSize = ScrabbleBoardSizes.Boards[gameType];
-        Tiles = new Tile[BoardSize.Width, BoardSize.Height];
+        _boardSize = ScrabbleBoardSizes.Boards[gameType];
+        _tiles = new Tile[BoardSize.Width, BoardSize.Height];
 
         for (var i = 0; i < BoardSize.Width; i++)
         {
             for (var j = 0; j < BoardSize.Height; j++)
             {
                 var tile = _tileFactory.CreateTileForPosition(gameType, i, j);
-                Tiles[i, j] = tile;
+                _tiles[i, j] = tile;
             }
         }
     }
@@ -79,28 +81,25 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     public void InitFromStateModel(GameType gameType, BoardStateModel boardStateModel)
     {
         GameType = gameType;
-        BoardSize = ScrabbleBoardSizes.Boards[gameType];
-        Tiles = new Tile[BoardSize.Width, BoardSize.Height];
+        _boardSize = ScrabbleBoardSizes.Boards[gameType];
 
         if (boardStateModel.Tiles == null)
-        {
-            Tiles = null;
-            return;
-        }
+            throw new ArgumentException("Cannot initialize board from state model with null tiles.", nameof(boardStateModel));
 
-        foreach (var tile in boardStateModel.Tiles) Tiles[tile.PosX, tile.PosY] = tile;
+        _tiles = new Tile[BoardSize.Width, BoardSize.Height];
+        foreach (var tile in boardStateModel.Tiles) _tiles[tile.PosX, tile.PosY] = tile;
     }
 
     private void ScoreHorizontal(IReadOnlyCollection<Tile> tiles, ref PlayerMoveResult playerMoveResult)
     {
         ScoreWords(ref playerMoveResult, tiles, BoardSize.Height, BoardSize.Width,
-            (i, j) => Tiles![j, i], (i, j) => (j, i));
+            (i, j) => Tiles[j, i], (i, j) => (j, i));
     }
 
     private void ScoreVertical(IReadOnlyCollection<Tile> tiles, ref PlayerMoveResult playerMoveResult)
     {
         ScoreWords(ref playerMoveResult, tiles, BoardSize.Width, BoardSize.Height,
-            (i, j) => Tiles![i, j], (i, j) => (i, j));
+            (i, j) => Tiles[i, j], (i, j) => (i, j));
     }
 
     private void ScoreWords(ref PlayerMoveResult playerMoveResult, IReadOnlyCollection<Tile> tiles,
@@ -147,12 +146,12 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
         if (isUsersPlacedTile)
         {
             userHasContributedToWord = true;
-            wordScore += LetterValue(tile.Letter!) * GetLetterMultiplier(x, y);
+            wordScore += LetterValue(tile.Letter ?? string.Empty) * GetLetterMultiplier(x, y);
             wordScoreMultiplier = GetWordMultiplier(wordScoreMultiplier, x, y);
         }
         else
         {
-            wordScore += LetterValue(tile.Letter!);
+            wordScore += LetterValue(tile.Letter ?? string.Empty);
         }
     }
 
@@ -174,7 +173,7 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
 
     private int GetWordMultiplier(int currentMultiplier, int x, int y)
     {
-        var code = Tiles![x, y];
+        var code = Tiles[x, y];
         if (code.TileType == TileType.TripleWordScoreTile)
             return currentMultiplier * 3;
         if (code.TileType == TileType.DoubleWordScoreTile ||
@@ -186,7 +185,7 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
 
     private int GetLetterMultiplier(int x, int y)
     {
-        var code = Tiles![x, y];
+        var code = Tiles[x, y];
         if (code.TileType == TileType.DoubleLetterScoreTile)
             return 2;
         if (code.TileType == TileType.TripleLetterScoreTile)

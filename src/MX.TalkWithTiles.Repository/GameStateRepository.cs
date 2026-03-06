@@ -33,13 +33,15 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
 
             if (!skipTileFetch)
             {
-                if (gameStateModelCloudEntity.BagStateModel is { Tiles: null } bagState)
+                gameStateModelCloudEntity.BagStateModel ??= new BagStateModel();
+                if (gameStateModelCloudEntity.BagStateModel.Tiles == null)
                 {
                     var bagTiles = await GetTiles($"{gameId}-bag");
-                    bagState.Tiles = bagTiles;
+                    gameStateModelCloudEntity.BagStateModel.Tiles = bagTiles;
                 }
 
-                if (gameStateModelCloudEntity.BoardStateModel is { Tiles: null } boardState)
+                gameStateModelCloudEntity.BoardStateModel ??= new BoardStateModel();
+                if (gameStateModelCloudEntity.BoardStateModel.Tiles == null)
                 {
                     var boardTileList = await GetTiles($"{gameId}-board");
 
@@ -48,7 +50,7 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
 
                     foreach (var tile in boardTileList) boardTiles[tile.PosX, tile.PosY] = tile;
 
-                    boardState.Tiles = boardTiles;
+                    gameStateModelCloudEntity.BoardStateModel.Tiles = boardTiles;
                 }
             }
 
@@ -138,7 +140,8 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
 
             await foreach (var tileEntity in TilesTable.QueryAsync<TileCloudEntity>(x => x.PartitionKey == partitionKey))
             {
-                result.Add(tileEntity.Tile!);
+                if (tileEntity.Tile is { } tile)
+                    result.Add(tile);
             }
 
             return result;

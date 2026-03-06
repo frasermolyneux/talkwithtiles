@@ -47,8 +47,8 @@ public class PlayerMoveManager(
         bagManager.ReturnTilesToBag(newTiles);
 
         // Take back the tiles into rack
-        boardManager.UndoMove(LastMoveResult.Tiles!);
-        player.SetTiles(LastMoveResult.Tiles!);
+        boardManager.UndoMove(LastMoveResult.Tiles);
+        player.SetTiles(LastMoveResult.Tiles);
 
         // Reset current player
         SetCurrentPlayer(playerId);
@@ -95,7 +95,7 @@ public class PlayerMoveManager(
 
         var player = playerManager.GetPlayer(playerMove.PlayerId);
 
-        if (!playerMove.Tiles!.All(t => player.Tiles.Any(pt => pt.Letter == t.Letter)))
+        if (!playerMove.Tiles.All(t => player.Tiles.Any(pt => pt.Letter == t.Letter)))
             return new PlayerMoveResult(playerMove.PlayerId)
             {
                 InvalidMessage = "Tiles have been placed that are not in your rack."
@@ -112,7 +112,7 @@ public class PlayerMoveManager(
 
             UpdateLastMove(playerMoveResult);
 
-            var remainingTiles = playerMove.Tiles?.Where(t => t.RackPosition != -1).ToList() ?? [];
+            var remainingTiles = playerMove.Tiles.Where(t => t.RackPosition != -1).ToList();
 
             var neededTimes = 7 - remainingTiles.Count;
 
@@ -126,12 +126,12 @@ public class PlayerMoveManager(
                 // The user has placed all of their tiles and the game is effectively over.
                 // Note: challenges on the last move are not currently supported.
                 var remainingTilePoints = playerManager.Players
-                    .Sum(playerStateModel => playerStateModel.Tiles.Sum(t => boardManager.LetterValue(t.Letter!)));
+                    .Sum(playerStateModel => playerStateModel.Tiles.Sum(t => boardManager.LetterValue(t.Letter ?? string.Empty)));
                 playerManager.AddToScore(playerMove.PlayerId, remainingTilePoints);
 
                 foreach (var otherPlayer in playerManager.Players.Where(p => p.PlayerId != playerMove.PlayerId))
                 {
-                    var otherRemainingTilePoints = otherPlayer.Tiles.Sum(t => boardManager.LetterValue(t.Letter!));
+                    var otherRemainingTilePoints = otherPlayer.Tiles.Sum(t => boardManager.LetterValue(t.Letter ?? string.Empty));
                     playerManager.AddToScore(otherPlayer.PlayerId, -otherRemainingTilePoints);
                 }
 

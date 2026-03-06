@@ -12,5 +12,5 @@ public class PlayerMoveResult(Guid playerId)
     public Guid PlayerId { get; set; } = playerId;
     public Guid NextPlayer { get; set; }
     public List<WordAndScore> WordsAndPoints { get; set; } = [];
-    public List<Tile>? Tiles { get; set; }
+    public List<Tile> Tiles { get; set; } = [];
 }

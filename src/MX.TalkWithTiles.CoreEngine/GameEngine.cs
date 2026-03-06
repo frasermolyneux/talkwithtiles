@@ -9,12 +9,19 @@ namespace MX.TalkWithTiles.CoreEngine;
 
 public class GameEngine(IManagerFactory managerFactory) : IGameEngine
 {
-    private IBoardManager BoardManager { get; set; } = null!;
-    private IBagManager BagManager { get; set; } = null!;
-    private IPlayerManager PlayerManager { get; set; } = null!;
-    private IEndGameManager EndGameManager { get; set; } = null!;
-    private IChallengeManager ChallengeManager { get; set; } = null!;
-    private IPlayerMoveManager PlayerMoveManager { get; set; } = null!;
+    private IBoardManager? _boardManager;
+    private IBagManager? _bagManager;
+    private IPlayerManager? _playerManager;
+    private IEndGameManager? _endGameManager;
+    private IChallengeManager? _challengeManager;
+    private IPlayerMoveManager? _playerMoveManager;
+
+    private IBoardManager BoardManager => _boardManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+    private IBagManager BagManager => _bagManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+    private IPlayerManager PlayerManager => _playerManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+    private IEndGameManager EndGameManager => _endGameManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+    private IChallengeManager ChallengeManager => _challengeManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+    private IPlayerMoveManager PlayerMoveManager => _playerMoveManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
 
     private Guid GameId { get; set; }
     private GamePrivacyType GamePrivacyType { get; set; }
@@ -99,13 +106,13 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
         GameType = gameType;
         TileBagVisibilityOption = tileBagVisibilityOption;
 
-        BoardManager = managerFactory.CreateBoardManager(GameType);
-        BagManager = managerFactory.CreateBagManager(GameType);
-        PlayerManager = managerFactory.CreatePlayerManager();
-        EndGameManager = managerFactory.CreateEndGameManager();
-        PlayerMoveManager = managerFactory.CreatePlayerMoveManager(
+        _boardManager = managerFactory.CreateBoardManager(GameType);
+        _bagManager = managerFactory.CreateBagManager(GameType);
+        _playerManager = managerFactory.CreatePlayerManager();
+        _endGameManager = managerFactory.CreateEndGameManager();
+        _playerMoveManager = managerFactory.CreatePlayerMoveManager(
             BagManager, BoardManager, PlayerManager, EndGameManager);
-        ChallengeManager = managerFactory.CreateChallengeManager(
+        _challengeManager = managerFactory.CreateChallengeManager(
             canOverrideChallengeOutcome, challengeResults, PlayerMoveManager);
     }
 
@@ -116,13 +123,13 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
         GameType = gameStateModel.GameType;
         TileBagVisibilityOption = gameStateModel.TileBagVisibilityOption;
 
-        BoardManager = managerFactory.CreateBoardManager(GameType, gameStateModel.BoardStateModel);
-        BagManager = managerFactory.CreateBagManager(gameStateModel.BagStateModel);
-        PlayerManager = managerFactory.CreatePlayerManager(gameStateModel.PlayersStateModel);
-        EndGameManager = managerFactory.CreateEndGameManager(gameStateModel.EndGameStateModel);
-        PlayerMoveManager = managerFactory.CreatePlayerMoveManager(
+        _boardManager = managerFactory.CreateBoardManager(GameType, gameStateModel.BoardStateModel);
+        _bagManager = managerFactory.CreateBagManager(gameStateModel.BagStateModel);
+        _playerManager = managerFactory.CreatePlayerManager(gameStateModel.PlayersStateModel);
+        _endGameManager = managerFactory.CreateEndGameManager(gameStateModel.EndGameStateModel);
+        _playerMoveManager = managerFactory.CreatePlayerMoveManager(
             gameStateModel.PlayerMoveStateModel, BagManager, BoardManager, PlayerManager, EndGameManager);
-        ChallengeManager = managerFactory.CreateChallengeManager(
+        _challengeManager = managerFactory.CreateChallengeManager(
             gameStateModel.ChallengeStateModel, PlayerMoveManager);
     }
 }

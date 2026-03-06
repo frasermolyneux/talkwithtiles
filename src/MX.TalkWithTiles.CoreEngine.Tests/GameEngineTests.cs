@@ -272,7 +272,13 @@ public class GameEngineTests
             GameId = Guid.NewGuid(),
             GamePrivacyType = GamePrivacyType.Public,
             GameType = GameType.StandardBoard,
-            TileBagVisibilityOption = TileBagVisibilityOption.OnlyShowRemainingCount
+            TileBagVisibilityOption = TileBagVisibilityOption.OnlyShowRemainingCount,
+            BoardStateModel = new BoardStateModel(),
+            BagStateModel = new BagStateModel(),
+            PlayersStateModel = new PlayersStateModel(),
+            EndGameStateModel = new EndGameStateModel(),
+            ChallengeStateModel = new ChallengeStateModel(),
+            PlayerMoveStateModel = new PlayerMoveStateModel()
         };
     }
 }

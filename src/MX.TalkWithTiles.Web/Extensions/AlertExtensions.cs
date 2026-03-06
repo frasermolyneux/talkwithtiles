@@ -48,7 +48,7 @@ public static class AlertExtensions
         {
             var alertsTemp = controller.TempData[AlertKey] ?? JsonSerializer.Serialize(new HashSet<Alert>());
 
-            var alerts = JsonSerializer.Deserialize<ICollection<Alert>>(alertsTemp.ToString()!) ??
+            var alerts = JsonSerializer.Deserialize<ICollection<Alert>>(alertsTemp.ToString() ?? "[]") ??
                          new HashSet<Alert>();
 
             return alerts;

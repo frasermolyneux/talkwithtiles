@@ -13,10 +13,10 @@ public class GameStateModel
     public string? GameEtag { get; set; }
     public DateTimeOffset LastUpdated { get; set; }
 
-    public BoardStateModel BoardStateModel { get; set; } = null!;
-    public BagStateModel BagStateModel { get; set; } = null!;
-    public PlayersStateModel PlayersStateModel { get; set; } = null!;
-    public EndGameStateModel EndGameStateModel { get; set; } = null!;
-    public ChallengeStateModel ChallengeStateModel { get; set; } = null!;
-    public PlayerMoveStateModel PlayerMoveStateModel { get; set; } = null!;
+    public required BoardStateModel BoardStateModel { get; set; }
+    public required BagStateModel BagStateModel { get; set; }
+    public required PlayersStateModel PlayersStateModel { get; set; }
+    public required EndGameStateModel EndGameStateModel { get; set; }
+    public required ChallengeStateModel ChallengeStateModel { get; set; }
+    public required PlayerMoveStateModel PlayerMoveStateModel { get; set; }
 }

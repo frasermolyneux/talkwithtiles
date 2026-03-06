@@ -37,7 +37,7 @@ public class BagManagerTests
 
         Assert.NotNull(result);
         var expectedTileCount = StartingTileHelper.GetStartingTiles(gameType).Sum(i => i.Value);
-        Assert.Equal(expectedTileCount, result.Tiles!.Count);
+        Assert.Equal(expectedTileCount, result.Tiles?.Count);
     }
 
     [Fact]
@@ -57,7 +57,7 @@ public class BagManagerTests
         var result = bagManager.BagStateModel;
 
         Assert.NotNull(result);
-        Assert.Equal(15, result.Tiles!.Count);
+        Assert.Equal(15, result.Tiles?.Count);
     }
 
     [Fact]
@@ -97,7 +97,8 @@ public class BagManagerTests
         var result = bagManager.BagStateModel;
 
         Assert.NotNull(result);
-        Assert.Equal(18, result.Tiles!.Count);
+        Assert.NotNull(result.Tiles);
+        Assert.Equal(18, result.Tiles.Count);
 
         Assert.NotNull(result.Tiles.SingleOrDefault(i => i.Letter == "P"));
         Assert.NotNull(result.Tiles.SingleOrDefault(i => i.Letter == "Q"));

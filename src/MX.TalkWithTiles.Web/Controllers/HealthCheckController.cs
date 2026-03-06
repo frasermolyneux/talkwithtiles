@@ -69,7 +69,7 @@ public class HealthCheckController : Controller
     {
         public string Name { get; set; } = string.Empty;
         public bool Critical { get; set; }
-        public Func<Task<Tuple<bool, string>>> HealthFunc { get; set; } = null!;
+        public required Func<Task<Tuple<bool, string>>> HealthFunc { get; set; }
     }
 
     public class HealthCheckComponentStatus

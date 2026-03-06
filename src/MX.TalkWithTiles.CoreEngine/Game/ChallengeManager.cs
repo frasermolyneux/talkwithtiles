@@ -32,7 +32,10 @@ public class ChallengeManager(IPlayerMoveManager playerMoveManager) : IChallenge
 
     public void IssuePlayerChallenge(Guid playerId, GameChallengeReason gameChallengeReason, string challengeText)
     {
-        ChallengedPlayerId = playerMoveManager.LastMoveResult!.PlayerId;
+        if (playerMoveManager.LastMoveResult is null)
+            throw new InvalidOperationException("Cannot issue challenge: no previous move recorded.");
+
+        ChallengedPlayerId = playerMoveManager.LastMoveResult.PlayerId;
         ChallengerPlayerId = playerId;
         ChallengeReason = gameChallengeReason;
         ChallengeText = challengeText;
@@ -55,9 +58,9 @@ public class ChallengeManager(IPlayerMoveManager playerMoveManager) : IChallenge
                     break;
             }
         }
-        else if (accepted && ChallengeReason != null)
+        else if (accepted && ChallengeReason is { } reason)
         {
-            var challengeResult = ChallengeResults[(GameChallengeReason)ChallengeReason];
+            var challengeResult = ChallengeResults[reason];
 
             switch (challengeResult)
             {
@@ -108,7 +111,7 @@ public class ChallengeManager(IPlayerMoveManager playerMoveManager) : IChallenge
             ChallengedPlayerId = ChallengedPlayerId,
             ChallengerPlayerId = ChallengerPlayerId,
             // ReSharper disable once PossibleInvalidOperationException
-            GameChallengeReason = (GameChallengeReason)ChallengeReason!,
+            GameChallengeReason = ChallengeReason ?? throw new InvalidOperationException("Cannot set challenge result: no challenge reason recorded."),
             GameChallengeResult = gameChallengeResult
         };
     }

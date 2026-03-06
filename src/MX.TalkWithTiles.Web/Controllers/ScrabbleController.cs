@@ -72,16 +72,16 @@ public class ScrabbleController(
 
             var challengeResults = new Dictionary<GameChallengeReason, GameChallengeResult>
             {
-                {GameChallengeReason.Catchall, createScrabbleGameModel.CatchallGameChallengeResult!.Value},
-                {GameChallengeReason.ThatsNotAWord, createScrabbleGameModel.ThatsNotAWordGameChallengeResult!.Value},
+                {GameChallengeReason.Catchall, createScrabbleGameModel.CatchallGameChallengeResult.GetValueOrDefault()},
+                {GameChallengeReason.ThatsNotAWord, createScrabbleGameModel.ThatsNotAWordGameChallengeResult.GetValueOrDefault()},
                 {
                     GameChallengeReason.ThatsNotAValidTurn,
-                    createScrabbleGameModel.ThatsNotAValidTurnGameChallengeResult!.Value
+                    createScrabbleGameModel.ThatsNotAValidTurnGameChallengeResult.GetValueOrDefault()
                 }
             };
 
-            var gameEngine = gameEngineFactory.CreateNew(privacyOption, createScrabbleGameModel.GameType!.Value,
-                createScrabbleGameModel.TileBagVisibilityOption!.Value, createScrabbleGameModel.CanOverrideChallengeOutcome,
+            var gameEngine = gameEngineFactory.CreateNew(privacyOption, createScrabbleGameModel.GameType.GetValueOrDefault(),
+                createScrabbleGameModel.TileBagVisibilityOption.GetValueOrDefault(), createScrabbleGameModel.CanOverrideChallengeOutcome,
                 challengeResults);
 
             gameEngine.AddPlayer(playerId, User.GetUserName());
@@ -272,7 +272,7 @@ public class ScrabbleController(
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var gameStateModel = await gameStateRepository.GetGameState(exchangeTilesModel.Id!.Value);
+            var gameStateModel = await gameStateRepository.GetGameState(exchangeTilesModel.Id.GetValueOrDefault());
 
             if (gameStateModel == null)
                 return NotFound();
@@ -283,17 +283,17 @@ public class ScrabbleController(
                 return RedirectToAction("Play",
                     new
                     {
-                        id = exchangeTilesModel.Id.Value, hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id.Value)
+                        id = exchangeTilesModel.Id.GetValueOrDefault(), hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id.GetValueOrDefault())
                     });
 
             var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
             gameEngine.ExchangeTiles(User.GetUserGuid(),
                 exchangeTilesModel.ExchangeTiles.Where(t => t.Exchange).Select(e => e.TileId));
 
-            await gameStateRepository.UpdateGameState(exchangeTilesModel.Id.Value, gameEngine.GameStateModel);
+            await gameStateRepository.UpdateGameState(exchangeTilesModel.Id.GetValueOrDefault(), gameEngine.GameStateModel);
 
             return RedirectToAction("Play",
-                new {id = exchangeTilesModel.Id.Value, hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id.Value)});
+                new {id = exchangeTilesModel.Id.GetValueOrDefault(), hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id.GetValueOrDefault())});
         }
 
         [HttpPost]
@@ -302,7 +302,7 @@ public class ScrabbleController(
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var gameStateModel = await gameStateRepository.GetGameState(issueChallengeModel.GameId!.Value);
+            var gameStateModel = await gameStateRepository.GetGameState(issueChallengeModel.GameId.GetValueOrDefault());
 
             if (gameStateModel == null)
                 return NotFound();
@@ -311,16 +311,16 @@ public class ScrabbleController(
 
             var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
-            gameEngine.IssuePlayerChallenge(User.GetUserGuid(), issueChallengeModel.GameChallengeReason!.Value,
+            gameEngine.IssuePlayerChallenge(User.GetUserGuid(), issueChallengeModel.GameChallengeReason.GetValueOrDefault(),
                 issueChallengeModel.ChallengeText ?? string.Empty);
 
-            await gameStateRepository.UpdateGameState(issueChallengeModel.GameId.Value, gameEngine.GameStateModel);
+            await gameStateRepository.UpdateGameState(issueChallengeModel.GameId.GetValueOrDefault(), gameEngine.GameStateModel);
 
             return RedirectToAction("Play",
                 new
                 {
-                    id = issueChallengeModel.GameId.Value,
-                    hideScreenClutter = HideScreenClutterForGame(issueChallengeModel.GameId.Value)
+                    id = issueChallengeModel.GameId.GetValueOrDefault(),
+                    hideScreenClutter = HideScreenClutterForGame(issueChallengeModel.GameId.GetValueOrDefault())
                 });
         }
 
@@ -383,7 +383,7 @@ public class ScrabbleController(
         {
             if (!ModelState.IsValid) return BadRequest(ModelState);
 
-            var gameStateModel = await gameStateRepository.GetGameState(model.Id!.Value);
+            var gameStateModel = await gameStateRepository.GetGameState(model.Id.GetValueOrDefault());
 
             if (gameStateModel == null)
                 return NotFound();
@@ -391,19 +391,19 @@ public class ScrabbleController(
             if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
 
             if (!gameStateModel.IsGameInChallenge())
-                return RedirectToAction("Play", new { id = model.Id.Value, hideScreenClutter = HideScreenClutterForGame(model.Id.Value) });
+                return RedirectToAction("Play", new { id = model.Id.GetValueOrDefault(), hideScreenClutter = HideScreenClutterForGame(model.Id.GetValueOrDefault()) });
 
             if (!gameStateModel.IsChallengedPlayer(User))
-                return RedirectToAction("Play", new { id = model.Id.Value, hideScreenClutter = HideScreenClutterForGame(model.Id.Value) });
+                return RedirectToAction("Play", new { id = model.Id.GetValueOrDefault(), hideScreenClutter = HideScreenClutterForGame(model.Id.GetValueOrDefault()) });
 
             var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
             if (gameStateModel.ChallengeStateModel.CanOverrideChallengeOutcome)
-                gameEngine.ResolveChallenge(model.Accept, model.GameChallengeResultOverride!.Value);
+                gameEngine.ResolveChallenge(model.Accept, model.GameChallengeResultOverride.GetValueOrDefault());
             else
                 gameEngine.ResolveChallenge(model.Accept, null);
 
-            await gameStateRepository.UpdateGameState(model.Id.Value, gameEngine.GameStateModel);
+            await gameStateRepository.UpdateGameState(model.Id.GetValueOrDefault(), gameEngine.GameStateModel);
 
             if (model.Accept && gameEngine.GameStateModel.ChallengeStateModel.PlayerChallengeResult is { } challengeResult)
                 switch (challengeResult.GameChallengeResult)
@@ -425,7 +425,7 @@ public class ScrabbleController(
                     "You have rejected the challenge and nothing will happen. Play will proceed to the next player.");
 
 
-            return RedirectToAction("Play", new { id = model.Id.Value, hideScreenClutter = HideScreenClutterForGame(model.Id.Value) });
+            return RedirectToAction("Play", new { id = model.Id.GetValueOrDefault(), hideScreenClutter = HideScreenClutterForGame(model.Id.GetValueOrDefault()) });
         }
 
         private void GenerateStateOfPlayMessage(GameStateModel model)
