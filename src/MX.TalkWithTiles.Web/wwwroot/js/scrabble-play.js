@@ -119,7 +119,7 @@ function clearSelectedTile() {
         selectedTile.classList.remove("selectedTile");
         selectedTile = null;
         document.querySelectorAll(".selectedTileMessage").forEach(function (el) {
-            el.style.display = "none";
+            el.classList.add("d-none");
         });
     }
 }
@@ -128,7 +128,7 @@ function setSelectedTile(element) {
     selectedTile = element;
     selectedTile.classList.add("selectedTile");
     document.querySelectorAll(".selectedTileMessage").forEach(function (el) {
-        el.style.display = "";
+        el.classList.remove("d-none");
     });
 }
 

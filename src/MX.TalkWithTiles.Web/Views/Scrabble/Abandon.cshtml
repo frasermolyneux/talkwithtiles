@@ -5,10 +5,21 @@
     Layout = "_Layout";
 }
 
-<h2>Are you sure you want to abandon the game?</h2>
-
-<form asp-action="ConfirmAbandon" asp-antiforgery="true" asp-route-id="@Model.GameId">
-    <div class="form-group">
-        <input type="submit" value="Confirm" class="btn btn-danger"/>
+<div class="row justify-content-center mt-4">
+    <div class="col-md-6">
+        <div class="card border-danger">
+            <div class="card-header bg-danger text-white">
+                <i class="fas fa-triangle-exclamation me-2"></i>Abandon Game
+            </div>
+            <div class="card-body">
+                <p class="card-text">Are you sure you want to abandon the game? This action cannot be undone.</p>
+                <div class="d-flex gap-2">
+                    <form asp-action="ConfirmAbandon" asp-antiforgery="true" asp-route-id="@Model.GameId">
+                        <button type="submit" class="btn btn-danger"><i class="fas fa-ban me-1"></i>Confirm Abandon</button>
+                    </form>
+                    <a asp-action="Play" asp-route-id="@Model.GameId" class="btn btn-secondary"><i class="fas fa-arrow-left me-1"></i>Cancel</a>
+                </div>
+            </div>
+        </div>
     </div>
-</form>
+</div>

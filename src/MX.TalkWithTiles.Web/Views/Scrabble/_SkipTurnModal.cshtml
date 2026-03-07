@@ -13,7 +13,7 @@
             <div class="modal-footer">
                 <form asp-controller="Scrabble" asp-action="SkipTurn" asp-antiforgery="true" method="post">
                     <input name="id" type="hidden" value="@Model.GameId"/>
-                    <button type="submit" class="btn btn-primary">Confirm Skip Turn</button>
+                    <button type="submit" class="btn btn-primary"><i class="fas fa-forward me-1"></i>Confirm Skip Turn</button>
                 </form>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>

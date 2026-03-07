@@ -9,13 +9,13 @@
     @if (User.Identity?.IsAuthenticated == true)
     {
         <div class="row">
-            <div class="jumbotron">
+            <div class="bg-light p-5 rounded-3">
                 <h1 class="display-4">Welcome @User.GetUserName()!</h1>
                 <p class="lead">Thanks for signing in to Talk With Tiles. You can create a game from the top menu by clicking <strong>Scrabble</strong> > <strong>Create Game</strong>.</p>
                 <hr class="my-4">
                 <p>Alternatively click this button to go straight there.</p>
                 <p class="lead">
-                    <a asp-controller="Scrabble" asp-action="Create" class="btn btn-primary btn-lg" role="button">Create Scrabble Game</a>
+                    <a asp-controller="Scrabble" asp-action="Create" class="btn btn-primary btn-lg" role="button"><i class="fas fa-plus me-2"></i>Create Scrabble Game</a>
                 </p>
             </div>
         </div>
@@ -59,13 +59,13 @@
 
     <div class="row">
         <div class="col-md-7">
-            <h1 class="featurette-heading" style="font-weight: 400">Online Scrabble. <span class="text-muted">Lets Play a Game.</span></h1>
+            <h1 class="featurette-heading fw-normal">Online Scrabble. <span class="text-muted">Lets Play a Game.</span></h1>
             <p class="lead">This website was created to fill the demand of a easy, no-frills and modern way to play Scrabble (+other) board games with friends and family.</p>
             <p class="lead">We have tried to recreate the experience of in-person Scrabble as much as possible. We suggest playing whilst on a Zoom/Skype/WhatsApp/etc. video call for the best social experience.</p>
             <p class="lead">Our service allows you to play with up to four players in any of the game types.</p>
         </div>
         <div class="col-md-5">
-            <img class="bd-placeholder-img bd-placeholder-img-lg img-fluid mx-auto" width="500" height="500" src="~/img/home-image-1.PNG" alt="standard scrabble board"/>
+            <img class="img-fluid mx-auto" src="~/img/home-image-1.PNG" alt="standard scrabble board"/>
         </div>
     </div>
 
@@ -79,7 +79,7 @@
             <p class="lead">For when things go wrong there is a quick 'undo turn' button and also the ability to challenge a players turn.</p>
         </div>
         <div class="col-md-5">
-            <img src="~/img/home-image-2.PNG" class="bd-placeholder-img bd-placeholder-img-lg img-fluid mx-auto" width="500" height="500" alt="easy scrabble controls"/>
+            <img src="~/img/home-image-2.PNG" class="img-fluid mx-auto" alt="easy scrabble controls"/>
         </div>
     </div>
 
@@ -93,11 +93,9 @@
             <p class="lead">When creating a game you can decide on aspects such as if players can see remaining tiles, when they can see them and the outcomes of challenges.</p>
         </div>
         <div class="col-md-5">
-            <img src="~/img/home-image-3.PNG" class="bd-placeholder-img bd-placeholder-img-lg img-fluid mx-auto" width="500" height="500" alt="scrabble game options"/>
+            <img src="~/img/home-image-3.PNG" class="img-fluid mx-auto" alt="scrabble game options"/>
         </div>
     </div>
-
-    <hr class="featurette-divider">
 
     <hr class="featurette-divider">
 </div>

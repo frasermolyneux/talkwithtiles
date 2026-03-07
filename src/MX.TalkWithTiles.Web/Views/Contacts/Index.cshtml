@@ -24,21 +24,15 @@
 
 </div>
 
-<hr class="featurette-divider">
+<hr class="my-4">
 
-<table class="table table-bordered">
+<table class="table table-bordered table-striped">
 
     <thead>
     <tr>
-        <th>
-            Name
-        </th>
-        <th>
-            Last Played With
-        </th>
-        <th>
-
-        </th>
+        <th>Name</th>
+        <th>Last Played With</th>
+        <th></th>
     </tr>
     </thead>
     <tbody>
@@ -49,7 +43,7 @@
             <td>@contact.Name</td>
             <td>@contact.LastPlayed</td>
             <td>
-                <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-contactId="@contact.Id">Delete Contact</a>
+                <a asp-controller="Contacts" asp-action="DeleteContact" asp-route-contactId="@contact.Id" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash me-1"></i>Delete</a>
             </td>
         </tr>
     }

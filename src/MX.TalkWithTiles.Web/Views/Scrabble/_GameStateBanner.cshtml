@@ -6,20 +6,20 @@
 {
     <div class="row">
 
-        <div class="jumbotron" style="text-align: center; width: 100%;">
+        <div class="bg-light p-5 rounded-3 text-center w-100">
 
             @if (Model.IsSingleWinner())
             {
-                <h1 class="display-4">Congratulations @Model.WinnerName()!</h1>
+                <h1 class="display-4"><i class="fas fa-trophy text-warning me-2"></i>Congratulations @Model.WinnerName()!</h1>
                 <p class="lead">The winning score was @Model.WinningPoints()</p>
             }
             else
             {
-                <h1 class="display-4">Congratulations @Model.WinnerName()!</h1>
+                <h1 class="display-4"><i class="fas fa-handshake me-2"></i>Congratulations @Model.WinnerName()!</h1>
                 <p class="lead">The result was a draw with a score of @Model.WinningPoints()</p>
             }
 
-            <hr/>
+            <hr class="my-4"/>
             <h3>Player Score Summary</h3>
             <dl>
                 @foreach (var player in Model.Players())
@@ -27,7 +27,7 @@
                     <dt>
                         @player.PlayerName
                     </dt>
-                    <dd style="margin-bottom: 15px">
+                    <dd class="mb-3">
                         @if (player.Tiles.Any())
                         {
                             var leftoverTilePoints = player.Tiles.Sum(t => ScrabbleTileScoreHelper.GetTileScore(t.Letter!));
@@ -37,7 +37,7 @@
 
                             @foreach (var tile in player.Tiles)
                             {
-                                <text><img id="@(tile.TileId)" src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" alt="@(tile.Letter)" height="25" width="25" style="margin: 1px"/></text>
+                                <text><img id="@(tile.TileId)" src="/img/tiles/@(tile.Letter?.ToLowerInvariant()).jpg" alt="@(tile.Letter)" height="25" width="25" class="m-1"/></text>
                             }
                             <text> (@leftoverTilePoints) = @player.Score</text>
                         }
@@ -54,7 +54,7 @@
                 }
             </dl>
 
-            <hr/>
+            <hr class="my-4"/>
             <h3>Final Turn</h3>
             <p>
                 The final turn was from <strong>@Model.LastPlayerName()</strong> who placed <strong>@Model.LastMoveAndScore()</strong>
@@ -67,8 +67,8 @@ else
 {
     <div class="row">
 
-        <div class="jumbotron" style="text-align: center; width: 100%;">
-            <h1 class="display-4">Abandoned Game!</h1>
+        <div class="bg-light p-5 rounded-3 text-center w-100">
+            <h1 class="display-4"><i class="fas fa-ban text-danger me-2"></i>Abandoned Game!</h1>
             <p class="lead">This game has been abandoned.</p>
         </div>
 
