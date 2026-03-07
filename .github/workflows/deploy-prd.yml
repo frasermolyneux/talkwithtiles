@@ -21,6 +21,7 @@ jobs:
     outputs:
       src: ${{ steps.changes.outputs.src }}
       terraform: ${{ steps.changes.outputs.terraform }}
+      playwright: ${{ steps.changes.outputs.playwright }}
     steps:
       - id: changes
         uses: frasermolyneux/actions/detect-changes@main
@@ -28,6 +29,7 @@ jobs:
           filters: |
             src:src/**
             terraform:terraform/**
+            playwright:playwright/**
 
   terraform-state-check-dev:
     if: github.event_name != 'schedule'
@@ -124,9 +126,10 @@ jobs:
     permissions:
       contents: read
     needs:
+      - detect-changes
       - build-and-test
     if: |
-      !failure() && !cancelled() && needs.build-and-test.result == 'success'
+      !failure() && !cancelled() && (needs.build-and-test.result == 'success' || needs.detect-changes.outputs.playwright == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:

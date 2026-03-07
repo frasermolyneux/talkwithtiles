@@ -17,6 +17,7 @@ jobs:
     outputs:
       src: ${{ steps.changes.outputs.src }}
       terraform: ${{ steps.changes.outputs.terraform }}
+      playwright: ${{ steps.changes.outputs.playwright }}
     steps:
       - id: changes
         uses: frasermolyneux/actions/detect-changes@detect-changes/v1.0
@@ -24,6 +25,7 @@ jobs:
           filters: |
             src:src/**
             terraform:terraform/**
+            playwright:playwright/**
 
   build-and-test:
     needs: detect-changes
@@ -42,7 +44,8 @@ jobs:
     needs:
       - detect-changes
       - build-and-test
-    if: needs.detect-changes.outputs.src == 'true'
+    if: |
+      !failure() && !cancelled() && (needs.detect-changes.outputs.src == 'true' || needs.detect-changes.outputs.playwright == 'true')
     permissions:
       contents: read
     runs-on: ubuntu-latest
