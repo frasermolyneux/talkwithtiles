@@ -50,12 +50,12 @@ resource "azurerm_linux_web_app" "app" {
     "AzureAd__ClientId"                           = azuread_application.web.client_id
     "AzureAd__ClientSecret"                       = azuread_application_password.web.value
     "AzureAd__CallbackPath"                       = "/signin-oidc"
-    "AppData__StorageAccountUri"                   = azurerm_storage_account.data.primary_table_endpoint
-    "AppData__GameStateTableName"                  = azurerm_storage_table.tables["scrabble"].name
-    "AppData__GameStateIndexTableName"             = azurerm_storage_table.tables["scrabbleindex"].name
-    "AppData__TilesTableName"                      = azurerm_storage_table.tables["scrabbletiles"].name
-    "AppData__GameInviteTableName"                 = azurerm_storage_table.tables["gameinvites"].name
-    "AppData__ContactsTableName"                   = azurerm_storage_table.tables["contacts"].name
+    "AppData__StorageAccountUri"                  = azurerm_storage_account.data.primary_table_endpoint
+    "AppData__GameStateTableName"                 = azurerm_storage_table.tables["scrabble"].name
+    "AppData__GameStateIndexTableName"            = azurerm_storage_table.tables["scrabbleindex"].name
+    "AppData__TilesTableName"                     = azurerm_storage_table.tables["scrabbletiles"].name
+    "AppData__GameInviteTableName"                = azurerm_storage_table.tables["gameinvites"].name
+    "AppData__ContactsTableName"                  = azurerm_storage_table.tables["contacts"].name
   }
 }
 
