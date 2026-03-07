@@ -2,6 +2,9 @@
 # Shared Copilot configuration checked out during copilot-setup-steps
 .github-copilot/
 
+# Node
+node_modules/
+
 # .NET build artifacts
 [Bb]in/
 [Oo]bj/
@@ -10,8 +13,9 @@
 *.user
 *.suo
 *.cache
-*.vs/
+.vs/
 .vscode/
+[Tt]est[Rr]esult*/
 
 # NuGet
 *.nupkg
@@ -29,6 +33,8 @@ __azurite_db_table*.json
 **/.terraform/
 *.tfstate
 *.tfstate.*
+*.tfplan
+.terraform.lock.hcl
 crash.log
 override.tf
 override.tf.json
