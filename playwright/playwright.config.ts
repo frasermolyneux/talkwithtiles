@@ -33,7 +33,7 @@ export default defineConfig({
   ],
 
   webServer: {
-    command: 'dotnet run --project ../src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj --launch-profile MX.TalkWithTiles.Web',
+    command: `dotnet run${process.env.CI ? ' --no-build' : ''} --project ../src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj --launch-profile MX.TalkWithTiles.Web`,
     url: `${baseURL}/api/health`,
     reuseExistingServer: !process.env.CI,
     ignoreHTTPSErrors: true,
