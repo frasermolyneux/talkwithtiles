@@ -33,9 +33,9 @@ public static class GameStateModelExtensions
         {
             var playerId =
                 model.PlayerMoveStateModel.PlayerOrderIds.PreviousTo(model.PlayerMoveStateModel.CurrentPlayerId);
-            var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
+            var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
 
-            return player.PlayerName;
+            return player?.PlayerName ?? "Unknown";
         }
 
         public static bool IsCurrentPlayer(this GameStateModel model, ClaimsPrincipal user)
@@ -124,17 +124,17 @@ public static class GameStateModelExtensions
         public static string ChallengerName(this GameStateModel model)
         {
             var playerId = model.ChallengeStateModel.ChallengerPlayerId;
-            var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
+            var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
 
-            return player.PlayerName;
+            return player?.PlayerName ?? "Unknown";
         }
 
         public static string ChallengedName(this GameStateModel model)
         {
             var playerId = model.ChallengeStateModel.ChallengedPlayerId;
-            var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
+            var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
 
-            return player.PlayerName;
+            return player?.PlayerName ?? "Unknown";
         }
 
         public static string LastMoveAndScore(this GameStateModel model)
@@ -177,9 +177,9 @@ public static class GameStateModelExtensions
         public static string NextPlayerName(this GameStateModel model)
         {
             var playerId = model.PlayerMoveStateModel.PlayerOrderIds.NextOf(model.PlayerMoveStateModel.CurrentPlayerId);
-            var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
+            var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
 
-            return player.PlayerName;
+            return player?.PlayerName ?? "Unknown";
         }
 
         public static bool IsNextPlayer(this GameStateModel model, ClaimsPrincipal user)
@@ -191,9 +191,9 @@ public static class GameStateModelExtensions
         public static string CurrentPlayerName(this GameStateModel model)
         {
             var playerId = model.PlayerMoveStateModel.CurrentPlayerId;
-            var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
+            var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
 
-            return player.PlayerName;
+            return player?.PlayerName ?? "Unknown";
         }
 
         public static bool IsResolvedChallenged(this GameStateModel model, ClaimsPrincipal user)
@@ -226,9 +226,9 @@ public static class GameStateModelExtensions
                 throw new InvalidOperationException("Cannot get resolved challenger name: no challenge result recorded.");
 
             var playerId = result.ChallengerPlayerId;
-            var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
+            var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
 
-            return player.PlayerName;
+            return player?.PlayerName ?? "Unknown";
         }
 
         public static string ResolvedChallengedName(this GameStateModel model)
@@ -237,9 +237,9 @@ public static class GameStateModelExtensions
                 throw new InvalidOperationException("Cannot get resolved challenged name: no challenge result recorded.");
 
             var playerId = result.ChallengedPlayerId;
-            var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == playerId);
+            var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
 
-            return player.PlayerName;
+            return player?.PlayerName ?? "Unknown";
         }
 
         public static bool CanUndoLastTurn(this GameStateModel model, ClaimsPrincipal user)

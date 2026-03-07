@@ -1,0 +1,19 @@
+{
+  "name": "talkwithtiles-playwright",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:chromium": "npx playwright test --project=chromium",
+    "test:mobile": "npx playwright test --project=mobile-chrome",
+    "test:ui": "npx playwright test --ui",
+    "report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@azure/data-tables": "^13.3.2",
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.3.5",
+    "typescript": "^5.9.3"
+  }
+}

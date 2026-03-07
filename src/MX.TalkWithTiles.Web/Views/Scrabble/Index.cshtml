@@ -9,7 +9,7 @@
 <h4>Active Games</h4>
 
 <div class="row">
-    <table class="table table-bordered table-responsive-sm">
+    <table data-testid="active-games" class="table table-bordered table-responsive-sm">
         <thead>
         <tr>
             <td>
@@ -65,7 +65,7 @@
 <h4>Completed / Abandoned Games</h4>
 
 <div class="row">
-    <table class="table table-bordered table-responsive-sm">
+    <table data-testid="completed-games" class="table table-bordered table-responsive-sm">
         <thead>
         <tr>
             <td>Players</td>
@@ -95,9 +95,9 @@
                             <text>Winner(s): @(string.Join(", ", winningPlayerStateModels.Select(p => p.PlayerName)))</text>
                             break;
                         case GameStateType.Abandoned:
-                            var abandonedBy = gameStateModel.Players().Single(p => p.PlayerId == gameStateModel.EndGameStateModel.AbandoningPlayerId);
+                            var abandonedBy = gameStateModel.Players().SingleOrDefault(p => p.PlayerId == gameStateModel.EndGameStateModel.AbandoningPlayerId);
 
-                            <text>Abandoned By: @abandonedBy.PlayerName</text>
+                            <text>Abandoned By: @(abandonedBy?.PlayerName ?? "Unknown")</text>
                             break;
                     }
                 </td>

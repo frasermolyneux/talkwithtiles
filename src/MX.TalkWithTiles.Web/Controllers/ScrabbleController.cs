@@ -149,6 +149,54 @@ public class ScrabbleController(
             var gameStateModel = await gameStateRepository.GetGameState(id);
             if (gameStateModel == null) return NotFound();
 
+            // Auto-link invited players: when a user accesses a game they were invited to
+            // by email, update the placeholder invite GUID with their real identity.
+            if (!gameStateModel.IsUserInGame(User) && !User.IsAdmin())
+            {
+                var userEmail = User.GetEmail();
+                if (!string.IsNullOrEmpty(userEmail))
+                {
+                    var invitedPlayer = gameStateModel.PlayersStateModel.Players
+                        .FirstOrDefault(p => string.Equals(p.PlayerName, userEmail, StringComparison.OrdinalIgnoreCase));
+
+                    if (invitedPlayer != null)
+                    {
+                        var oldPlayerId = invitedPlayer.PlayerId;
+                        var newPlayerId = User.GetUserGuid();
+
+                        // Update player identity
+                        invitedPlayer.PlayerId = newPlayerId;
+                        invitedPlayer.PlayerName = User.GetUserName() ?? userEmail;
+
+                        // Update turn order tracking
+                        var orderIndex = gameStateModel.PlayerMoveStateModel.PlayerOrderIds.IndexOf(oldPlayerId);
+                        if (orderIndex >= 0)
+                            gameStateModel.PlayerMoveStateModel.PlayerOrderIds[orderIndex] = newPlayerId;
+
+                        if (gameStateModel.PlayerMoveStateModel.CurrentPlayerId == oldPlayerId)
+                            gameStateModel.PlayerMoveStateModel.CurrentPlayerId = newPlayerId;
+
+                        // Update challenge tracking (if game is mid-challenge)
+                        if (gameStateModel.ChallengeStateModel.ChallengedPlayerId == oldPlayerId)
+                            gameStateModel.ChallengeStateModel.ChallengedPlayerId = newPlayerId;
+                        if (gameStateModel.ChallengeStateModel.ChallengerPlayerId == oldPlayerId)
+                            gameStateModel.ChallengeStateModel.ChallengerPlayerId = newPlayerId;
+
+                        // Update end-game tracking
+                        var winnerIndex = gameStateModel.EndGameStateModel.Winners.IndexOf(oldPlayerId);
+                        if (winnerIndex >= 0)
+                            gameStateModel.EndGameStateModel.Winners[winnerIndex] = newPlayerId;
+                        if (gameStateModel.EndGameStateModel.SkippedTurns.Remove(oldPlayerId, out var skips))
+                            gameStateModel.EndGameStateModel.SkippedTurns[newPlayerId] = skips;
+
+                        await gameStateRepository.UpdateGameState(id, gameStateModel);
+                        await gameStateRepository.DeleteGameStateIndex(id, oldPlayerId);
+                        logger.LogInformation("Linked invited player {Email} to user {UserId} in game {GameId}",
+                            userEmail, newPlayerId, id);
+                    }
+                }
+            }
+
             if (!gameStateModel.IsUserInGame(User) && !User.IsAdmin()) return Unauthorized();
 
             GenerateStateOfPlayMessage(gameStateModel);

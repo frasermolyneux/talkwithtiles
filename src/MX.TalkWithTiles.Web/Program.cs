@@ -1,3 +1,6 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
@@ -17,12 +20,31 @@ if (!string.IsNullOrEmpty(aiConnectionString))
     builder.Services.AddApplicationInsightsTelemetry();
 }
 
-// Entra External ID authentication
-builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration, "AzureAd");
+// Authentication: use test cookie scheme in development when Testing__Enabled is set
+var testingEnabled = builder.Environment.IsDevelopment()
+    && string.Equals(builder.Configuration["Testing:Enabled"], "true", StringComparison.OrdinalIgnoreCase);
+
+if (testingEnabled)
+{
+    builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        .AddCookie(options =>
+        {
+            options.LoginPath = "/sign-in";
+            options.Cookie.HttpOnly = true;
+            options.Cookie.IsEssential = true;
+        });
+}
+else
+{
+    builder.Services.AddMicrosoftIdentityWebAppAuthentication(builder.Configuration, "AzureAd");
+}
 
 // MVC
-var mvcBuilder = builder.Services.AddControllersWithViews()
-    .AddMicrosoftIdentityUI();
+var mvcBuilder = builder.Services.AddControllersWithViews();
+if (!testingEnabled)
+{
+    mvcBuilder.AddMicrosoftIdentityUI();
+}
 if (builder.Environment.IsDevelopment())
 {
     mvcBuilder.AddRazorRuntimeCompilation();
