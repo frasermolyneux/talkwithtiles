@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using MX.TalkWithTiles.Contracts.Interfaces;
@@ -80,8 +81,13 @@ app.UseSession();
 
 if (app.Environment.IsDevelopment())
 {
-    var repository = app.Services.GetRequiredService<IAppDataRepository>();
-    await repository.CreateTablesIfNotExist();
+    // Auto-create tables in development (Azurite) only when using a local connection string
+    var appDataOptions = app.Services.GetRequiredService<IOptions<AppDataOptions>>();
+    if (!string.IsNullOrEmpty(appDataOptions.Value.StorageConnectionString))
+    {
+        var repository = app.Services.GetRequiredService<IAppDataRepository>();
+        await repository.CreateTablesIfNotExist();
+    }
 }
 
 app.MapHealthChecks("/api/health").AllowAnonymous();
