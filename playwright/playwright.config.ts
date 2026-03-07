@@ -10,7 +10,7 @@ export default defineConfig({
   retries: process.env.CI ? 2 : 0,
   workers: 1,
   reporter: process.env.CI
-    ? [['html', { open: 'never' }], ['github'], ['junit', { outputFile: 'test-results/junit-report.xml' }]]
+    ? [['html', { open: 'never' }], ['github']]
     : [['html', { open: 'on-failure' }]],
 
   use: {
