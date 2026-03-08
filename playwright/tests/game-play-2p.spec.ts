@@ -1,8 +1,8 @@
 import { test, expect } from '../fixtures/test-fixtures';
 import { CreateGamePage } from '../pages/create-game.page';
 import { PlayGamePage } from '../pages/play-game.page';
-import { players, scrabbleWords, boardCenter } from '../helpers/test-data';
-import { findPlayableWord } from '../helpers/gameplay.helper';
+import { boardCenter } from '../helpers/test-data';
+import { findPlayableWord, getShortWords } from '../helpers/gameplay.helper';
 
 test.describe('2-Player Game Playthrough', () => {
   test('first player can place tiles and submit a move', async ({ twoPlayers }) => {
@@ -32,13 +32,8 @@ test.describe('2-Player Game Playthrough', () => {
     const rackLetters = await currentPlayer.playPage.getRackLetters();
     expect(rackLetters.length).toBe(7);
 
-    // Find a playable word from rack tiles
-    const allWords = [
-      ...scrabbleWords.twoLetter,
-      ...scrabbleWords.threeLetter,
-      ...scrabbleWords.fourLetter,
-    ];
-    const word = findPlayableWord(rackLetters, allWords);
+    // Find a playable word from rack tiles using ENABLE dictionary
+    const word = findPlayableWord(rackLetters, getShortWords());
     if (!word) {
       test.skip(true, 'No playable word could be formed from random rack tiles');
       return;
@@ -72,7 +67,7 @@ test.describe('2-Player Game Playthrough', () => {
     const currentPlayer = (await p1.playPage.isCurrentPlayer()) ? p1 : p2;
 
     const rackLetters = await currentPlayer.playPage.getRackLetters();
-    const word = findPlayableWord(rackLetters, scrabbleWords.twoLetter);
+    const word = findPlayableWord(rackLetters, getShortWords());
     if (!word) {
       test.skip(true, 'No playable word could be formed from random rack tiles');
       return;
@@ -128,10 +123,7 @@ test.describe('2-Player Game Playthrough', () => {
     expect(initialBagCount).toBeGreaterThan(0);
 
     const rackLetters = await currentPlayer.playPage.getRackLetters();
-    const word = findPlayableWord(rackLetters, [
-      ...scrabbleWords.twoLetter,
-      ...scrabbleWords.threeLetter,
-    ]);
+    const word = findPlayableWord(rackLetters, getShortWords());
     if (!word) {
       test.skip(true, 'No playable word could be formed from random rack tiles');
       return;

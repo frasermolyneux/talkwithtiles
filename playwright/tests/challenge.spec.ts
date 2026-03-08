@@ -2,8 +2,8 @@ import { test, expect } from '../fixtures/test-fixtures';
 import { CreateGamePage } from '../pages/create-game.page';
 import { IssueChallengeModal } from '../pages/modals/issue-challenge.modal';
 import { ResolveChallengeModal } from '../pages/modals/resolve-challenge.modal';
-import { players, scrabbleWords, boardCenter } from '../helpers/test-data';
-import { findPlayableWord } from '../helpers/gameplay.helper';
+import { boardCenter } from '../helpers/test-data';
+import { findPlayableWord, getShortWords } from '../helpers/gameplay.helper';
 
 test.describe('Challenge System', () => {
   test('player can issue a challenge after opponents move', async ({ twoPlayers }) => {
@@ -26,7 +26,7 @@ test.describe('Challenge System', () => {
     const secondPlayer = firstPlayer === p1 ? p2 : p1;
 
     const rackLetters = await firstPlayer.playPage.getRackLetters();
-    const word = findPlayableWord(rackLetters, scrabbleWords.twoLetter);
+    const word = findPlayableWord(rackLetters, getShortWords());
     if (!word) {
       test.skip(true, 'No playable word could be formed from random rack tiles');
       return;

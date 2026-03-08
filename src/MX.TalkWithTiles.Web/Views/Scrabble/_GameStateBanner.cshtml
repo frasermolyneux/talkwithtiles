@@ -55,10 +55,18 @@
             </dl>
 
             <hr class="my-4"/>
-            <h3>Final Turn</h3>
-            <p>
-                The final turn was from <strong>@Model.LastPlayerName()</strong> who placed <strong>@Model.LastMoveAndScore()</strong>
-            </p>
+            @if (Model.PlayerMoveStateModel.LastMoveResult != null)
+            {
+                <h3>Final Turn</h3>
+                <p>
+                    The final turn was from <strong>@Model.LastPlayerName()</strong> who placed <strong>@Model.LastMoveAndScore()</strong>
+                </p>
+            }
+            else
+            {
+                <h3>Game Ended</h3>
+                <p>The game ended because all players passed consecutively.</p>
+            }
         </div>
 
     </div>

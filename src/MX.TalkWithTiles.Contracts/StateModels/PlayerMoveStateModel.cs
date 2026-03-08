@@ -10,6 +10,7 @@ public class PlayerMoveStateModel
     public Guid CurrentPlayerId { get; set; }
     public List<Guid> PlayerOrderIds { get; set; } = [];
     public int TurnsTaken { get; set; }
+    public int ConsecutivePasses { get; set; }
     public LastMoveType LastMoveType { get; set; }
     public PlayerMoveResult? LastMoveResult { get; set; }
 }

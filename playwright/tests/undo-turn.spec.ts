@@ -1,8 +1,8 @@
 import { test, expect } from '../fixtures/test-fixtures';
 import { CreateGamePage } from '../pages/create-game.page';
 import { UndoTurnModal } from '../pages/modals/undo-turn.modal';
-import { players, scrabbleWords, boardCenter } from '../helpers/test-data';
-import { findPlayableWord } from '../helpers/gameplay.helper';
+import { boardCenter } from '../helpers/test-data';
+import { findPlayableWord, getShortWords } from '../helpers/gameplay.helper';
 
 test.describe('Undo Turn', () => {
   test('last player can undo their move', async ({ twoPlayers }) => {
@@ -21,7 +21,7 @@ test.describe('Undo Turn', () => {
 
     // Make a move first
     const rackLetters = await currentPlayer.playPage.getRackLetters();
-    const word = findPlayableWord(rackLetters, scrabbleWords.twoLetter);
+    const word = findPlayableWord(rackLetters, getShortWords());
     if (!word) {
       test.skip(true, 'No playable word could be formed from random rack tiles');
       return;

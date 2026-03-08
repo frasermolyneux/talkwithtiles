@@ -1,7 +1,6 @@
 import { test, expect } from '../fixtures/test-fixtures';
 import { CreateGamePage } from '../pages/create-game.page';
-import { players, scrabbleWords, boardCenter } from '../helpers/test-data';
-import { findPlayableWord } from '../helpers/gameplay.helper';
+import { boardCenter } from '../helpers/test-data';
 
 test.describe('3-Player Game', () => {
   test('three players can all see the game board', async ({ threePlayers }) => {

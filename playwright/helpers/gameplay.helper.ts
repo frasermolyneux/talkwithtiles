@@ -1,5 +1,44 @@
 import type { Page, Locator } from '@playwright/test';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 import { boardCenter, type GameType } from './test-data';
+
+// ---------------------------------------------------------------------------
+// ENABLE word list (public domain, ~52K words, 2–7 letters, uppercase)
+// ---------------------------------------------------------------------------
+
+let _enableWords: string[] | null = null;
+
+function loadEnableWords(): string[] {
+  if (!_enableWords) {
+    const raw = readFileSync(
+      join(__dirname, 'enable-wordlist.txt'),
+      'utf-8',
+    );
+    _enableWords = raw.split(/\r?\n/).filter((w) => w.length >= 2);
+  }
+  return _enableWords;
+}
+
+/**
+ * Get ENABLE dictionary words filtered by length.
+ * Results are sorted shortest-first so `findPlayableWord` prefers short words.
+ */
+export function getWordsByLength(minLen: number, maxLen: number): string[] {
+  return loadEnableWords().filter(
+    (w) => w.length >= minLen && w.length <= maxLen,
+  );
+}
+
+/** Shorthand: 2–4 letter words (high probability of matching a random rack). */
+export function getShortWords(): string[] {
+  return getWordsByLength(2, 4);
+}
+
+/** Shorthand: all available words (2–7 letters). */
+export function getAllWords(): string[] {
+  return loadEnableWords();
+}
 
 export interface TilePlacement {
   letter: string;

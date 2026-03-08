@@ -1,7 +1,7 @@
 import { test, expect } from '../fixtures/test-fixtures';
 import { CreateGamePage } from '../pages/create-game.page';
-import { players, scrabbleWords, boardCenter } from '../helpers/test-data';
-import { findPlayableWord } from '../helpers/gameplay.helper';
+import { boardCenter } from '../helpers/test-data';
+import { findPlayableWord, getShortWords } from '../helpers/gameplay.helper';
 
 test.describe('Drag and Drop Tile Placement', () => {
   test.setTimeout(60_000);
@@ -48,7 +48,7 @@ test.describe('Drag and Drop Tile Placement', () => {
 
     const currentPlayer = (await p1.playPage.isCurrentPlayer()) ? p1 : p2;
     const rackLetters = await currentPlayer.playPage.getRackLetters();
-    const word = findPlayableWord(rackLetters, scrabbleWords.twoLetter);
+    const word = findPlayableWord(rackLetters, getShortWords());
 
     if (word) {
       const center = boardCenter.StandardBoard;

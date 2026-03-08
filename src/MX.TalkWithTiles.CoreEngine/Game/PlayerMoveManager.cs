@@ -18,6 +18,7 @@ public class PlayerMoveManager(
     public Guid CurrentPlayerId { get; private set; }
     public List<Guid> PlayerOrderIds { get; private set; } = [];
     public int TurnsTaken { get; private set; }
+    public int ConsecutivePasses { get; private set; }
     public LastMoveType LastMoveType { get; private set; }
     public PlayerMoveResult? LastMoveResult { get; private set; }
 
@@ -27,6 +28,7 @@ public class PlayerMoveManager(
             CurrentPlayerId = CurrentPlayerId,
             PlayerOrderIds = PlayerOrderIds,
             TurnsTaken = TurnsTaken,
+            ConsecutivePasses = ConsecutivePasses,
             LastMoveType = LastMoveType,
             LastMoveResult = LastMoveResult
         };
@@ -59,6 +61,7 @@ public class PlayerMoveManager(
     public void ExchangeTiles(Guid playerId, IEnumerable<Guid> tileIds)
     {
         LastMoveType = LastMoveType.ExchangedTiles;
+        ConsecutivePasses = 0;
 
         var player = playerManager.GetPlayer(playerId);
 
@@ -80,7 +83,18 @@ public class PlayerMoveManager(
     public void SkipTurn(Guid playerId)
     {
         LastMoveType = LastMoveType.SkippedTurn;
+        ConsecutivePasses++;
         SetNextPlayer();
+
+        // When consecutive passes reach the number of players,
+        // every player has passed in a row — game ends per Scrabble rules
+        if (ConsecutivePasses >= PlayerOrderIds.Count)
+        {
+            var gameWinners = GetWinners();
+            endGameManager.SetWinners(
+                gameWinners.Select(p => p.PlayerId).ToList(),
+                gameWinners[0].Score);
+        }
     }
 
     public PlayerMoveResult MakeMove(PlayerMove playerMove, bool dryRun)
@@ -106,6 +120,7 @@ public class PlayerMoveManager(
         if (playerMoveResult.IsValid && !dryRun)
         {
             TurnsTaken++;
+            ConsecutivePasses = 0;
 
             playerMoveResult.NextPlayer = SetNextPlayer();
             playerManager.AddToScore(playerMove.PlayerId, playerMoveResult.Points);
@@ -179,6 +194,7 @@ public class PlayerMoveManager(
     public void InitNew()
     {
         TurnsTaken = 0;
+        ConsecutivePasses = 0;
         LastMoveType = LastMoveType.Null;
         LastMoveResult = null;
     }
@@ -188,6 +204,7 @@ public class PlayerMoveManager(
         CurrentPlayerId = playerMoveStateModel.CurrentPlayerId;
         PlayerOrderIds = playerMoveStateModel.PlayerOrderIds;
         TurnsTaken = playerMoveStateModel.TurnsTaken;
+        ConsecutivePasses = playerMoveStateModel.ConsecutivePasses;
         LastMoveType = playerMoveStateModel.LastMoveType;
         LastMoveResult = playerMoveStateModel.LastMoveResult;
     }
