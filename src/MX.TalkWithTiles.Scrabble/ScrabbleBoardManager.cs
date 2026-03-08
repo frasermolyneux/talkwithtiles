@@ -31,9 +31,68 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     public PlayerMoveResult MakeMove(PlayerMove playerMove)
     {
         var playerMoveResult = new PlayerMoveResult(playerMove.PlayerId) { Tiles = playerMove.Tiles };
+        var placedTiles = playerMove.Tiles.Where(t => t.RackPosition == -1).ToList();
+
+        if (placedTiles.Count == 0)
+            return playerMoveResult;
+
+        // Bounds check
+        foreach (var tile in placedTiles)
+        {
+            if (tile.PosX < 0 || tile.PosX >= BoardSize.Width || tile.PosY < 0 || tile.PosY >= BoardSize.Height)
+            {
+                playerMoveResult.InvalidMessage = "Tile placement is out of bounds.";
+                return playerMoveResult;
+            }
+        }
+
+        // Occupancy check — cannot place on an already occupied cell
+        foreach (var tile in placedTiles)
+        {
+            if (Tiles[tile.PosX, tile.PosY].LetterSet)
+            {
+                playerMoveResult.InvalidMessage = "Cannot place a tile on an already occupied cell.";
+                return playerMoveResult;
+            }
+        }
+
+        // Linear check — all placed tiles must share the same row or column
+        if (placedTiles.Count > 1)
+        {
+            var allSameRow = placedTiles.All(t => t.PosY == placedTiles[0].PosY);
+            var allSameCol = placedTiles.All(t => t.PosX == placedTiles[0].PosX);
+            if (!allSameRow && !allSameCol)
+            {
+                playerMoveResult.InvalidMessage = "Tiles must be placed in a straight line (same row or column).";
+                return playerMoveResult;
+            }
+        }
+
+        // First-move vs connectivity checks
+        var boardIsEmpty = !HasExistingTiles();
+        if (boardIsEmpty)
+        {
+            // Center star check — first word must cross the center
+            if (!placedTiles.Any(t => Tiles[t.PosX, t.PosY].TileType == TileType.CentreTile))
+            {
+                playerMoveResult.InvalidMessage = "The first word must cross the center star.";
+                return playerMoveResult;
+            }
+        }
+        else
+        {
+            // Connectivity check — at least one placed tile must be adjacent to an existing tile
+            if (!placedTiles.Any(t => HasAdjacentExistingTile(t.PosX, t.PosY)))
+            {
+                playerMoveResult.InvalidMessage = "Tiles must connect to or be adjacent to existing tiles on the board.";
+                return playerMoveResult;
+            }
+        }
+
+        // All validation passed — place tiles and calculate score
         List<Tile> playerTilesOnBoard = [];
 
-        foreach (var tile in playerMove.Tiles.Where(t => t.RackPosition == -1))
+        foreach (var tile in placedTiles)
         {
             var tileOnBoard = Tiles[tile.PosX, tile.PosY];
             tileOnBoard.Letter = tile.Letter;
@@ -192,5 +251,29 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
             return 3;
 
         return 1;
+    }
+
+    private bool HasExistingTiles()
+    {
+        for (var x = 0; x < BoardSize.Width; x++)
+        {
+            for (var y = 0; y < BoardSize.Height; y++)
+            {
+                if (Tiles[x, y].LetterSet)
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool HasAdjacentExistingTile(int x, int y)
+    {
+        if (x > 0 && Tiles[x - 1, y].LetterSet) return true;
+        if (x < BoardSize.Width - 1 && Tiles[x + 1, y].LetterSet) return true;
+        if (y > 0 && Tiles[x, y - 1].LetterSet) return true;
+        if (y < BoardSize.Height - 1 && Tiles[x, y + 1].LetterSet) return true;
+
+        return false;
     }
 }

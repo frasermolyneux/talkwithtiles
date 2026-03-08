@@ -205,12 +205,29 @@ function addTileToRack(tile, position) {
     });
 }
 
+function showMoveError(message) {
+    const errorEl = document.getElementById('moveErrorMessage');
+    if (errorEl) {
+        errorEl.textContent = message;
+        errorEl.classList.remove('d-none');
+    }
+}
+
+function clearMoveError() {
+    const errorEl = document.getElementById('moveErrorMessage');
+    if (errorEl) {
+        errorEl.textContent = '';
+        errorEl.classList.add('d-none');
+    }
+}
+
 async function updateMoveScore() {
     const tilesOnBoard = userTiles.find(function (o) { return o.rackPosition === -1; });
     const turnScoreEl = document.getElementById("turnScore");
 
     if (!tilesOnBoard) {
         turnScoreEl.style.display = "none";
+        clearMoveError();
         return;
     }
 
@@ -234,6 +251,14 @@ async function updateMoveScore() {
 
         const result = await response.json();
         console.log(result);
+
+        if (!result.isValid) {
+            showMoveError(result.invalidMessage || 'Invalid tile placement');
+            turnScoreEl.style.display = "none";
+            return;
+        }
+
+        clearMoveError();
 
         const wordsAndPoints = result.wordsAndPoints;
 
@@ -285,6 +310,12 @@ async function submitPlayerMove() {
 
         const result = await response.json();
         console.log(result);
+
+        if (!result.isValid) {
+            showMoveError(result.invalidMessage || 'Invalid move');
+            return;
+        }
+
         location.reload();
     } catch (err) {
         console.error("Failed to submit player move:", err);

@@ -13,6 +13,7 @@ export class PlayGamePage extends BasePage {
 
   // Score
   readonly turnScore: Locator;
+  readonly moveErrorMessage: Locator;
 
   // Game controls
   readonly submitTurnButton: Locator;
@@ -45,6 +46,7 @@ export class PlayGamePage extends BasePage {
 
     // Score
     this.turnScore = page.getByTestId('turn-score');
+    this.moveErrorMessage = page.getByTestId('move-error-message');
 
     // Controls
     this.submitTurnButton = page.getByTestId('btn-submit-turn');
