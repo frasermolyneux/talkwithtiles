@@ -10,7 +10,7 @@
         @if (Model.AllowOverride && Model.Accept)
         {
             <label>You can override the challenge result using this dropdown: </label>
-            <select asp-for="@Model.GameChallengeResultOverride" asp-items="@Html.GetEnumSelectList<ChallengeResult>()" class="form-select w-auto"></select>
+            <select asp-for="@Model.GameChallengeResultOverride" asp-items="@Html.GetEnumSelectList<ChallengeResult>()" class="form-select w-auto" data-testid="challenge-override-select"></select>
         }
         else
         {
@@ -26,11 +26,11 @@
 
         @if (Model.Accept)
         {
-            <button type="submit" class="btn btn-primary"><i class="fas fa-check me-1"></i>Accept Challenge</button>
+            <button type="submit" class="btn btn-primary" data-testid="btn-accept-challenge"><i class="fas fa-check me-1"></i>Accept Challenge</button>
         }
         else
         {
-            <button type="submit" class="btn btn-danger"><i class="fas fa-xmark me-1"></i>Reject Challenge</button>
+            <button type="submit" class="btn btn-danger" data-testid="btn-reject-challenge"><i class="fas fa-xmark me-1"></i>Reject Challenge</button>
         }
     </div>
 

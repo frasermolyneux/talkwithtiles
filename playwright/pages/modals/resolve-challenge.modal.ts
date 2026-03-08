@@ -9,10 +9,10 @@ export class ResolveChallengeModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.container = page.locator('#handleChallengeContainer, form[action*="ResolveChallenge"]');
-    this.acceptButton = this.container.locator('button:has-text("Accept"), input[value="Accept"]');
-    this.rejectButton = this.container.locator('button:has-text("Reject"), input[value="Reject"]');
-    this.overrideSelect = this.container.locator('select');
+    this.container = page.getByTestId('handle-challenge-container');
+    this.acceptButton = page.getByTestId('btn-accept-challenge');
+    this.rejectButton = page.getByTestId('btn-reject-challenge');
+    this.overrideSelect = page.getByTestId('challenge-override-select');
   }
 
   async accept(): Promise<void> {

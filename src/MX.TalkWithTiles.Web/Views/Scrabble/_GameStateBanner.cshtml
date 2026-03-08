@@ -6,7 +6,7 @@
 {
     <div class="row">
 
-        <div class="bg-light p-5 rounded-3 text-center w-100">
+        <div class="bg-light p-5 rounded-3 text-center w-100" data-testid="game-state-banner">
 
             @if (Model.IsSingleWinner())
             {
@@ -67,7 +67,7 @@ else
 {
     <div class="row">
 
-        <div class="bg-light p-5 rounded-3 text-center w-100">
+        <div class="bg-light p-5 rounded-3 text-center w-100" data-testid="game-state-banner">
             <h1 class="display-4"><i class="fas fa-ban text-danger me-2"></i>Abandoned Game!</h1>
             <p class="lead">This game has been abandoned.</p>
         </div>

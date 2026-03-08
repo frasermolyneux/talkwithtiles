@@ -8,9 +8,9 @@ export class RemainingTilesModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.modal = page.locator('#remainingTilesModal');
+    this.modal = page.getByTestId('modal-remaining-tiles');
     this.tileList = this.modal.locator('.badge');
-    this.closeButton = this.modal.locator('[data-bs-dismiss="modal"]');
+    this.closeButton = page.getByTestId('modal-remaining-tiles-close');
   }
 
   async getTileCount(): Promise<number> {

@@ -28,6 +28,7 @@ __tablestorage__/
 __azurite_db_blob*.json
 __azurite_db_queue*.json
 __azurite_db_table*.json
+AzuriteConfig
 
 # Terraform
 **/.terraform/

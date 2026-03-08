@@ -1,12 +1,12 @@
 @using MX.TalkWithTiles.Web.Extensions
 @model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
 
-<div id="issueChallengeModal" class="modal fade" tabindex="-1">
+<div id="issueChallengeModal" class="modal fade" tabindex="-1" data-testid="modal-issue-challenge">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Issue Challenge</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close" data-testid="modal-issue-challenge-cancel"></button>
             </div>
             <div class="modal-body">
                 <p>

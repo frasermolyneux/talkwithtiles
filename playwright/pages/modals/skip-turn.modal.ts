@@ -8,9 +8,9 @@ export class SkipTurnModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.modal = page.locator('#skipTurnModal');
-    this.confirmButton = this.modal.locator('input[type="submit"], button[type="submit"]');
-    this.cancelButton = this.modal.locator('button.btn-secondary[data-bs-dismiss="modal"]');
+    this.modal = page.getByTestId('modal-skip-turn');
+    this.confirmButton = page.getByTestId('modal-skip-turn-confirm');
+    this.cancelButton = page.getByTestId('modal-skip-turn-cancel');
   }
 
   async confirm(): Promise<void> {

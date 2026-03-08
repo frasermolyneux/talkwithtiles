@@ -3,12 +3,12 @@
 
 <div class="row">
 
-    <div class="playerSummaryContainer d-flex flex-wrap gap-2">
+    <div class="playerSummaryContainer d-flex flex-wrap gap-2" data-testid="player-summary">
         @foreach (var player in Model.Players())
         {
             @if (player.PlayerId == Model.CurrentPlayerId())
             {
-                <span class="badge bg-primary">
+                <span class="badge bg-primary" data-testid="player-badge">
                     <i class="fas fa-user me-1"></i>@player.PlayerName : @player.Score
 
                     @if (!(Model.BagStateModel.Tiles?.Any() ?? false))
@@ -21,7 +21,7 @@
             }
             else
             {
-                <span class="badge bg-secondary">
+                <span class="badge bg-secondary" data-testid="player-badge">
                     <i class="fas fa-user me-1"></i>@player.PlayerName : @player.Score
 
                     @if (!(Model.BagStateModel.Tiles?.Any() ?? false))

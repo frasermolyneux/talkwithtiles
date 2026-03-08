@@ -74,12 +74,12 @@ test.describe('Mobile Viewport Tests', () => {
     await page.goto('/');
 
     // On mobile, navbar should have a hamburger toggle
-    const toggler = page.locator('.navbar-toggler');
+    const toggler = page.getByTestId('nav-toggler');
     if (await toggler.isVisible()) {
       await toggler.click();
       // Menu items should become visible
-      const navItems = page.locator('.navbar-nav .nav-link');
-      await expect(navItems.first()).toBeVisible();
+      const homeLink = page.getByTestId('nav-home');
+      await expect(homeLink).toBeVisible();
     }
 
     await context.close();

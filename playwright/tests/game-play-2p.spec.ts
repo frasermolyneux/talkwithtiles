@@ -105,11 +105,11 @@ test.describe('2-Player Game Playthrough', () => {
 
     // Player 1 should see the game in their list
     await p1.page.goto('/Scrabble');
-    await expect(p1.page.locator('[data-testid="active-games"]')).toBeVisible();
+    await expect(p1.page.getByTestId('active-games')).toBeVisible();
 
     // Player 2 should also see the game
     await p2.page.goto('/Scrabble');
-    await expect(p2.page.locator('[data-testid="active-games"]')).toBeVisible();
+    await expect(p2.page.getByTestId('active-games')).toBeVisible();
   });
 
   test('tile bag count decreases after moves', async ({ twoPlayers }) => {

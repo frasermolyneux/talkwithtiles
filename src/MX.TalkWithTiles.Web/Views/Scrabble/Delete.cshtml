@@ -9,6 +9,6 @@
 
 <form asp-action="ConfirmDelete" asp-antiforgery="true" asp-route-id="@Model.GameId">
     <div class="form-group">
-        <input type="submit" value="Confirm" class="btn btn-danger"/>
+        <input type="submit" value="Confirm" class="btn btn-danger" data-testid="btn-confirm-delete"/>
     </div>
 </form>

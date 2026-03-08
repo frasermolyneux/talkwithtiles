@@ -63,8 +63,8 @@ export async function clickToPlaceTile(
   targetY: number,
 ): Promise<void> {
   // Find the tile in the rack by letter
-  const rackTile = page.locator(
-    `.scrabbleRackCell img.rackScrabbleTile[src*="/${tileLetter.toLowerCase()}.jpg"]`,
+  const rackTile = page.getByTestId('scrabble-rack').locator(
+    `img.rackScrabbleTile[src*="/${tileLetter.toLowerCase()}.jpg"]`,
   ).first();
   await rackTile.click();
 
@@ -82,8 +82,8 @@ export async function dragToPlaceTile(
   targetX: number,
   targetY: number,
 ): Promise<void> {
-  const rackTile = page.locator(
-    `.scrabbleRackCell img.rackScrabbleTile[src*="/${tileLetter.toLowerCase()}.jpg"]`,
+  const rackTile = page.getByTestId('scrabble-rack').locator(
+    `img.rackScrabbleTile[src*="/${tileLetter.toLowerCase()}.jpg"]`,
   ).first();
 
   const boardCell = page.locator(`#cell_${targetX}-${targetY}`);
@@ -120,7 +120,7 @@ export async function placeWordByDragging(
  * Get the letters currently in the player's rack.
  */
 export async function getRackLetters(page: Page): Promise<string[]> {
-  const tiles = page.locator('.scrabbleRackCell img.rackScrabbleTile');
+  const tiles = page.getByTestId('scrabble-rack').locator('img.rackScrabbleTile');
   const count = await tiles.count();
   const letters: string[] = [];
 
@@ -170,8 +170,8 @@ export function findPlayableWord(
  * Wait for the game page to fully load (board and rack rendered).
  */
 export async function waitForGameReady(page: Page): Promise<void> {
-  await page.waitForSelector('.scrabbleBoard', { state: 'visible' });
-  await page.waitForSelector('.scrabbleRack', { state: 'visible' });
+  await page.getByTestId('scrabble-board').waitFor({ state: 'visible' });
+  await page.getByTestId('scrabble-rack').waitFor({ state: 'visible' });
 }
 
 /**

@@ -8,9 +8,9 @@ export class UndoTurnModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.modal = page.locator('#undoLastTurnModal');
-    this.confirmButton = this.modal.locator('input[type="submit"], button[type="submit"]');
-    this.cancelButton = this.modal.locator('button.btn-secondary[data-bs-dismiss="modal"]');
+    this.modal = page.getByTestId('modal-undo-turn');
+    this.confirmButton = page.getByTestId('modal-undo-turn-confirm');
+    this.cancelButton = page.getByTestId('modal-undo-turn-cancel');
   }
 
   async confirm(): Promise<void> {

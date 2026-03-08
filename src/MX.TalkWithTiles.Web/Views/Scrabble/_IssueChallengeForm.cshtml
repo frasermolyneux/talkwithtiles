@@ -6,15 +6,15 @@
     <input asp-for="GameId" type="hidden"/>
     <div class="mb-3">
         <label asp-for="GameChallengeReason" class="form-label"></label>
-        <select asp-for="GameChallengeReason" asp-items="@Html.GetEnumSelectList<GameChallengeReason>()" class="form-select"></select>
+        <select asp-for="GameChallengeReason" asp-items="@Html.GetEnumSelectList<GameChallengeReason>()" class="form-select" data-testid="modal-issue-challenge-reason"></select>
         <span asp-validation-for="GameChallengeReason" class="text-danger"></span>
     </div>
     <div class="mb-3">
         <label asp-for="ChallengeText" class="form-label"></label>
-        <textarea asp-for="ChallengeText" class="form-control" rows="10"></textarea>
+        <textarea asp-for="ChallengeText" class="form-control" rows="10" data-testid="modal-issue-challenge-text"></textarea>
         <span asp-validation-for="ChallengeText" class="text-danger"></span>
     </div>
     <div class="mb-3">
-        <button type="submit" class="btn btn-primary"><i class="fas fa-flag me-1"></i>Submit Challenge</button>
+        <button type="submit" class="btn btn-primary" data-testid="modal-issue-challenge-confirm"><i class="fas fa-flag me-1"></i>Submit Challenge</button>
     </div>
 </form>

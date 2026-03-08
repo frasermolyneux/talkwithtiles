@@ -7,8 +7,8 @@ export class FeedbackPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.feedbackForm = page.locator('form[action*="Feedback"]');
-    this.submitButton = page.locator('button[type="submit"], input[type="submit"]');
+    this.feedbackForm = page.getByTestId('feedback-form');
+    this.submitButton = page.getByTestId('btn-submit-feedback');
   }
 
   async goto(): Promise<void> {

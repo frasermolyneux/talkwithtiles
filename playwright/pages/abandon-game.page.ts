@@ -8,9 +8,9 @@ export class AbandonGamePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.warningCard = page.locator('.card.border-danger, .card');
-    this.confirmButton = page.locator('input[type="submit"], button[type="submit"]');
-    this.cancelButton = page.locator('a:has-text("Cancel"), a:has-text("Return")');
+    this.warningCard = page.getByTestId('abandon-warning-card');
+    this.confirmButton = page.getByTestId('btn-confirm-abandon');
+    this.cancelButton = page.getByTestId('btn-cancel-abandon');
   }
 
   async goto(gameId: string): Promise<void> {

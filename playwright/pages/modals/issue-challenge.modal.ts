@@ -10,11 +10,11 @@ export class IssueChallengeModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.modal = page.locator('#issueChallengeModal');
-    this.reasonSelect = this.modal.locator('select');
-    this.challengeText = this.modal.locator('input[type="text"], textarea');
-    this.confirmButton = this.modal.locator('input[type="submit"], button[type="submit"]');
-    this.cancelButton = this.modal.locator('button.btn-secondary[data-bs-dismiss="modal"]');
+    this.modal = page.getByTestId('modal-issue-challenge');
+    this.reasonSelect = page.getByTestId('modal-issue-challenge-reason');
+    this.challengeText = page.getByTestId('modal-issue-challenge-text');
+    this.confirmButton = page.getByTestId('modal-issue-challenge-confirm');
+    this.cancelButton = page.getByTestId('modal-issue-challenge-cancel');
   }
 
   async selectReason(reason: string): Promise<void> {

@@ -8,9 +8,9 @@
         @if (Model.ShowRemainingTiles(User))
         {
             <div class="scrabbleRackControls">
-                <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#remainingTilesModal" type="button">
+                <button data-testid="bag-button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#remainingTilesModal" type="button">
                     <img id="bagImage" src="/img/bag.svg" width="20" height="20" alt="Tile bag" />
-                    <span>@(Model.BagStateModel.Tiles?.Count ?? 0)</span>
+                    <span data-testid="bag-count">@(Model.BagStateModel.Tiles?.Count ?? 0)</span>
                 </button>
             </div>
         }
@@ -18,14 +18,14 @@
         @if (Model.ShowRemainingTileCountOnly())
         {
             <div class="scrabbleRackControls">
-                <button class="btn btn-primary" type="button" title="You can only see the remaining tile count for this game">
+                <button data-testid="bag-button" class="btn btn-primary" type="button" title="You can only see the remaining tile count for this game">
                     <img id="bagImageCount" src="/img/bag.svg" width="20" height="20" alt="Tile bag" />
-                    <span>@(Model.BagStateModel.Tiles?.Count ?? 0)</span>
+                    <span data-testid="bag-count">@(Model.BagStateModel.Tiles?.Count ?? 0)</span>
                 </button>
             </div>
         }
 
-        <div id="scrabbleRack" class="scrabbleRack">
+        <div id="scrabbleRack" data-testid="scrabble-rack" class="scrabbleRack">
             <div id="rack_0" class="scrabbleRackCell"></div>
             <div id="rack_1" class="scrabbleRackCell"></div>
             <div id="rack_2" class="scrabbleRackCell"></div>
@@ -37,10 +37,10 @@
         </div>
 
         <div class="scrabbleRackControls">
-            <button id="recallTiles" class="btn btn-primary" title="Recall your tiles from the board">
+            <button id="recallTiles" data-testid="btn-recall-tiles" class="btn btn-primary" title="Recall your tiles from the board">
                 <i class="fas fa-arrow-down"></i>
             </button>
-            <button id="shuffleTiles" class="btn btn-primary" title="Shuffle your tiles in the rack (this will also recall your tiles)">
+            <button id="shuffleTiles" data-testid="btn-shuffle-tiles" class="btn btn-primary" title="Shuffle your tiles in the rack (this will also recall your tiles)">
                 <i class="fas fa-shuffle"></i>
             </button>
         </div>
@@ -50,7 +50,7 @@
 
 <div class="row">
 
-    <div id="selectedTileMessage" class="selectedTileMessage d-none">
+    <div id="selectedTileMessage" data-testid="selected-tile-message" class="selectedTileMessage d-none">
         <label>You have selected a tile - click/tap on an available space on the rack or board to place the tile.</label>
     </div>
 

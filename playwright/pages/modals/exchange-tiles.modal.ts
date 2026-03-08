@@ -8,9 +8,9 @@ export class ExchangeTilesModal {
 
   constructor(page: Page) {
     this.page = page;
-    this.modal = page.locator('#exchangeTilesModal');
-    this.confirmButton = this.modal.locator('input[type="submit"], button[type="submit"]');
-    this.cancelButton = this.modal.locator('button.btn-secondary[data-bs-dismiss="modal"]');
+    this.modal = page.getByTestId('modal-exchange-tiles');
+    this.confirmButton = page.getByTestId('modal-exchange-tiles-confirm');
+    this.cancelButton = page.getByTestId('modal-exchange-tiles-cancel');
   }
 
   async selectTile(index: number): Promise<void> {

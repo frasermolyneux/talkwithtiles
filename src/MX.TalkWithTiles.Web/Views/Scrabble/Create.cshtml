@@ -12,7 +12,7 @@
 </div>
 
 <hr/>
-<form asp-action="Create" asp-antiforgery="true">
+<form asp-action="Create" asp-antiforgery="true" data-testid="create-game-form">
 
     <div class="row">
 
@@ -33,10 +33,10 @@
 
                 @Html.EditorFor(model => model.PlayerModels)
 
-                <div id="additionalPlayers"></div>
+                <div id="additionalPlayers" data-testid="additional-players"></div>
 
                 <div id="addAdditionalPlayers" class="form-group">
-                    <button class="btn btn-secondary" type="button" onclick="addAdditionalPlayer()"><i class="fas fa-plus"></i> Add Additional Player</button>
+                    <button class="btn btn-secondary" type="button" onclick="addAdditionalPlayer()" data-testid="btn-add-player"><i class="fas fa-plus"></i> Add Additional Player</button>
                 </div>
             </div>
         </div>
@@ -48,7 +48,7 @@
             <div class="card-body">
                 <div class="form-group">
                     <div class="form-check">
-                        @Html.CheckBoxFor(model => model.PublicGame, new {@class = "form-check-input"})
+                        @Html.CheckBoxFor(model => model.PublicGame, new {@class = "form-check-input", data_testid = "checkbox-public-game"})
                         @Html.LabelFor(model => model.PublicGame, new {@class = "form-check-label"})
                     </div>
                     @Html.ValidationMessageFor(model => model.PublicGame)
@@ -68,13 +68,13 @@
 
                 <div class="form-group">
                     @Html.LabelFor(model => model.GameType)
-                    @Html.DropDownListFor(model => model.GameType, Html.GetEnumSelectList<GameType>(), new {@class = "form-control"})
+                    @Html.DropDownListFor(model => model.GameType, Html.GetEnumSelectList<GameType>(), new {@class = "form-control", data_testid = "select-game-type"})
                     @Html.ValidationMessageFor(model => model.GameType)
                 </div>
 
                 <div class="form-group">
                     @Html.LabelFor(model => model.TileBagVisibilityOption)
-                    @Html.DropDownListFor(model => model.TileBagVisibilityOption, Html.GetEnumSelectList<TileBagVisibilityOption>(), new {@class = "form-control"})
+                    @Html.DropDownListFor(model => model.TileBagVisibilityOption, Html.GetEnumSelectList<TileBagVisibilityOption>(), new {@class = "form-control", data_testid = "select-tile-bag-visibility"})
                     @Html.ValidationMessageFor(model => model.TileBagVisibilityOption)
                 </div>
 
@@ -86,7 +86,7 @@
     <div class="row">
         <div id="accordion" class="card col-sm-12 w-100 border-0">
             <div class="card-header panel-title">
-                <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+                <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne" data-testid="btn-advanced-options">
                     <i class="fas fa-plus"></i> Advanced Challenge Options
                 </button>
             </div>
@@ -139,7 +139,7 @@
 
                         <div class="form-group">
                             <div class="form-check">
-                                @Html.CheckBoxFor(model => model.CanOverrideChallengeOutcome, new {@class = "form-check-input"})
+                                @Html.CheckBoxFor(model => model.CanOverrideChallengeOutcome, new {@class = "form-check-input", data_testid = "checkbox-override-challenge"})
                                 @Html.LabelFor(model => model.CanOverrideChallengeOutcome, new {@class = "form-check-label"})
                             </div>
                             @Html.ValidationMessageFor(model => model.CanOverrideChallengeOutcome)
@@ -161,7 +161,7 @@
                     <li>Any players that do not have an account will be sent an invitation link</li>
                 </ul>
                 <div class="form-group">
-                    <input type="submit" value="Create Game" class="btn btn-primary"/>
+                    <input type="submit" value="Create Game" class="btn btn-primary" data-testid="btn-create-game-submit"/>
                 </div>
             </div>
 

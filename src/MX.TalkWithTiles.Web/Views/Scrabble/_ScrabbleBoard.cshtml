@@ -6,7 +6,7 @@
     var boardSize = BoardSizeHelper.GetSize(Model.GameType);
 }
 
-<div id="scrabbleBoard" class="scrabbleBoard" style="grid-template-columns: repeat(@boardSize.Width, 1fr); grid-template-rows: repeat(@boardSize.Height, 1fr);">
+<div id="scrabbleBoard" data-testid="scrabble-board" class="scrabbleBoard" style="grid-template-columns: repeat(@boardSize.Width, 1fr); grid-template-rows: repeat(@boardSize.Height, 1fr);">
     @if (Model.BoardStateModel.Tiles != null)
     {
         @for (var i = 0; i < boardSize.Height; i++)

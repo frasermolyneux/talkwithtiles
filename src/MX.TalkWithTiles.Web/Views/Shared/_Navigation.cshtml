@@ -1,9 +1,9 @@
 @using MX.TalkWithTiles.Web.Extensions
 <nav class="navbar fixed-top navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
     <div class="container">
-        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">Talk With Tiles</a>
+        <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index" data-testid="nav-brand">Talk With Tiles</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                aria-expanded="false" aria-label="Toggle navigation">
+                aria-expanded="false" aria-label="Toggle navigation" data-testid="nav-toggler">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="navbar-collapse collapse d-sm-inline-flex flex-sm-row-reverse">
@@ -11,24 +11,24 @@
             <ul class="navbar-nav flex-grow-1">
 
                 <li class="nav-item">
-                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
+                    <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index" data-testid="nav-home">Home</a>
                 </li>
 
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <li class="nav-item dropdown">
-                        <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                        <a class="nav-link text-dark dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-testid="nav-scrabble">
                             Scrabble
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="Scrabble" asp-action="Index"><i class="fas fa-rectangle-list"></i> My Games</a>
-                            <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="Scrabble" asp-action="Create"><i class="fas fa-square-plus"></i> Create Game</a>
+                            <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="Scrabble" asp-action="Index" data-testid="nav-my-games"><i class="fas fa-rectangle-list"></i> My Games</a>
+                            <a class="nav-link dropdown-item text-dark" asp-area="" asp-controller="Scrabble" asp-action="Create" data-testid="nav-create-game"><i class="fas fa-square-plus"></i> Create Game</a>
                         </div>
                     </li>
                 }
 
                 <li class="nav-item dropdown">
-                    <a class="nav-link text-dark dropdown-toggle" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <a class="nav-link text-dark dropdown-toggle" href="#" id="aboutDropdown" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" data-testid="nav-about">
                         About/Guides
                     </a>
                     <div class="dropdown-menu" aria-labelledby="aboutDropdown">
@@ -42,14 +42,14 @@
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Feedback">Feedback</a>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Feedback" data-testid="nav-feedback">Feedback</a>
                     </li>
                 }
                 
                 @if (User.IsAdmin())
                 {
                     <li class="nav-item">
-                        <a class="nav-link text-dark" asp-area="" asp-controller="Analytics" asp-action="Index">Analytics</a>
+                        <a class="nav-link text-dark" asp-area="" asp-controller="Analytics" asp-action="Index" data-testid="nav-analytics">Analytics</a>
                     </li>
                 }
             </ul>

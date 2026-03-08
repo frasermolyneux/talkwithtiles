@@ -1,0 +1,79 @@
+---
+applyTo: "playwright/**/*.ts"
+---
+
+# Playwright TypeScript Patterns
+
+## Project Structure
+
+```
+playwright/
+├── playwright.config.ts    # Config: webServer, projects (chromium + mobile-chrome)
+├── global-setup.ts          # Clears Azurite tables before each run
+├── test-ids.ts              # Centralised data-testid constants
+├── fixtures/test-fixtures.ts # Custom fixtures (twoPlayers, threePlayers, fourPlayers)
+├── helpers/
+│   ├── auth.helper.ts       # signIn/signOut via TestAuthController
+│   ├── test-data.ts         # TestUser definitions, board centers, game types
+│   └── gameplay.helper.ts   # Tile placement, rack reading, word finding
+├── pages/                   # Page Object Models
+│   ├── base.page.ts         # Shared nav, alerts, auth methods
+│   └── modals/              # Modal-specific POMs
+└── tests/                   # Test specs
+```
+
+## Locator Priority
+
+1. `page.getByTestId('...')` — primary choice for all elements with `data-testid`.
+2. `page.getByRole('button', { name: '...' })` — standard accessible controls.
+3. `page.locator('#elementId')` — ONLY for JS-bound IDs (`#cell_X-Y`, `#rack_N`, `#scrabbleBoard`), ASP.NET form field IDs, or Bootstrap JS targets.
+4. Never use CSS class selectors (`.btn-primary`, `.bg-light`) in page objects.
+
+## Page Object Model Rules
+
+- One POM per page/view, one per modal. Extend `BasePage` for pages (provides nav, alerts, auth).
+- All locators defined as `readonly` properties in the constructor.
+- Expose semantic methods (`submitMove()`, `selectRackTile(letter)`) not raw locator access.
+- POMs never assert — tests assert, POMs act and query.
+- Scope locators to parent when needed: `this.modal.locator('input[type="checkbox"]')`.
+
+## Test Fixtures
+
+Use custom fixtures from `fixtures/test-fixtures.ts` for multi-player tests:
+
+```typescript
+import { test, expect } from '../fixtures/test-fixtures';
+
+test('example', async ({ twoPlayers }) => {
+  const [p1, p2] = twoPlayers;
+  // Each PlayerSession has: context, page, user, playPage
+});
+```
+
+Single-player tests use standard Playwright `{ page }` fixture with `signIn()` from auth helper.
+
+## Authentication
+
+Auth via `TestAuthController` (dev-only cookie scheme). Call `signIn(page, players.player1)` before interacting with protected pages. Multi-player tests use separate browser contexts (each gets its own cookies).
+
+## Async Game Interactions
+
+- `updateMoveScore()` is async (fetches `/Scrabble/GetPlayerMoveResult`) — use auto-retrying assertions (`toBeVisible()`, `toHaveText(/\d+/)`) not immediate reads.
+- `submitMove()` triggers `location.reload()` — wait with `page.waitForEvent('load')`.
+- Etag polling (5s) may trigger page reloads — use `waitForStableBoard()` to absorb.
+- Board cells and rack tiles are dynamically rendered by JS (`InitTileRack`, `InitBoard`).
+
+## Drag and Drop
+
+Chromium restricts `DataTransfer.getData()` on synthetic DragEvents. Use the `Object.defineProperty` shim pattern in `play-game.page.ts` `dragToPlace()` method — do not use Playwright's built-in `dragTo()` for tile placement.
+
+## Test ID Constants
+
+Import from `playwright/test-ids.ts` when referencing test IDs programmatically. When adding a new `data-testid` to a view, add the corresponding constant to `test-ids.ts` in the appropriate section.
+
+## CI Considerations
+
+- `process.env.CI` controls: `--no-build` flag, retry count (2), `forbidOnly`, reporter selection.
+- webServer uses Azurite for Table Storage — global-setup clears tables.
+- Tests run single-worker (`workers: 1`) — game state is shared.
+- `test-results/` directory only exists on failure — upload steps use `if-no-files-found: ignore`.

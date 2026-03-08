@@ -24,7 +24,7 @@ test.describe('Authentication', () => {
     await homePage.goto();
 
     // Should no longer see welcome banner
-    await expect(page.locator('.bg-light.p-5')).not.toBeVisible();
+    await expect(page.getByTestId('welcome-banner')).not.toBeVisible();
   });
 
   test('different users have separate identities', async ({ browser }) => {
@@ -55,7 +55,7 @@ test.describe('Authentication', () => {
 
   test('admin role grants admin access', async ({ page }) => {
     await signIn(page, players.admin);
-    const response = await page.goto('/Analytics');
+    const response = await page.goto('/Analytics', { waitUntil: 'domcontentloaded' });
     // Admin should be able to access analytics
     expect(response?.status()).not.toBe(403);
   });

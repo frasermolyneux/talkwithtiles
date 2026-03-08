@@ -18,15 +18,15 @@ export class CreateGamePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.form = page.locator('form[action*="Create"]');
-    this.gameTypeSelect = page.locator('#GameType');
+    this.form = page.getByTestId('create-game-form');
+    this.gameTypeSelect = page.getByTestId('select-game-type');
     this.tileBagVisibilitySelect = page.locator('#TileBagVisibilityOption');
-    this.publicGameCheckbox = page.locator('#PublicGame');
-    this.addPlayerButton = page.locator('#addAdditionalPlayers button');
-    this.additionalPlayersContainer = page.locator('#additionalPlayers');
-    this.submitButton = page.locator('input[type="submit"][value="Create Game"]');
-    this.advancedOptionsToggle = page.locator('[data-bs-target="#collapseOne"]');
-    this.overrideChallengeCheckbox = page.locator('#CanOverrideChallengeOutcome');
+    this.publicGameCheckbox = page.getByTestId('checkbox-public-game');
+    this.addPlayerButton = page.getByTestId('btn-add-player');
+    this.additionalPlayersContainer = page.getByTestId('additional-players');
+    this.submitButton = page.getByTestId('btn-create-game-submit');
+    this.advancedOptionsToggle = page.getByTestId('btn-advanced-options');
+    this.overrideChallengeCheckbox = page.getByTestId('checkbox-override-challenge');
     this.thatsNotAWordSelect = page.locator('#ThatsNotAWordGameChallengeResult');
     this.thatsNotAValidTurnSelect = page.locator('#ThatsNotAValidTurnGameChallengeResult');
     this.catchallSelect = page.locator('#CatchallGameChallengeResult');

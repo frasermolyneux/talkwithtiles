@@ -9,10 +9,10 @@ export class ScrabbleIndexPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.activeGamesTable = page.locator('[data-testid="active-games"]');
-    this.completedGamesTable = page.locator('[data-testid="completed-games"]');
-    this.createGameLink = page.locator('a[href*="Scrabble/Create"]');
-    this.pageHeading = page.locator('h4').first();
+    this.activeGamesTable = page.getByTestId('active-games');
+    this.completedGamesTable = page.getByTestId('completed-games');
+    this.createGameLink = page.getByTestId('nav-create-game');
+    this.pageHeading = page.getByRole('heading', { level: 4 });
   }
 
   async goto(): Promise<void> {

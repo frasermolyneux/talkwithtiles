@@ -9,7 +9,8 @@ test.describe('Navigation & Public Pages', () => {
     await homePage.goto();
 
     await expect(page).toHaveTitle(/Talk With Tiles/i);
-    await expect(homePage.carousel).toBeVisible();
+    // Welcome banner only shows for authenticated users; check marketing heading instead
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
   });
 
   test('authenticated user sees welcome banner', async ({ page }) => {
@@ -30,7 +31,7 @@ test.describe('Navigation & Public Pages', () => {
 
   test('FAQ page is publicly accessible', async ({ page }) => {
     await page.goto('/faq');
-    await expect(page.locator('h1')).toContainText(/Frequently Asked Questions|FAQ/i);
+    await expect(page.getByRole('heading', { level: 1 })).toContainText(/Frequently Asked Questions|FAQ/i);
   });
 
   test('Getting Started page is publicly accessible', async ({ page }) => {
@@ -48,15 +49,22 @@ test.describe('Navigation & Public Pages', () => {
     expect(response?.status()).toBe(404);
   });
 
-  test('navbar links are functional', async ({ page }) => {
+  test('navbar links are functional', async ({ page, isMobile }) => {
     await signIn(page, players.player1);
     await page.goto('/');
 
+    // On mobile, open the hamburger menu first
+    if (isMobile) {
+      const toggler = page.getByTestId('nav-toggler');
+      await toggler.click();
+      await page.locator('.navbar-collapse.show, .navbar-collapse.collapsing').waitFor({ state: 'visible' });
+    }
+
     // Test Scrabble dropdown
-    const scrabbleDropdown = page.locator('a.nav-link.dropdown-toggle', { hasText: 'Scrabble' });
+    const scrabbleDropdown = page.getByTestId('nav-scrabble');
     await scrabbleDropdown.click();
-    const myGames = page.locator('.dropdown-item', { hasText: /My Games|Games/i });
-    await expect(myGames.first()).toBeVisible();
+    const myGames = page.getByTestId('nav-my-games');
+    await expect(myGames).toBeVisible();
   });
 
   test('health check endpoint responds', async ({ page }) => {

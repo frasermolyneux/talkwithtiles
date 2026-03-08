@@ -1,7 +1,7 @@
 @using MX.TalkWithTiles.Web.Extensions
 @model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
 
-<div id="exchangeTilesModal" class="modal fade" tabindex="-1">
+<div id="exchangeTilesModal" class="modal fade" tabindex="-1" data-testid="modal-exchange-tiles">
     <div class="modal-dialog">
         <div class="modal-content">
             <form asp-controller="Scrabble" asp-action="ExchangeTiles" asp-antiforgery="true" method="post">
@@ -34,9 +34,9 @@
                 <div class="modal-footer">
 
                     <input name="id" type="hidden" value="@Model.GameId"/>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-right-left me-1"></i>Confirm Exchange Tiles</button>
+                    <button type="submit" class="btn btn-primary" data-testid="modal-exchange-tiles-confirm"><i class="fas fa-right-left me-1"></i>Confirm Exchange Tiles</button>
 
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-testid="modal-exchange-tiles-cancel">Close</button>
                 </div>
             </form>
         </div>

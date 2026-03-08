@@ -8,6 +8,7 @@ import type { TestUser } from '../helpers/test-data';
 export class BasePage {
   readonly page: Page;
   readonly navbar: Locator;
+  readonly navToggler: Locator;
   readonly alertContainer: Locator;
   readonly homeLink: Locator;
   readonly scrabbleDropdown: Locator;
@@ -18,12 +19,13 @@ export class BasePage {
   constructor(page: Page) {
     this.page = page;
     this.navbar = page.locator('nav.navbar');
-    this.alertContainer = page.locator('alerts, .alert');
-    this.homeLink = page.locator('a.nav-link', { hasText: 'Home' });
-    this.scrabbleDropdown = page.locator('a.nav-link.dropdown-toggle', { hasText: 'Scrabble' });
-    this.aboutDropdown = page.locator('a.nav-link.dropdown-toggle', { hasText: 'About/Guides' });
-    this.feedbackLink = page.locator('a.nav-link', { hasText: 'Feedback' });
-    this.userDropdown = page.locator('#navbarDropdown');
+    this.navToggler = page.getByTestId('nav-toggler');
+    this.alertContainer = page.getByTestId('alert-container');
+    this.homeLink = page.getByTestId('nav-home');
+    this.scrabbleDropdown = page.getByTestId('nav-scrabble');
+    this.aboutDropdown = page.getByTestId('nav-about');
+    this.feedbackLink = page.getByTestId('nav-feedback');
+    this.userDropdown = page.getByTestId('nav-user-menu');
   }
 
   async signInAs(user: TestUser): Promise<void> {

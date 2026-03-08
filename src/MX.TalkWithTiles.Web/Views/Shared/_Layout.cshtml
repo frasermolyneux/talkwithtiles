@@ -40,10 +40,10 @@
 
 
 <div class="container @(hideClutter ? "" : "mt-5")">
-    <div class="pt-3 pb-2">
+    <div class="pt-3 pb-2" data-testid="alert-container">
         <alerts></alerts>
     </div>
-    <main id="mainContainer" role="main" class="pb-3">
+    <main id="mainContainer" role="main" class="pb-3" data-testid="main-content">
         @RenderBody()
     </main>
 </div>

@@ -1,6 +1,6 @@
 @model MX.TalkWithTiles.Contracts.StateModels.GameStateModel
 
-<div id="skipTurnModal" class="modal fade" tabindex="-1">
+<div id="skipTurnModal" data-testid="modal-skip-turn" class="modal fade" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
@@ -13,9 +13,9 @@
             <div class="modal-footer">
                 <form asp-controller="Scrabble" asp-action="SkipTurn" asp-antiforgery="true" method="post">
                     <input name="id" type="hidden" value="@Model.GameId"/>
-                    <button type="submit" class="btn btn-primary"><i class="fas fa-forward me-1"></i>Confirm Skip Turn</button>
+                    <button type="submit" data-testid="modal-skip-turn-confirm" class="btn btn-primary"><i class="fas fa-forward me-1"></i>Confirm Skip Turn</button>
                 </form>
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" data-testid="modal-skip-turn-cancel" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>
     </div>

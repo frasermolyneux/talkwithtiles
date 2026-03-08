@@ -7,8 +7,8 @@ export class ContactsPage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.contactsTable = page.locator('table');
-    this.pageHeading = page.locator('h2, h3').first();
+    this.contactsTable = page.getByTestId('contacts-table');
+    this.pageHeading = page.getByRole('heading').first();
   }
 
   async goto(): Promise<void> {

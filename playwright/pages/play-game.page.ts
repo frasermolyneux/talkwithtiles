@@ -34,30 +34,30 @@ export class PlayGamePage extends BasePage {
   constructor(page: Page) {
     super(page);
 
-    // Board
-    this.board = page.locator('#scrabbleBoard');
+    // Board — keep #scrabbleBoard as it's used by JavaScript
+    this.board = page.getByTestId('scrabble-board');
 
-    // Rack
-    this.rack = page.locator('#scrabbleRack');
-    this.recallButton = page.locator('#recallTiles');
-    this.shuffleButton = page.locator('#shuffleTiles');
-    this.selectedTileMessage = page.locator('#selectedTileMessage');
+    // Rack — keep #scrabbleRack as it's used by JavaScript
+    this.rack = page.getByTestId('scrabble-rack');
+    this.recallButton = page.getByTestId('btn-recall-tiles');
+    this.shuffleButton = page.getByTestId('btn-shuffle-tiles');
+    this.selectedTileMessage = page.getByTestId('selected-tile-message');
 
     // Score
-    this.turnScore = page.locator('#turnScore');
+    this.turnScore = page.getByTestId('turn-score');
 
     // Controls
-    this.submitTurnButton = page.locator('#submitTurn');
-    this.skipTurnButton = page.locator('#skipTurn');
-    this.exchangeTilesButton = page.locator('#exchangeTiles');
-    this.undoLastTurnButton = page.locator('#undoLastTurn');
-    this.issueChallengeButton = page.locator('#issueChallenge');
+    this.submitTurnButton = page.getByTestId('btn-submit-turn');
+    this.skipTurnButton = page.getByTestId('btn-skip-turn');
+    this.exchangeTilesButton = page.getByTestId('btn-exchange-tiles');
+    this.undoLastTurnButton = page.getByTestId('btn-undo-turn');
+    this.issueChallengeButton = page.getByTestId('btn-issue-challenge');
 
     // Player info
-    this.playerSummary = page.locator('.playerSummaryContainer');
-    this.gameStateBanner = page.locator('.bg-light.p-5.rounded-3');
-    this.bagButton = page.locator('#bagImage, #bagImageCount').locator('..');
-    this.bagCount = page.locator('#bagImage + span, #bagImageCount + span');
+    this.playerSummary = page.getByTestId('player-summary');
+    this.gameStateBanner = page.getByTestId('game-state-banner');
+    this.bagButton = page.getByTestId('bag-button').first();
+    this.bagCount = page.getByTestId('bag-count').first();
   }
 
   async goto(gameId: string): Promise<void> {
@@ -257,7 +257,7 @@ export class PlayGamePage extends BasePage {
 
   async getPlayerScores(): Promise<Map<string, number>> {
     const scores = new Map<string, number>();
-    const badges = this.playerSummary.locator('.badge');
+    const badges = this.playerSummary.locator('[data-testid="player-badge"]');
     const count = await badges.count();
 
     for (let i = 0; i < count; i++) {

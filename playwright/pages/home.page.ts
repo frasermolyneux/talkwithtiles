@@ -9,9 +9,9 @@ export class HomePage extends BasePage {
 
   constructor(page: Page) {
     super(page);
-    this.welcomeBanner = page.locator('.bg-light.p-5');
-    this.createGameButton = page.locator('a', { hasText: 'Create Scrabble Game' });
-    this.carousel = page.locator('#carouselExampleIndicators');
+    this.welcomeBanner = page.getByTestId('welcome-banner');
+    this.createGameButton = page.getByTestId('btn-create-game');
+    this.carousel = page.getByTestId('home-carousel');
     this.signInButton = page.locator('a', { hasText: 'Continue with Microsoft' });
   }
 
