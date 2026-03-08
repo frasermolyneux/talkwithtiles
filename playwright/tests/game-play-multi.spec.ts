@@ -4,7 +4,7 @@ import { players, scrabbleWords, boardCenter } from '../helpers/test-data';
 import { findPlayableWord } from '../helpers/gameplay.helper';
 
 test.describe('3-Player Game', () => {
-  test('three players can take turns in order', async ({ threePlayers }) => {
+  test('three players can all see the game board', async ({ threePlayers }) => {
     const [p1, p2, p3] = threePlayers;
 
     const createPage = new CreateGamePage(p1.page);

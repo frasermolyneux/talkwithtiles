@@ -35,19 +35,28 @@ interface MoveResult {
 /**
  * Submit the current move and capture the server's JSON response.
  *
- * Unlike PlayGamePage.submitMove(), this does NOT wait for the client-side
- * page reload. We intercept the network response to assert on the server's
- * validation result directly.
+ * Uses route interception to buffer the response body before the page
+ * JS processes it — for valid moves, the client calls location.reload()
+ * which would otherwise cause response.json() to fail.
  */
 async function submitAndCapture(session: PlayerSession): Promise<MoveResult> {
-  const responsePromise = session.page.waitForResponse(
-    (resp) =>
-      resp.url().includes('/Scrabble/SubmitPlayerMove/') &&
-      resp.request().method() === 'POST',
-  );
+  let resolveResult!: (result: MoveResult) => void;
+  const resultPromise = new Promise<MoveResult>((resolve) => {
+    resolveResult = resolve;
+  });
+
+  await session.page.route('**/Scrabble/SubmitPlayerMove/**', async (route) => {
+    const response = await route.fetch();
+    const json = (await response.json()) as MoveResult;
+    resolveResult(json);
+    await route.fulfill({ response });
+  });
+
   await session.playPage.submitTurnButton.click();
-  const response = await responsePromise;
-  return (await response.json()) as MoveResult;
+  const result = await resultPromise;
+
+  await session.page.unroute('**/Scrabble/SubmitPlayerMove/**');
+  return result;
 }
 
 /**

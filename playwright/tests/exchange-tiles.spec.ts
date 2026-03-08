@@ -35,5 +35,9 @@ test.describe('Exchange Tiles', () => {
     await currentPlayer.playPage.waitForReady();
     const newLetters = await currentPlayer.playPage.getRackLetters();
     expect(newLetters.length).toBe(7);
+
+    // Turn should have passed to the other player
+    const isStillCurrent = await currentPlayer.playPage.isCurrentPlayer();
+    expect(isStillCurrent).toBe(false);
   });
 });

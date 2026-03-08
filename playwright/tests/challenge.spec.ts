@@ -18,8 +18,8 @@ test.describe('Challenge System', () => {
     const gameId = gameUrl.match(/Play\/([a-f0-9-]+)/i)?.[1]!;
 
     await p2.playPage.goto(gameId);
-    await p2.playPage.waitForReady();
-    await p1.playPage.waitForReady();
+    await p2.playPage.waitForStableBoard();
+    await p1.playPage.waitForStableBoard();
 
     // First player makes a move
     const firstPlayer = (await p1.playPage.isCurrentPlayer()) ? p1 : p2;
@@ -27,30 +27,35 @@ test.describe('Challenge System', () => {
 
     const rackLetters = await firstPlayer.playPage.getRackLetters();
     const word = findPlayableWord(rackLetters, scrabbleWords.twoLetter);
-
-    if (word) {
-      const center = boardCenter.StandardBoard;
-      await firstPlayer.playPage.placeWord(word, center.x, center.y);
-      await firstPlayer.playPage.submitMove();
-      await firstPlayer.playPage.waitForReady();
-
-      // Second player reloads to see the updated game state
-      await secondPlayer.page.goto(`/Scrabble/Play/${gameId}`);
-      await secondPlayer.playPage.waitForReady();
-
-      const challengeVisible = await secondPlayer.playPage.issueChallengeButton.isVisible();
-      if (challengeVisible) {
-        await secondPlayer.playPage.issueChallengeButton.click();
-        const challengeModal = new IssueChallengeModal(secondPlayer.page);
-        await expect(challengeModal.modal).toBeVisible();
-
-        // Issue the challenge
-        await challengeModal.confirm();
-
-        // First player should see the challenge resolution
-        await firstPlayer.page.goto(`/Scrabble/Play/${gameId}`);
-        await firstPlayer.playPage.waitForReady();
-      }
+    if (!word) {
+      test.skip(true, 'No playable word could be formed from random rack tiles');
+      return;
     }
+
+    const center = boardCenter.StandardBoard;
+    await firstPlayer.playPage.placeWord(word, center.x, center.y);
+    await firstPlayer.playPage.submitMove();
+    await firstPlayer.playPage.waitForReady();
+
+    // Second player reloads to see the updated game state
+    await secondPlayer.page.goto(`/Scrabble/Play/${gameId}`);
+    await secondPlayer.playPage.waitForReady();
+
+    const challengeVisible = await secondPlayer.playPage.issueChallengeButton.isVisible();
+    if (!challengeVisible) {
+      test.skip(true, 'Challenge button not visible — game state may not support challenges');
+      return;
+    }
+
+    await secondPlayer.playPage.issueChallengeButton.click();
+    const challengeModal = new IssueChallengeModal(secondPlayer.page);
+    await expect(challengeModal.modal).toBeVisible();
+
+    // Issue the challenge
+    await challengeModal.confirm();
+
+    // First player should see the challenge resolution
+    await firstPlayer.page.goto(`/Scrabble/Play/${gameId}`);
+    await firstPlayer.playPage.waitForReady();
   });
 });
