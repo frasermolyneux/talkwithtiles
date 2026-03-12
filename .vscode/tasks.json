@@ -98,19 +98,10 @@
         {
             "label": "start-azurite",
             "type": "shell",
-            "command": "npx",
-            "args": [
-                "-y",
-                "-p",
-                "azurite",
-                "azurite-table",
-                "--tableHost",
-                "127.0.0.1",
-                "--tablePort",
-                "10002",
-                "--location",
-                "${workspaceFolder}"
-            ],
+            "command": "npx -y -p azurite azurite-table --tableHost 127.0.0.1 --tablePort 10002",
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
             "isBackground": true,
             "problemMatcher": {
                 "pattern": {
@@ -120,8 +111,8 @@
                 },
                 "background": {
                     "activeOnStart": true,
-                    "beginsPattern": "^Azurite",
-                    "endsPattern": "^Azurite Table service is successfully listening"
+                    "beginsPattern": "Azurite Table service is starting",
+                    "endsPattern": "Azurite Table service successfully started"
                 }
             },
             "presentation": {
@@ -136,6 +127,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/playwright"
             },
+            "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
@@ -149,6 +141,7 @@
                 "cwd": "${workspaceFolder}/playwright"
             },
             "dependsOn": "start-azurite",
+            "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
@@ -162,6 +155,7 @@
                 "cwd": "${workspaceFolder}/playwright"
             },
             "dependsOn": "start-azurite",
+            "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
@@ -175,6 +169,7 @@
                 "cwd": "${workspaceFolder}/playwright"
             },
             "dependsOn": "start-azurite",
+            "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
                 "panel": "dedicated"
@@ -187,6 +182,7 @@
             "options": {
                 "cwd": "${workspaceFolder}/playwright"
             },
+            "problemMatcher": [],
             "presentation": {
                 "reveal": "always"
             }
