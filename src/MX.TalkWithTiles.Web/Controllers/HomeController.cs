@@ -1,20 +1,28 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using MX.TalkWithTiles.Repository.Interfaces;
 using MX.TalkWithTiles.Web.Extensions;
 using MX.TalkWithTiles.Web.Models;
 
 namespace MX.TalkWithTiles.Web.Controllers;
 
 [Route("")]
-public class HomeController(ILogger<HomeController> logger) : Controller
+public class HomeController(ILogger<HomeController> logger, IGameInviteRepository gameInviteRepository) : Controller
 {
     [Route("")]
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
         if (User.Identity?.IsAuthenticated == true)
         {
             this.AddAlertWarning(
                 "Thanks for playing on Talk With Tiles. Feedback is encouraged through the feedback form <a href='/feedback'>here</a>");
+
+            var userEmail = User.GetEmail();
+            if (!string.IsNullOrEmpty(userEmail))
+            {
+                var pendingInvites = await gameInviteRepository.GetGameInvites(userEmail);
+                ViewData["PendingInviteCount"] = pendingInvites.Count;
+            }
         }
 
         return View();

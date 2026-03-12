@@ -18,6 +18,8 @@ public class AccountController(IWebHostEnvironment environment, IConfiguration c
             }
 
             ViewData["ReturnUrl"] = returnUrl;
+            ViewData["TestingEnabled"] = environment.IsDevelopment()
+                && string.Equals(configuration["Testing:Enabled"], "true", StringComparison.OrdinalIgnoreCase);
             return View();
         }
 

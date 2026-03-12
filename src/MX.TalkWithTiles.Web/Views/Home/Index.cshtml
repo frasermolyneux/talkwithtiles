@@ -8,6 +8,22 @@
 
     @if (User.Identity?.IsAuthenticated == true)
     {
+        var pendingInviteCount = ViewData["PendingInviteCount"] as int? ?? 0;
+
+        @if (pendingInviteCount > 0)
+        {
+            <div class="row mt-3">
+                <div class="alert alert-info d-flex align-items-center" role="alert" data-testid="invite-banner">
+                    <i class="fas fa-envelope fa-2x me-3"></i>
+                    <div>
+                        <strong>You have @pendingInviteCount game @(pendingInviteCount == 1 ? "invite" : "invites") waiting!</strong>
+                        <br />
+                        <a asp-controller="Scrabble" asp-action="Index" class="alert-link">View your game invites</a> to accept or decline.
+                    </div>
+                </div>
+            </div>
+        }
+
         <div class="row mt-3">
             <div class="bg-light p-5 rounded-3" data-testid="welcome-banner">
                 <h1 class="display-4">Welcome @User.GetUserName()!</h1>

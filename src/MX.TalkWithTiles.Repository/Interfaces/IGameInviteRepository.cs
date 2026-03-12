@@ -9,4 +9,5 @@ public interface IGameInviteRepository
 {
     Task UpdateGameInvite(Guid inviteId, string emailAddress, Guid gameId);
     Task<List<GameInviteDto>> GetGameInvites(string userEmail);
+    Task DeleteGameInvite(Guid inviteId, string emailAddress);
 }

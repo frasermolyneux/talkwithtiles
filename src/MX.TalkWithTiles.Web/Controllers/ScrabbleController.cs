@@ -16,6 +16,7 @@ public class ScrabbleController(
     ILogger<ScrabbleController> logger,
     IGameStateRepository gameStateRepository,
     IContactsRepository contactsRepository,
+    IGameInviteRepository gameInviteRepository,
     IGameEngineFactory gameEngineFactory,
     IHttpContextAccessor httpContextAccessor) : Controller
 {
@@ -25,6 +26,7 @@ public class ScrabbleController(
         public async Task<IActionResult> Index()
         {
             var playerId = User.GetUserGuid();
+            var userEmail = User.GetEmail();
 
             var gamesFilterModel = new GameStateFilterModel
             {
@@ -35,6 +37,12 @@ public class ScrabbleController(
             };
 
             var gamesEntries = await gameStateRepository.GetGameStates(gamesFilterModel);
+
+            var pendingInvites = !string.IsNullOrEmpty(userEmail)
+                ? await gameInviteRepository.GetGameInvites(userEmail)
+                : [];
+
+            ViewData["PendingInvites"] = pendingInvites;
 
             return View(gamesEntries);
         }
@@ -92,6 +100,7 @@ public class ScrabbleController(
                 {
                     var inviteId = Guid.NewGuid();
                     gameEngine.AddPlayer(inviteId, modelPlayerModel.Identifier);
+                    await gameInviteRepository.UpdateGameInvite(inviteId, modelPlayerModel.Identifier, gameEngine.GameStateModel.GameId);
                 }
                 else
                 {
@@ -127,6 +136,112 @@ public class ScrabbleController(
             }
 
             return RedirectToAction("Play", new {id = gameStateModel.GameId});
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AcceptInvite(Guid gameId)
+        {
+            var gameStateModel = await gameStateRepository.GetGameState(gameId);
+            if (gameStateModel == null) return NotFound();
+
+            var userEmail = User.GetEmail();
+            if (string.IsNullOrEmpty(userEmail)) return BadRequest();
+
+            var invitedPlayer = gameStateModel.PlayersStateModel.Players
+                .FirstOrDefault(p => string.Equals(p.PlayerName, userEmail, StringComparison.OrdinalIgnoreCase));
+
+            if (invitedPlayer == null) return NotFound();
+
+            var oldPlayerId = invitedPlayer.PlayerId;
+            var newPlayerId = User.GetUserGuid();
+
+            // Update player identity
+            invitedPlayer.PlayerId = newPlayerId;
+            invitedPlayer.PlayerName = User.GetUserName() ?? userEmail;
+
+            // Update turn order tracking
+            var orderIndex = gameStateModel.PlayerMoveStateModel.PlayerOrderIds.IndexOf(oldPlayerId);
+            if (orderIndex >= 0)
+                gameStateModel.PlayerMoveStateModel.PlayerOrderIds[orderIndex] = newPlayerId;
+
+            if (gameStateModel.PlayerMoveStateModel.CurrentPlayerId == oldPlayerId)
+                gameStateModel.PlayerMoveStateModel.CurrentPlayerId = newPlayerId;
+
+            // Update challenge tracking
+            if (gameStateModel.ChallengeStateModel.ChallengedPlayerId == oldPlayerId)
+                gameStateModel.ChallengeStateModel.ChallengedPlayerId = newPlayerId;
+            if (gameStateModel.ChallengeStateModel.ChallengerPlayerId == oldPlayerId)
+                gameStateModel.ChallengeStateModel.ChallengerPlayerId = newPlayerId;
+
+            // Update end-game tracking
+            var winnerIndex = gameStateModel.EndGameStateModel.Winners.IndexOf(oldPlayerId);
+            if (winnerIndex >= 0)
+                gameStateModel.EndGameStateModel.Winners[winnerIndex] = newPlayerId;
+            if (gameStateModel.EndGameStateModel.SkippedTurns.Remove(oldPlayerId, out var skips))
+                gameStateModel.EndGameStateModel.SkippedTurns[newPlayerId] = skips;
+
+            await gameStateRepository.UpdateGameState(gameId, gameStateModel);
+            await gameStateRepository.DeleteGameStateIndex(gameId, oldPlayerId);
+
+            // Delete the invite record
+            var invites = await gameInviteRepository.GetGameInvites(userEmail);
+            var matchingInvite = invites.FirstOrDefault(i => i.GameId == gameId);
+            if (matchingInvite != null)
+                await gameInviteRepository.DeleteGameInvite(matchingInvite.InviteId, userEmail);
+
+            // Update contacts for all players
+            var players = gameStateModel.Players();
+            var contactUpdates = players.SelectMany(
+                player => players.Where(p => p.PlayerId != player.PlayerId),
+                (player, other) => (player.PlayerId, other.PlayerId, other.PlayerName));
+
+            foreach (var (sourcePlayerId, targetPlayerId, targetPlayerName) in contactUpdates)
+            {
+                await contactsRepository.UpdateContact(sourcePlayerId, targetPlayerId, targetPlayerName);
+            }
+
+            logger.LogInformation("User {UserId} accepted invite to game {GameId}", newPlayerId, gameId);
+
+            this.AddAlertSuccess("You have joined the game!");
+            return RedirectToAction("Play", new { id = gameId });
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> RejectInvite(Guid gameId)
+        {
+            var gameStateModel = await gameStateRepository.GetGameState(gameId);
+            if (gameStateModel == null) return NotFound();
+
+            var userEmail = User.GetEmail();
+            if (string.IsNullOrEmpty(userEmail)) return BadRequest();
+
+            var invitedPlayer = gameStateModel.PlayersStateModel.Players
+                .FirstOrDefault(p => string.Equals(p.PlayerName, userEmail, StringComparison.OrdinalIgnoreCase));
+
+            if (invitedPlayer == null) return NotFound();
+
+            var oldPlayerId = invitedPlayer.PlayerId;
+
+            // Remove the player from the game
+            gameStateModel.PlayersStateModel.Players.Remove(invitedPlayer);
+            gameStateModel.PlayerMoveStateModel.PlayerOrderIds.Remove(oldPlayerId);
+            gameStateModel.EndGameStateModel.SkippedTurns.Remove(oldPlayerId);
+
+            await gameStateRepository.UpdateGameState(gameId, gameStateModel);
+            await gameStateRepository.DeleteGameStateIndex(gameId, oldPlayerId);
+
+            // Delete the invite record
+            var invites = await gameInviteRepository.GetGameInvites(userEmail);
+            var matchingInvite = invites.FirstOrDefault(i => i.GameId == gameId);
+            if (matchingInvite != null)
+                await gameInviteRepository.DeleteGameInvite(matchingInvite.InviteId, userEmail);
+
+            logger.LogInformation("User {Email} rejected invite to game {GameId}", userEmail, gameId);
+
+            this.AddAlertInfo("You have declined the game invite.");
+            return RedirectToAction("Index");
         }
 
         [HttpGet]

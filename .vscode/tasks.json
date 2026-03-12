@@ -1,0 +1,195 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "restore",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "restore",
+                "${workspaceFolder}/src/MX.TalkWithTiles.sln"
+            ],
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem"
+            }
+        },
+        {
+            "label": "build",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/MX.TalkWithTiles.sln",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "dependsOn": "restore",
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem"
+            }
+        },
+        {
+            "label": "build-web-project",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary;ForceNoAlign"
+            ],
+            "problemMatcher": "$msCompile",
+            "presentation": {
+                "reveal": "silent",
+                "revealProblems": "onProblem"
+            }
+        },
+        {
+            "label": "watch",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "watch",
+                "run",
+                "--project",
+                "${workspaceFolder}/src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj"
+            ],
+            "options": {
+                "env": {
+                    "ASPNETCORE_ENVIRONMENT": "Development",
+                    "Testing__Enabled": "true",
+                    "AppData__StorageConnectionString": "DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;"
+                }
+            },
+            "problemMatcher": "$msCompile",
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always"
+            }
+        },
+        {
+            "label": "unit-tests",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "test",
+                "${workspaceFolder}/src/MX.TalkWithTiles.sln",
+                "--verbosity",
+                "normal"
+            ],
+            "problemMatcher": "$msCompile",
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "start-azurite",
+            "type": "shell",
+            "command": "npx",
+            "args": [
+                "-y",
+                "-p",
+                "azurite",
+                "azurite-table",
+                "--tableHost",
+                "127.0.0.1",
+                "--tablePort",
+                "10002",
+                "--location",
+                "${workspaceFolder}"
+            ],
+            "isBackground": true,
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": "^ERROR",
+                    "file": 1,
+                    "message": 0
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": "^Azurite",
+                    "endsPattern": "^Azurite Table service is successfully listening"
+                }
+            },
+            "presentation": {
+                "reveal": "silent",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "playwright-install",
+            "type": "shell",
+            "command": "npm ci && npx playwright install chromium --with-deps",
+            "options": {
+                "cwd": "${workspaceFolder}/playwright"
+            },
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "playwright-tests",
+            "type": "shell",
+            "command": "npx playwright test --project=chromium",
+            "options": {
+                "cwd": "${workspaceFolder}/playwright"
+            },
+            "dependsOn": "start-azurite",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "playwright-tests-headed",
+            "type": "shell",
+            "command": "npx playwright test --project=chromium --headed",
+            "options": {
+                "cwd": "${workspaceFolder}/playwright"
+            },
+            "dependsOn": "start-azurite",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "playwright-tests-ui",
+            "type": "shell",
+            "command": "npx playwright test --ui",
+            "options": {
+                "cwd": "${workspaceFolder}/playwright"
+            },
+            "dependsOn": "start-azurite",
+            "presentation": {
+                "reveal": "always",
+                "panel": "dedicated"
+            }
+        },
+        {
+            "label": "playwright-report",
+            "type": "shell",
+            "command": "npx playwright show-report",
+            "options": {
+                "cwd": "${workspaceFolder}/playwright"
+            },
+            "presentation": {
+                "reveal": "always"
+            }
+        }
+    ]
+}

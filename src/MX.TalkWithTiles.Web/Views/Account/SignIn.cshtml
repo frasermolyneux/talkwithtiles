@@ -1,10 +1,56 @@
 @{
     ViewData["Title"] = "Sign In";
     var returnUrl = ViewData["ReturnUrl"] as string;
+    var testingEnabled = ViewData["TestingEnabled"] is true;
 }
 
 <div class="row justify-content-center pt-5">
     <div class="col-md-6 col-lg-5">
+        @if (testingEnabled)
+        {
+            <div class="card shadow mb-4 border-warning">
+                <div class="card-body p-4">
+                    <h2 class="card-title text-center mb-2">
+                        <i class="fas fa-flask me-2 text-warning"></i>Dev Sign In
+                    </h2>
+                    <p class="text-muted text-center mb-4">Quick sign in as a test player</p>
+
+                    <div class="d-grid gap-2" data-testid="dev-signin-buttons">
+                        <button type="button" class="btn btn-warning btn-lg" onclick="devSignIn('emily-id', 'Emily', 'emily@@local.test')">
+                            <i class="fas fa-user me-2"></i>Sign in as Emily
+                        </button>
+                        <button type="button" class="btn btn-warning btn-lg" onclick="devSignIn('toby-id', 'Toby', 'toby@@local.test')">
+                            <i class="fas fa-user me-2"></i>Sign in as Toby
+                        </button>
+                        <button type="button" class="btn btn-warning btn-lg" onclick="devSignIn('priya-id', 'Priya', 'priya@@local.test')">
+                            <i class="fas fa-user me-2"></i>Sign in as Priya
+                        </button>
+                        <button type="button" class="btn btn-warning btn-lg" onclick="devSignIn('marco-id', 'Marco', 'marco@@local.test')">
+                            <i class="fas fa-user me-2"></i>Sign in as Marco
+                        </button>
+                        <button type="button" class="btn btn-warning btn-lg" onclick="devSignIn('suki-id', 'Suki', 'suki@@local.test')">
+                            <i class="fas fa-user me-2"></i>Sign in as Suki
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                async function devSignIn(userId, userName, email) {
+                    const response = await fetch('/api/test/signin', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId, userName, email })
+                    });
+                    if (response.ok) {
+                        window.location.href = '@(returnUrl ?? "/")';
+                    } else {
+                        alert('Sign in failed: ' + response.statusText);
+                    }
+                }
+            </script>
+        }
+
         <div class="card shadow">
             <div class="card-body p-4">
                 <h2 class="card-title text-center mb-2">Sign In</h2>

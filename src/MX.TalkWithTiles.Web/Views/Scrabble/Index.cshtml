@@ -1,9 +1,55 @@
 @using MX.TalkWithTiles.Web.Extensions
 @using MX.TalkWithTiles.Contracts.Constants
+@using MX.TalkWithTiles.Repository.Dtos
 @model List<MX.TalkWithTiles.Contracts.StateModels.GameStateModel>
 
 @{
     ViewData["Title"] = "My Scrabble Games";
+    var pendingInvites = ViewData["PendingInvites"] as List<GameInviteDto> ?? [];
+}
+
+@if (pendingInvites.Count > 0)
+{
+    <h4><i class="fas fa-envelope me-2"></i>Game Invites</h4>
+
+    <div class="row mb-4">
+        <table data-testid="game-invites" class="table table-bordered table-responsive-sm">
+            <thead>
+            <tr>
+                <td>Invited As</td>
+                <td>Game ID</td>
+                <td></td>
+            </tr>
+            </thead>
+            <tbody>
+            @foreach (var invite in pendingInvites)
+            {
+                <tr>
+                    <td>@invite.Email</td>
+                    <td>@invite.GameId.ToString()[..8]&hellip;</td>
+                    <td>
+                        <form asp-action="AcceptInvite" asp-controller="Scrabble" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="gameId" value="@invite.GameId" />
+                            <button type="submit" class="btn btn-success btn-sm" data-testid="btn-accept-invite">
+                                <i class="fas fa-check me-1"></i>Accept
+                            </button>
+                        </form>
+                        <form asp-action="RejectInvite" asp-controller="Scrabble" method="post" style="display:inline">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="gameId" value="@invite.GameId" />
+                            <button type="submit" class="btn btn-danger btn-sm" data-testid="btn-reject-invite">
+                                <i class="fas fa-times me-1"></i>Decline
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+            </tbody>
+        </table>
+    </div>
+
+    <hr />
 }
 
 <h4>Active Games</h4>

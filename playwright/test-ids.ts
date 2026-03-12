@@ -18,6 +18,7 @@ export const NAV = {
   signIn: 'nav-sign-in',
   signOut: 'nav-sign-out',
   contacts: 'nav-contacts',
+  profile: 'nav-profile',
   analytics: 'nav-analytics',
 } as const;
 
@@ -123,4 +124,20 @@ export const CHALLENGE = {
 // Contacts
 export const CONTACTS = {
   table: 'contacts-table',
+} as const;
+
+// Profile
+export const PROFILE = {
+  card: 'profile-card',
+  name: 'profile-name',
+  email: 'profile-email',
+  userId: 'profile-user-id',
+} as const;
+
+// Game Invites
+export const INVITES = {
+  banner: 'invite-banner',
+  table: 'game-invites',
+  btnAccept: 'btn-accept-invite',
+  btnReject: 'btn-reject-invite',
 } as const;

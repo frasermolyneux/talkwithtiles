@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Profile";
+    var userId = ViewData["UserId"] as string;
+    var userName = ViewData["UserName"] as string;
+    var email = ViewData["Email"] as string;
+}
+
+<div class="row justify-content-center pt-5">
+    <div class="col-md-6 col-lg-5">
+        <div class="card shadow">
+            <div class="card-body p-4" data-testid="profile-card">
+                <div class="text-center mb-4">
+                    <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center" style="width: 80px; height: 80px; font-size: 2rem;">
+                        @(userName?[0].ToString().ToUpperInvariant() ?? "?")
+                    </div>
+                </div>
+
+                <h2 class="card-title text-center mb-4">Your Profile</h2>
+
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">Name</dt>
+                    <dd class="col-sm-8" data-testid="profile-name">@userName</dd>
+
+                    <dt class="col-sm-4">Email</dt>
+                    <dd class="col-sm-8" data-testid="profile-email">@email</dd>
+
+                    <dt class="col-sm-4">User ID</dt>
+                    <dd class="col-sm-8 text-truncate" data-testid="profile-user-id" title="@userId">@userId</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>

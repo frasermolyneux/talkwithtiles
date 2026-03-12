@@ -32,4 +32,9 @@ public class GameInviteRepository(IOptions<AppDataOptions> options) : AppDataRep
 
         return playerInvites;
     }
+
+    public async Task DeleteGameInvite(Guid inviteId, string emailAddress)
+    {
+        await GameInviteTable.DeleteEntityAsync(emailAddress.ToLower(), inviteId.ToString(), Azure.ETag.All);
+    }
 }
