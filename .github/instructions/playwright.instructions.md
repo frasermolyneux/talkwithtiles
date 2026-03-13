@@ -2,69 +2,88 @@
 applyTo: "e2e/**,fixtures/**,helpers/**,pages/**,specs/**,playwright.config.ts,global-setup.ts,test-ids.ts,**/*.cshtml"
 ---
 
-# Playwright E2E Testing — General Guidance
+# Playwright E2E Testing Rules
 
-## Overview
+## MANDATORY: URL Navigation Rules
 
-This project uses Playwright for end-to-end testing of an ASP.NET Core 9 MVC Scrabble web app. Tests run against a real app instance backed by Azurite (Azure Table Storage emulator) with a dev-only cookie auth scheme replacing Entra ID.
+**ALWAYS use relative URLs. NEVER use absolute URLs.**
 
-## Architecture Decisions
+```typescript
+// REQUIRED pattern:
+await page.goto('/');                    // ✅ Correct
+await page.goto('/profile');             // ✅ Correct
+await expect(page).toHaveURL('/profile'); // ✅ Correct
 
-| Decision | Rationale |
-|----------|-----------|
-| Single worker, serial execution | Game state in Azurite is shared; parallel tests cause race conditions |
-| Cookie auth via `TestAuthController` | Avoids external Entra ID dependency; supports multi-player with separate browser contexts |
-| Azurite table emulator | Provides offline-capable Azure Table Storage; auto-started via webServer config |
-| `data-testid` over CSS selectors | Resilient to CSS framework upgrades (Bootstrap); decouples tests from styling |
-| `#id` retained for JS-bound elements | Board cells, rack cells, modals use `id` for JavaScript event handlers |
-| Chromium + mobile-chrome projects | Desktop and mobile viewport coverage via Pixel 7 device emulation |
-
-## Running Tests
-
-```bash
-# Run all tests (Azurite and .NET app auto-start via webServer config)
-npx playwright test
-
-# Run specific test file
-npx playwright test e2e/game-play-2p.spec.ts
-
-# Run specific project
-npx playwright test --project=chromium
+// FORBIDDEN pattern:
+await page.goto('https://localhost:5001/');       // ❌ Never do this
+await expect(page).toHaveURL('https://localhost:5001/profile'); // ❌ Never do this
 ```
 
-VS Code: Use the Playwright extension. The webServer config auto-starts both Azurite and the .NET app.
+## Test Architecture Requirements
+
+- **Single worker execution**: Set `workers: 1` - game state is shared in Azurite
+- **Cookie authentication**: Use `signIn(page, players.player1)` from `helpers/auth.helper.ts`
+- **Multi-player contexts**: Use fixtures from `fixtures/test-fixtures.ts` (twoPlayers, threePlayers, fourPlayers)
+- **Azurite dependency**: Tests require Azurite table emulator (auto-started via webServer config)
+
+## Locator Selection Priority
+
+1. `page.getByTestId('element-name')` - Primary choice for all testable elements
+2. `page.getByRole('button', { name: 'Text' })` - Accessible controls
+3. `page.locator('#specificId')` - ONLY for: JS-bound IDs (`#cell_X-Y`, `#rack_N`), ASP.NET form IDs, Bootstrap targets
+4. **NEVER use CSS class selectors** (`.btn-primary`, `.navbar-nav`, etc.)
+
+## Page Object Model Rules
+
+- Extend `BasePage` for all page classes
+- Define all locators as `readonly` properties in constructor
+- Expose semantic methods (`submitMove()`, `selectTile(letter)`) not raw locators
+- POMs perform actions and queries, tests perform assertions
+- Use relative URLs in `goto()` methods:
+
+```typescript
+async goto(): Promise<void> {
+  await this.page.goto('/profile');
+}
+```
+
+## Test Writing Requirements
+
+```typescript
+// Required imports:
+import { test, expect } from '@playwright/test';
+import { signIn } from '../helpers/auth.helper';
+import { players } from '../helpers/test-data';
+
+// Test structure:
+test.describe('Feature Name', () => {
+  test('specific behavior', async ({ page }) => {
+    await signIn(page, players.player1);
+    await page.goto('/relative-path');
+    // Test implementation
+  });
+});
+```
+
+## Async Interaction Patterns
+
+- **Board stability**: Use `waitForStableBoard()` after navigation to game pages
+- **Auto-retrying assertions**: Use `toBeVisible()`, `toHaveText()` for async-populated elements
+- **Mobile navigation**: Call `page.getByTestId('nav-toggler').click()` before nav items on mobile
+- **Form submissions**: Wait for page events after submit: `await page.waitForEvent('load')`
+- **No fixed delays**: Use event-driven waits, never `waitForTimeout()`
+
+## File Organization
+
+- Tests: `e2e/*.spec.ts`
+- Page Objects: `pages/*.page.ts`, `pages/modals/*.modal.ts`
+- Helpers: `helpers/*.helper.ts`
+- Test data: `helpers/test-data.ts`
+- Test IDs: `test-ids.ts` (register all new data-testid values)
 
 ## CI/CD Integration
 
-E2E tests run in three workflows:
-- `build-and-test.yml` — on feature/bugfix/hotfix branch pushes (conditioned on src or e2e changes)
-- `deploy-prd.yml` — gates `app-service-deploy-dev` (must pass before deployment)
-- `pr-verify.yml` — on pull requests
-
-Workflow jobs: checkout with `fetch-depth: 0` (NBGV needs full history), `dotnet build` before test run, Azurite started as background process, `--no-build` passed to webServer in CI.
-
-The `detect-changes` action filters on `e2e/**`, `playwright.config.ts`, `fixtures/**`, `helpers/**`, `pages/**`, and `package.json`. E2E tests execute when either `src` or Playwright files change.
-
-## Adding New Tests
-
-1. Identify which POM covers the page. Create a new one extending `BasePage` if needed.
-2. Add `data-testid` attributes to any new view elements (see `playwright-cshtml.instructions.md`).
-3. Register new test IDs in `test-ids.ts`.
-4. Update the relevant POM to expose the new elements via `getByTestId()`.
-5. Write the test in `e2e/`. Use fixtures for multi-player scenarios.
-6. Run locally to verify, then push — CI runs automatically.
-
-## Adding New Pages/Views
-
-When creating a new Razor view:
-1. Add `data-testid` to all interactive elements following the `{area}-{element}[-{qualifier}]` convention.
-2. Create a POM in `pages/` extending `BasePage`.
-3. Add corresponding test IDs to `test-ids.ts`.
-
-## Test Reliability Patterns
-
-- Use `waitForStableBoard()` after navigation to game pages — etag polling may trigger reloads.
-- Use auto-retrying assertions (`toBeVisible()`, `toHaveText()`) for elements populated by async JS.
-- For mobile tests, open the hamburger menu (`nav-toggler`) before clicking nav items.
-- Use `waitUntil: 'domcontentloaded'` for pages with heavy external resource loading.
-- Never use fixed delays (`waitForTimeout`) — use event-driven waits.
+- Tests auto-run on: feature/bugfix/hotfix pushes, pull requests, deployments
+- Environment variables: `process.env.CI` controls retry count and reporter
+- Build requirements: `dotnet build` before test execution
+- Azurite auto-start: Background process in CI workflows

@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Profile Page Layout and UI Validation', () => {
   test('Profile Page Layout and Structure', async ({ page }) => {
     // 1. Navigate to profile page
-    await page.goto('https://localhost:5001/profile');
+    await page.goto('/profile');
     await expect(page.getByText('Talk With Tiles')).toBeVisible();
     await expect(page.getByText('© 2026 - Molyneux.IO')).toBeVisible();
 
@@ -19,7 +19,7 @@ test.describe('Profile Page Layout and UI Validation', () => {
 
     // 4. Verify all profile fields are non-editable by checking for absence of form inputs
     await expect(page.locator('input, textarea, select').count()).toBeLessThanOrEqual(0);
-    
+
     // Verify the information is displayed as text, not in form fields
     await expect(page.getByText('Alice')).toBeVisible();
     await expect(page.getByText('alice@test.local')).toBeVisible();

@@ -6,7 +6,7 @@ import { test, expect } from '@playwright/test';
 test.describe('Profile Information Display and Validation', () => {
   test('Profile Shows Correct User Information', async ({ page }) => {
     // 1. Navigate to profile page as authenticated user
-    await page.goto('https://localhost:5001/profile');
+    await page.goto('/profile');
     await expect(page.getByRole('heading', { name: 'Your Profile' })).toBeVisible();
 
     // 2. Verify Name field is displayed
