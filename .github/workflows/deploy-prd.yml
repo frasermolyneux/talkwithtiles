@@ -29,7 +29,7 @@ jobs:
           filters: |
             src:src/**
             terraform:terraform/**
-            playwright:playwright/**
+            playwright:e2e/**,playwright.config.ts,global-setup.ts,fixtures/**,helpers/**,pages/**,package.json
 
   terraform-state-check-dev:
     if: github.event_name != 'schedule'
@@ -148,7 +148,6 @@ jobs:
           node-version: 20
 
       - name: Install Playwright dependencies
-        working-directory: playwright
         run: |
           npm ci
           npx playwright install chromium --with-deps
@@ -166,7 +165,6 @@ jobs:
         run: dotnet build src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj --no-restore
 
       - name: Run Playwright tests
-        working-directory: playwright
         run: npx playwright test --project=chromium
         env:
           CI: true
@@ -176,7 +174,7 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-report
-          path: playwright/playwright-report/
+          path: playwright-report/
           retention-days: 14
 
       - name: Upload test results
@@ -184,7 +182,7 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           name: playwright-results
-          path: playwright/test-results/
+          path: test-results/
           if-no-files-found: ignore
           retention-days: 7
 

@@ -124,9 +124,6 @@
             "label": "playwright-install",
             "type": "shell",
             "command": "npm ci && npx playwright install chromium --with-deps",
-            "options": {
-                "cwd": "${workspaceFolder}/playwright"
-            },
             "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
@@ -137,9 +134,6 @@
             "label": "playwright-tests",
             "type": "shell",
             "command": "npx playwright test --project=chromium",
-            "options": {
-                "cwd": "${workspaceFolder}/playwright"
-            },
             "dependsOn": "start-azurite",
             "problemMatcher": [],
             "presentation": {
@@ -151,9 +145,6 @@
             "label": "playwright-tests-headed",
             "type": "shell",
             "command": "npx playwright test --project=chromium --headed",
-            "options": {
-                "cwd": "${workspaceFolder}/playwright"
-            },
             "dependsOn": "start-azurite",
             "problemMatcher": [],
             "presentation": {
@@ -165,9 +156,6 @@
             "label": "playwright-tests-ui",
             "type": "shell",
             "command": "npx playwright test --ui",
-            "options": {
-                "cwd": "${workspaceFolder}/playwright"
-            },
             "dependsOn": "start-azurite",
             "problemMatcher": [],
             "presentation": {
@@ -179,9 +167,6 @@
             "label": "playwright-report",
             "type": "shell",
             "command": "npx playwright show-report",
-            "options": {
-                "cwd": "${workspaceFolder}/playwright"
-            },
             "problemMatcher": [],
             "presentation": {
                 "reveal": "always"

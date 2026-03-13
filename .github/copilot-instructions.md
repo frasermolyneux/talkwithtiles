@@ -31,9 +31,11 @@ Azure Table Storage via `Azure.Data.Tables` SDK with `DefaultAzureCredential`. C
 - Build: `dotnet build src/MX.TalkWithTiles.sln`
 - Run: `dotnet run --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj`
 - Test: `dotnet test src/MX.TalkWithTiles.sln`
-- Test projects: `MX.TalkWithTiles.CoreEngine.Tests` and `MX.TalkWithTiles.Scrabble.Tests`
+- E2E: `npx playwright test --project=chromium` (Azurite and .NET app auto-start via webServer config)
+- Test projects: `MX.TalkWithTiles.CoreEngine.Tests`, `MX.TalkWithTiles.Scrabble.Tests`, `MX.TalkWithTiles.Web.Tests`
 - Test stack: xUnit 2.9.3, Moq 4.20.72, Microsoft.NET.Test.Sdk 17.12.0
 - Tests use `[Theory]`/`[InlineData]` with extensive mocking of manager interfaces
+- E2E tests live at the repo root: `e2e/` (specs), `pages/` (POMs), `fixtures/`, `helpers/`
 
 ## Infrastructure
 

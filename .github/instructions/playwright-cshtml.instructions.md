@@ -28,7 +28,7 @@ Kebab-case: `{area}-{element}[-{qualifier}]`
 
 ## Existing Test IDs
 
-Reference `playwright/test-ids.ts` for the complete registry of all `data-testid` values. When adding a new view element that tests will target, add the ID to both the view and `test-ids.ts`.
+Reference `test-ids.ts` for the complete registry of all `data-testid` values. When adding a new view element that tests will target, add the ID to both the view and `test-ids.ts`.
 
 ## What NOT to add data-testid to
 

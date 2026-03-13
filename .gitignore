@@ -19,6 +19,7 @@ node_modules/
 !.vscode/tasks.json
 !.vscode/extensions.json
 !.vscode/settings.json
+!.vscode/mcp.json
 [Tt]est[Rr]esult*/
 
 # NuGet
@@ -33,6 +34,13 @@ __azurite_db_blob*.json
 __azurite_db_queue*.json
 __azurite_db_table*.json
 AzuriteConfig
+
+# Playwright
+playwright-report/
+blob-report/
+test-results/
+.auth/
+dist/
 
 # Terraform
 **/.terraform/
