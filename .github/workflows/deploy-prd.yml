@@ -123,13 +123,13 @@ jobs:
       web_app_resource_group: ${{ steps.terraform-output-dev.outputs.web_app_resource_group }}
 
   e2e-tests:
+    if: |
+      !failure() && !cancelled() && github.event_name != 'schedule' && (needs.build-and-test.result == 'success' || needs.detect-changes.outputs.playwright == 'true')
     permissions:
       contents: read
     needs:
       - detect-changes
       - build-and-test
-    if: |
-      !failure() && !cancelled() && (needs.build-and-test.result == 'success' || needs.detect-changes.outputs.playwright == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
