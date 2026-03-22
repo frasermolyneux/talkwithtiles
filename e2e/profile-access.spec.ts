@@ -2,9 +2,13 @@
 // seed: tests/seed.spec.ts
 
 import { test, expect } from '@playwright/test';
+import { signIn } from '../helpers/auth.helper';
+import { players } from '../helpers/test-data';
 
 test.describe('User Profile Access and Authentication', () => {
   test('Authenticated User Can Access Profile', async ({ page }) => {
+    await signIn(page, players.player1);
+
     // 1. Navigate to homepage with authenticated user
     await page.goto('/');
     await expect(page.getByRole('button', { name: 'Alice' })).toBeVisible();

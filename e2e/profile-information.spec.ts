@@ -2,9 +2,13 @@
 // seed: tests/seed.spec.ts
 
 import { test, expect } from '@playwright/test';
+import { signIn } from '../helpers/auth.helper';
+import { players } from '../helpers/test-data';
 
 test.describe('Profile Information Display and Validation', () => {
   test('Profile Shows Correct User Information', async ({ page }) => {
+    await signIn(page, players.player1);
+
     // 1. Navigate to profile page as authenticated user
     await page.goto('/profile');
     await expect(page.getByRole('heading', { name: 'Your Profile' })).toBeVisible();

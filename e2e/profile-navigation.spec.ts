@@ -2,9 +2,13 @@
 // seed: tests/seed.spec.ts
 
 import { test, expect } from '@playwright/test';
+import { signIn } from '../helpers/auth.helper';
+import { players } from '../helpers/test-data';
 
 test.describe('Profile Navigation and User Experience', () => {
   test('Profile Navigation Flow', async ({ page }) => {
+    await signIn(page, players.player1);
+
     // 1. Start from homepage and navigate to profile
     await page.goto('/');
     await page.getByTestId('nav-user-menu').click();
