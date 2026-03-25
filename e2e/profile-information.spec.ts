@@ -14,15 +14,15 @@ test.describe('Profile Information Display and Validation', () => {
     await expect(page.getByRole('heading', { name: 'Your Profile' })).toBeVisible();
 
     // 2. Verify Name field is displayed
-    await expect(page.getByText('Name')).toBeVisible();
-    await expect(page.getByText('Alice')).toBeVisible();
+    await expect(page.getByTestId('profile-name')).toBeVisible();
+    await expect(page.getByTestId('profile-name')).toHaveText('Alice');
 
     // 3. Verify Email field is displayed
-    await expect(page.getByText('Email')).toBeVisible();
-    await expect(page.getByText('alice@test.local')).toBeVisible();
+    await expect(page.getByTestId('profile-email')).toBeVisible();
+    await expect(page.getByTestId('profile-email')).toHaveText('alice@test.local');
 
     // 4. Verify User ID field is displayed
-    await expect(page.getByText('User ID')).toBeVisible();
-    await expect(page.getByText('11111111-1111-1111-1111-111111111111')).toBeVisible();
+    await expect(page.getByTestId('profile-user-id')).toBeVisible();
+    await expect(page.getByTestId('profile-user-id')).toHaveText('11111111-1111-1111-1111-111111111111');
   });
 });
