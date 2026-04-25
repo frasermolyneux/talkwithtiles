@@ -1,5 +1,7 @@
 # Copilot Instructions
 
+> Shared conventions: see [`.github-copilot/.github/instructions/terraform.instructions.md`](../../.github-copilot/.github/instructions/terraform.instructions.md) for the standard Terraform layout, providers, remote-state pattern, validation commands, and CI/CD workflows.
+
 ## Architecture
 
 This is an ASP.NET Core 9 MVC web application (`src/MX.TalkWithTiles.Web`) for playing tile-based word games. The solution is split into multiple projects:
