@@ -10,6 +10,7 @@ using MX.TalkWithTiles.Repository;
 using MX.TalkWithTiles.Repository.Config;
 using MX.TalkWithTiles.Repository.Interfaces;
 using MX.TalkWithTiles.Web;
+using MX.Observability.ApplicationInsights.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ var aiConnectionString = builder.Configuration["ApplicationInsights:ConnectionSt
 if (!string.IsNullOrEmpty(aiConnectionString))
 {
     builder.Services.AddApplicationInsightsTelemetry();
+    builder.Services.AddObservability();
 }
 
 // Authentication: use test cookie scheme in development when Testing__Enabled is set
