@@ -49,7 +49,7 @@ Terraform under `terraform/` with per-environment configs:
 
 ## C# Conventions
 
-- All projects target .NET 9, C# 13 (`<LangVersion>13.0</LangVersion>`)
+- All projects target .NET 9, C# latest version (`<LangVersion>latest</LangVersion>`)
 - File-scoped namespaces throughout (`namespace MX.TalkWithTiles.X;`)
 - Primary constructors used extensively for DI injection
 - Nullable reference types enabled (`<Nullable>enable</Nullable>`)
