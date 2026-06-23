@@ -1,8 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Web;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Identity.Web.UI;
 using MX.TalkWithTiles.Contracts.Interfaces;
 using MX.TalkWithTiles.CoreEngine.Factories;
@@ -79,7 +81,8 @@ builder.Services.AddScoped<IPlayerFactory, PlayerFactory>();
 builder.Services.AddScoped<IManagerFactory, ManagerFactory>();
 
 builder.Services.AddHttpContextAccessor();
-builder.Services.AddHealthChecks();
+builder.Services.AddHealthChecks()
+    .AddCheck("self", () => HealthCheckResult.Healthy(), ["live"]);
 
 var app = builder.Build();
 
@@ -114,7 +117,11 @@ if (app.Environment.IsDevelopment())
     }
 }
 
-app.MapHealthChecks("/api/health").AllowAnonymous();
+app.MapHealthChecks("/api/health/live", new HealthCheckOptions
+{
+    Predicate = check => check.Tags.Contains("live"),
+}).AllowAnonymous();
+app.MapHealthChecks("/api/health/ready").AllowAnonymous();
 app.MapInfoEndpoint();
 app.MapControllerRoute(name: "default", pattern: "{controller=Home}/{action=Index}/{id?}");
 app.MapRazorPages();
