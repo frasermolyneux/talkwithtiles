@@ -41,7 +41,7 @@ export default defineConfig({
     },
     {
       command: `dotnet run${process.env.CI ? ' --no-build' : ''} --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj --launch-profile MX.TalkWithTiles.Web`,
-      url: `${baseURL}/api/health`,
+      url: `${baseURL}/api/health/live`,
       reuseExistingServer: !process.env.CI,
       ignoreHTTPSErrors: true,
       timeout: 30_000,

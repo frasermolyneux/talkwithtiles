@@ -68,7 +68,7 @@ test.describe('Navigation & Public Pages', () => {
   });
 
   test('health check endpoint responds', async ({ page }) => {
-    const response = await page.request.get('/api/health');
+    const response = await page.request.get('/api/health/live');
     expect(response.ok()).toBeTruthy();
   });
 });
