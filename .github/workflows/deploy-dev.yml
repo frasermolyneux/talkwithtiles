@@ -67,7 +67,7 @@ jobs:
     concurrency:
       group: ${{ github.repository }}-dev
     steps:
-      - uses: frasermolyneux/actions/deploy-app-service@deploy-app-service/v1.2
+      - uses: frasermolyneux/actions/deploy-app-service@deploy-app-service/v1.3
         name: Deploy v${{ needs.build-and-test.outputs.build_version }}
         with:
           web-artifact-name: "MX.TalkWithTiles.Web"
