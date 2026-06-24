@@ -24,7 +24,7 @@ jobs:
       playwright: ${{ steps.changes.outputs.playwright }}
     steps:
       - id: changes
-        uses: frasermolyneux/actions/detect-changes@main
+        uses: frasermolyneux/actions/detect-changes@detect-changes/v1.0
         with:
           filters: |
             src:src/**
