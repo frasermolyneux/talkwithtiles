@@ -2,7 +2,7 @@
     "version": "2.0.0",
     "tasks": [
         {
-            "label": "restore",
+            "label": "dotnet: restore",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -16,7 +16,7 @@
             }
         },
         {
-            "label": "build",
+            "label": "dotnet: build",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -30,14 +30,14 @@
                 "kind": "build",
                 "isDefault": true
             },
-            "dependsOn": "restore",
+            "dependsOn": "dotnet: restore",
             "presentation": {
                 "reveal": "silent",
                 "revealProblems": "onProblem"
             }
         },
         {
-            "label": "build-web-project",
+            "label": "dotnet: build-web-project",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -53,7 +53,7 @@
             }
         },
         {
-            "label": "watch",
+            "label": "dotnet: watch-web",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -76,12 +76,14 @@
             }
         },
         {
-            "label": "unit-tests",
+            "label": "dotnet: test",
             "command": "dotnet",
             "type": "process",
             "args": [
                 "test",
                 "${workspaceFolder}/src/MX.TalkWithTiles.sln",
+                "--filter",
+                "FullyQualifiedName!~IntegrationTests",
                 "--verbosity",
                 "normal"
             ],
@@ -94,6 +96,39 @@
                 "reveal": "always",
                 "panel": "dedicated"
             }
+        },
+        {
+            "label": "dotnet: clean",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "clean",
+                "${workspaceFolder}/src/MX.TalkWithTiles.sln"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "dotnet: format",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "format",
+                "${workspaceFolder}/src/MX.TalkWithTiles.sln",
+                "--verify-no-changes"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "dotnet: publish",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj",
+                "--configuration",
+                "Release"
+            ],
+            "problemMatcher": "$msCompile"
         },
         {
             "label": "start-azurite",

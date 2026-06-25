@@ -401,8 +401,8 @@ public class PlayerMoveManagerTests
 
         _mockBoardManager.Setup(x => x.MakeMove(playerMove)).Returns(playerMoveResult);
         _mockBagManager.Setup(x => x.TakeTiles(It.IsAny<int>())).Returns(new List<Tile>());
-        _mockPlayerManager.Setup(x => x.Players).Returns(new List<IPlayer> {playerOne, playerTwo});
-        _mockPlayerManager.Setup(x => x.GetPlayers()).Returns(new List<IPlayer> {playerOne, playerTwo});
+        _mockPlayerManager.Setup(x => x.Players).Returns(new List<IPlayer> { playerOne, playerTwo });
+        _mockPlayerManager.Setup(x => x.GetPlayers()).Returns(new List<IPlayer> { playerOne, playerTwo });
         _mockBoardManager.Setup(x => x.LetterValue(It.IsAny<string>())).Returns(1);
 
         // Act

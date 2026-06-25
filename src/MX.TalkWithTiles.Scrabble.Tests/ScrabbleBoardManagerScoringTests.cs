@@ -35,14 +35,14 @@ public class ScrabbleBoardManagerScoringTests
         var tiles = new Tile[boardSize.Width, boardSize.Height];
 
         for (var x = 0; x < boardSize.Width; x++)
-        for (var y = 0; y < boardSize.Height; y++)
-            tiles[x, y] = new Tile
-            {
-                TileId = Guid.NewGuid(),
-                PosX = x,
-                PosY = y,
-                TileType = TileType.StandardTile
-            };
+            for (var y = 0; y < boardSize.Height; y++)
+                tiles[x, y] = new Tile
+                {
+                    TileId = Guid.NewGuid(),
+                    PosX = x,
+                    PosY = y,
+                    TileType = TileType.StandardTile
+                };
 
         // Apply premium squares from the actual board constants
         foreach (var premiumTile in ScrabbleBoardTiles.Tiles[GameType.StandardBoard])

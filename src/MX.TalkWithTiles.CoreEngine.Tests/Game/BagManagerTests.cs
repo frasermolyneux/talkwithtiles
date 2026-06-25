@@ -107,7 +107,7 @@ public class BagManagerTests
 
     private static List<Tile> GenerateTiles()
     {
-        return new[] {"A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O"}.Select(i =>
+        return new[] { "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O" }.Select(i =>
             new Tile
             {
                 TileId = Guid.NewGuid(),

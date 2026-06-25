@@ -170,7 +170,7 @@ public class GameEngineTests
         var gameEngine = new GameEngine(_mockManagerFactory.Object);
         var defaultGameStateModel = DefaultGameStateModel();
         var playerId = Guid.NewGuid();
-        var tileIds = new List<Guid> {Guid.NewGuid(), Guid.NewGuid()};
+        var tileIds = new List<Guid> { Guid.NewGuid(), Guid.NewGuid() };
 
         // Act
         gameEngine.InitFromStateModel(defaultGameStateModel);

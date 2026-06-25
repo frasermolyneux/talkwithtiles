@@ -9,42 +9,42 @@ namespace MX.TalkWithTiles.Web.Controllers;
 [Route("")]
 public class AccountController(IWebHostEnvironment environment, IConfiguration configuration) : Controller
 {
-        [Route("sign-in")]
-        public IActionResult SignIn(string? returnUrl = null)
+    [Route("sign-in")]
+    public IActionResult SignIn(string? returnUrl = null)
+    {
+        if (User.Identity?.IsAuthenticated == true)
         {
-            if (User.Identity?.IsAuthenticated == true)
-            {
-                return LocalRedirect(returnUrl ?? "/");
-            }
-
-            ViewData["ReturnUrl"] = returnUrl;
-            ViewData["TestingEnabled"] = environment.IsDevelopment()
-                && string.Equals(configuration["Testing:Enabled"], "true", StringComparison.OrdinalIgnoreCase);
-            return View();
+            return LocalRedirect(returnUrl ?? "/");
         }
 
-        [Route("sign-in/microsoft")]
-        public IActionResult SignInMicrosoft(string? returnUrl = null)
+        ViewData["ReturnUrl"] = returnUrl;
+        ViewData["TestingEnabled"] = environment.IsDevelopment()
+            && string.Equals(configuration["Testing:Enabled"], "true", StringComparison.OrdinalIgnoreCase);
+        return View();
+    }
+
+    [Route("sign-in/microsoft")]
+    public IActionResult SignInMicrosoft(string? returnUrl = null)
+    {
+        var redirectUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : "/";
+        return Challenge(
+            new AuthenticationProperties { RedirectUri = redirectUrl },
+            "OpenIdConnect");
+    }
+
+    [Route("sign-out")]
+    public new async Task<IActionResult> SignOut()
+    {
+        if (User.Identity?.IsAuthenticated != true)
+            return RedirectToAction("SignIn");
+
+        if (environment.IsDevelopment()
+            && string.Equals(configuration["Testing:Enabled"], "true", StringComparison.OrdinalIgnoreCase))
         {
-            var redirectUrl = Url.IsLocalUrl(returnUrl) ? returnUrl : "/";
-            return Challenge(
-                new AuthenticationProperties { RedirectUri = redirectUrl },
-                "OpenIdConnect");
+            await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            return Redirect("/");
         }
 
-        [Route("sign-out")]
-        public new async Task<IActionResult> SignOut()
-        {
-            if (User.Identity?.IsAuthenticated != true)
-                return RedirectToAction("SignIn");
-
-            if (environment.IsDevelopment()
-                && string.Equals(configuration["Testing:Enabled"], "true", StringComparison.OrdinalIgnoreCase))
-            {
-                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                return Redirect("/");
-            }
-
-            return RedirectToAction("SignOut", "Account", new { area = "MicrosoftIdentity" });
-        }
+        return RedirectToAction("SignOut", "Account", new { area = "MicrosoftIdentity" });
+    }
 }

@@ -35,14 +35,14 @@ public class ScrabbleBoardManagerValidationTests
         var tiles = new Tile[boardSize.Width, boardSize.Height];
 
         for (var x = 0; x < boardSize.Width; x++)
-        for (var y = 0; y < boardSize.Height; y++)
-            tiles[x, y] = new Tile
-            {
-                TileId = Guid.NewGuid(),
-                PosX = x,
-                PosY = y,
-                TileType = (x == 7 && y == 7) ? TileType.CentreTile : TileType.StandardTile
-            };
+            for (var y = 0; y < boardSize.Height; y++)
+                tiles[x, y] = new Tile
+                {
+                    TileId = Guid.NewGuid(),
+                    PosX = x,
+                    PosY = y,
+                    TileType = (x == 7 && y == 7) ? TileType.CentreTile : TileType.StandardTile
+                };
 
         _boardManager.InitFromStateModel(GameType.StandardBoard, new BoardStateModel { Tiles = tiles });
     }
@@ -57,14 +57,14 @@ public class ScrabbleBoardManagerValidationTests
         var tiles = new Tile[boardSize.Width, boardSize.Height];
 
         for (var x = 0; x < boardSize.Width; x++)
-        for (var y = 0; y < boardSize.Height; y++)
-            tiles[x, y] = new Tile
-            {
-                TileId = Guid.NewGuid(),
-                PosX = x,
-                PosY = y,
-                TileType = (x == 7 && y == 7) ? TileType.CentreTile : TileType.StandardTile
-            };
+            for (var y = 0; y < boardSize.Height; y++)
+                tiles[x, y] = new Tile
+                {
+                    TileId = Guid.NewGuid(),
+                    PosX = x,
+                    PosY = y,
+                    TileType = (x == 7 && y == 7) ? TileType.CentreTile : TileType.StandardTile
+                };
 
         tiles[7, 7].Letter = "A";
         tiles[8, 7].Letter = "B";
