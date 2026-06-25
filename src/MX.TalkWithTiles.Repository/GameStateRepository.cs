@@ -51,7 +51,10 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
                 var boardSize = BoardSizeHelper.GetSize(gameStateModelCloudEntity.GameType);
                 var boardTiles = new Tile[boardSize.Width, boardSize.Height];
 
-                foreach (var tile in boardTileList) boardTiles[tile.PosX, tile.PosY] = tile;
+                foreach (var tile in boardTileList)
+                {
+                    boardTiles[tile.PosX, tile.PosY] = tile;
+                }
 
                 boardStateModel.Tiles = boardTiles;
             }
@@ -79,11 +82,15 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
         // Save tiles separately before constructing cloud entity to avoid
         // serializing Tile[,] which System.Text.Json does not support.
         if (gameStateModel.BagStateModel.Tiles != null)
+        {
             await SaveTiles($"{gameStateModel.GameId}-bag", gameStateModel.BagStateModel.Tiles);
+        }
 
         if (gameStateModel.BoardStateModel.Tiles != null)
+        {
             await SaveTiles($"{gameStateModel.GameId}-board",
                 gameStateModel.BoardStateModel.Tiles.Cast<Tile>().ToArray());
+        }
 
         gameStateModel.BagStateModel.Tiles = null;
         gameStateModel.BoardStateModel.Tiles = null;
@@ -108,7 +115,10 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
 
     public async Task<List<GameStateModel>> GetGameStates(GameStateFilterModel filterModel)
     {
-        if (filterModel == null) throw new ArgumentNullException(nameof(filterModel));
+        if (filterModel == null)
+        {
+            throw new ArgumentNullException(nameof(filterModel));
+        }
 
         var indexResults = new List<GameStateIndexCloudEntity>();
         var filter = GameStateIndexCloudEntityExtensions.BuildFilter(filterModel);
@@ -126,7 +136,9 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
             var gameStateModel = await GetGameState(Guid.Parse(gameId), filterModel.SkipTileFetch);
 
             if (gameStateModel != null)
+            {
                 results.Add(gameStateModel);
+            }
         }
 
         return results.ToList();
@@ -144,7 +156,9 @@ public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepo
         await foreach (var tileEntity in TilesTable.QueryAsync<TileCloudEntity>(x => x.PartitionKey == partitionKey))
         {
             if (tileEntity.Tile is { } tile)
+            {
                 result.Add(tile);
+            }
         }
 
         return result;

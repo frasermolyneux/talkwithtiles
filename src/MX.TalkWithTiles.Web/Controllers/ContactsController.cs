@@ -25,7 +25,11 @@ public class ContactsController(
     [HttpGet]
     public async Task<IActionResult> DeleteContact(Guid contactId)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         logger.LogInformation("User has deleted a contact '{ContactId}'", contactId);
         await contactsRepository.DeleteContact(User.GetUserGuid(), contactId);
         return RedirectToAction("Index");

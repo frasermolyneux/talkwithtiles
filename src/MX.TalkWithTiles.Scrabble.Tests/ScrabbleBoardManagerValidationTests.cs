@@ -35,7 +35,9 @@ public class ScrabbleBoardManagerValidationTests
         var tiles = new Tile[boardSize.Width, boardSize.Height];
 
         for (var x = 0; x < boardSize.Width; x++)
+        {
             for (var y = 0; y < boardSize.Height; y++)
+            {
                 tiles[x, y] = new Tile
                 {
                     TileId = Guid.NewGuid(),
@@ -43,6 +45,8 @@ public class ScrabbleBoardManagerValidationTests
                     PosY = y,
                     TileType = (x == 7 && y == 7) ? TileType.CentreTile : TileType.StandardTile
                 };
+            }
+        }
 
         _boardManager.InitFromStateModel(GameType.StandardBoard, new BoardStateModel { Tiles = tiles });
     }
@@ -57,7 +61,9 @@ public class ScrabbleBoardManagerValidationTests
         var tiles = new Tile[boardSize.Width, boardSize.Height];
 
         for (var x = 0; x < boardSize.Width; x++)
+        {
             for (var y = 0; y < boardSize.Height; y++)
+            {
                 tiles[x, y] = new Tile
                 {
                     TileId = Guid.NewGuid(),
@@ -65,6 +71,8 @@ public class ScrabbleBoardManagerValidationTests
                     PosY = y,
                     TileType = (x == 7 && y == 7) ? TileType.CentreTile : TileType.StandardTile
                 };
+            }
+        }
 
         tiles[7, 7].Letter = "A";
         tiles[8, 7].Letter = "B";
@@ -76,7 +84,9 @@ public class ScrabbleBoardManagerValidationTests
     {
         var tiles = new List<Tile>();
         foreach (var (x, y, letter) in placements)
+        {
             tiles.Add(new Tile { PosX = x, PosY = y, Letter = letter, RackPosition = -1 });
+        }
 
         return new PlayerMove { PlayerId = Guid.NewGuid(), Tiles = tiles };
     }
@@ -100,7 +110,7 @@ public class ScrabbleBoardManagerValidationTests
         var result = _boardManager.MakeMove(move);
 
         Assert.False(result.IsValid);
-        Assert.Contains("bounds", result.InvalidMessage!, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("bounds", result.InvalidMessage, StringComparison.OrdinalIgnoreCase);
     }
 
     // -----------------------------------------------------------------------
@@ -205,7 +215,7 @@ public class ScrabbleBoardManagerValidationTests
         var result = _boardManager.MakeMove(move);
 
         Assert.False(result.IsValid);
-        Assert.Contains("center", result.InvalidMessage!, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("center", result.InvalidMessage, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -218,7 +228,7 @@ public class ScrabbleBoardManagerValidationTests
         var result = _boardManager.MakeMove(move);
 
         Assert.False(result.IsValid);
-        Assert.Contains("center", result.InvalidMessage!, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("center", result.InvalidMessage, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

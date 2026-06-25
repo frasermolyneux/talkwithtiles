@@ -54,7 +54,9 @@ public static class GameStateModelExtensions
     public static List<Tile> UserTiles(this GameStateModel model, ClaimsPrincipal user)
     {
         if (!model.IsUserInGame(user))
+        {
             return [];
+        }
 
         var player = model.PlayersStateModel.Players.Single(p => p.PlayerId == user.GetUserGuid());
 
@@ -69,7 +71,9 @@ public static class GameStateModelExtensions
     public static bool CanIssueChallenge(this GameStateModel model, ClaimsPrincipal user)
     {
         if (!model.IsUserInGame(user))
+        {
             return false;
+        }
 
         return !model.IsGameInChallenge() && !model.IsLastPlayer(user) &&
                model.PlayerMoveStateModel.LastMoveType == LastMoveType.Normal;
@@ -78,7 +82,9 @@ public static class GameStateModelExtensions
     public static bool ShowRemainingTiles(this GameStateModel model, ClaimsPrincipal user)
     {
         if (!model.IsUserInGame(user))
+        {
             return false;
+        }
 
         return model.TileBagVisibilityOption switch
         {
@@ -140,11 +146,15 @@ public static class GameStateModelExtensions
     public static string LastMoveAndScore(this GameStateModel model)
     {
         if (model.PlayerMoveStateModel.LastMoveResult is not { } lastTurn)
+        {
             throw new InvalidOperationException("Cannot get last move score: no previous move recorded.");
+        }
 
         var sb = new StringBuilder();
         foreach (var wordAndPoint in lastTurn.WordsAndPoints)
+        {
             sb.Append($"{wordAndPoint.Word} ({wordAndPoint.Score}) ");
+        }
 
         sb.Append($"= {lastTurn.Points}");
         return sb.ToString();
@@ -153,7 +163,10 @@ public static class GameStateModelExtensions
     public static GameChallengeReason ScrabbleChallengeReason(this GameStateModel model)
     {
         if (model.ChallengeStateModel.ChallengeReason != null)
+        {
             return (GameChallengeReason)model.ChallengeStateModel.ChallengeReason;
+        }
+
         return GameChallengeReason.Catchall;
     }
 
@@ -199,7 +212,9 @@ public static class GameStateModelExtensions
     public static bool IsResolvedChallenged(this GameStateModel model, ClaimsPrincipal user)
     {
         if (model.ChallengeStateModel.PlayerChallengeResult == null)
+        {
             return false;
+        }
 
         return model.ChallengeStateModel.PlayerChallengeResult.ChallengedPlayerId == user.GetUserGuid();
     }
@@ -207,7 +222,9 @@ public static class GameStateModelExtensions
     public static bool IsResolvedChallenger(this GameStateModel model, ClaimsPrincipal user)
     {
         if (model.ChallengeStateModel.PlayerChallengeResult == null)
+        {
             return false;
+        }
 
         return model.ChallengeStateModel.PlayerChallengeResult.ChallengerPlayerId == user.GetUserGuid();
     }
@@ -215,7 +232,9 @@ public static class GameStateModelExtensions
     public static GameChallengeResult ResolvedChallengeResult(this GameStateModel model)
     {
         if (model.ChallengeStateModel.PlayerChallengeResult is not { } result)
+        {
             throw new InvalidOperationException("Cannot get resolved challenge result: no challenge result recorded.");
+        }
 
         return result.GameChallengeResult;
     }
@@ -223,7 +242,9 @@ public static class GameStateModelExtensions
     public static string ResolvedChallengerName(this GameStateModel model)
     {
         if (model.ChallengeStateModel.PlayerChallengeResult is not { } result)
+        {
             throw new InvalidOperationException("Cannot get resolved challenger name: no challenge result recorded.");
+        }
 
         var playerId = result.ChallengerPlayerId;
         var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
@@ -234,7 +255,9 @@ public static class GameStateModelExtensions
     public static string ResolvedChallengedName(this GameStateModel model)
     {
         if (model.ChallengeStateModel.PlayerChallengeResult is not { } result)
+        {
             throw new InvalidOperationException("Cannot get resolved challenged name: no challenge result recorded.");
+        }
 
         var playerId = result.ChallengedPlayerId;
         var player = model.PlayersStateModel.Players.SingleOrDefault(p => p.PlayerId == playerId);
@@ -251,10 +274,14 @@ public static class GameStateModelExtensions
     public static bool IsTileInLastMove(this GameStateModel model, Tile tile)
     {
         if (model.PlayerMoveStateModel.LastMoveType != LastMoveType.Normal)
+        {
             return false;
+        }
 
         if (model.PlayerMoveStateModel.LastMoveResult == null)
+        {
             return false;
+        }
 
         return model.PlayerMoveStateModel.LastMoveResult.Tiles.Any(t =>
             t.Letter == tile.Letter && t.PosX == tile.PosX && t.PosY == tile.PosY);

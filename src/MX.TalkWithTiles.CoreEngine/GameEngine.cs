@@ -16,12 +16,41 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
     private IChallengeManager? _challengeManager;
     private IPlayerMoveManager? _playerMoveManager;
 
-    private IBoardManager BoardManager => _boardManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
-    private IBagManager BagManager => _bagManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
-    private IPlayerManager PlayerManager => _playerManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
-    private IEndGameManager EndGameManager => _endGameManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
-    private IChallengeManager ChallengeManager => _challengeManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
-    private IPlayerMoveManager PlayerMoveManager => _playerMoveManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+    private IBoardManager BoardManager
+    {
+        get => _boardManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+        set => _boardManager = value;
+    }
+
+    private IBagManager BagManager
+    {
+        get => _bagManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+        set => _bagManager = value;
+    }
+
+    private IPlayerManager PlayerManager
+    {
+        get => _playerManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+        set => _playerManager = value;
+    }
+
+    private IEndGameManager EndGameManager
+    {
+        get => _endGameManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+        set => _endGameManager = value;
+    }
+
+    private IChallengeManager ChallengeManager
+    {
+        get => _challengeManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+        set => _challengeManager = value;
+    }
+
+    private IPlayerMoveManager PlayerMoveManager
+    {
+        get => _playerMoveManager ?? throw new InvalidOperationException("Game engine not initialized. Call InitNew or InitFromStateModel first.");
+        set => _playerMoveManager = value;
+    }
 
     private Guid GameId { get; set; }
     private GamePrivacyType GamePrivacyType { get; set; }
@@ -106,13 +135,13 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
         GameType = gameType;
         TileBagVisibilityOption = tileBagVisibilityOption;
 
-        _boardManager = managerFactory.CreateBoardManager(GameType);
-        _bagManager = managerFactory.CreateBagManager(GameType);
-        _playerManager = managerFactory.CreatePlayerManager();
-        _endGameManager = managerFactory.CreateEndGameManager();
-        _playerMoveManager = managerFactory.CreatePlayerMoveManager(
+        BoardManager = managerFactory.CreateBoardManager(GameType);
+        BagManager = managerFactory.CreateBagManager(GameType);
+        PlayerManager = managerFactory.CreatePlayerManager();
+        EndGameManager = managerFactory.CreateEndGameManager();
+        PlayerMoveManager = managerFactory.CreatePlayerMoveManager(
             BagManager, BoardManager, PlayerManager, EndGameManager);
-        _challengeManager = managerFactory.CreateChallengeManager(
+        ChallengeManager = managerFactory.CreateChallengeManager(
             canOverrideChallengeOutcome, challengeResults, PlayerMoveManager);
     }
 
@@ -123,13 +152,13 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
         GameType = gameStateModel.GameType;
         TileBagVisibilityOption = gameStateModel.TileBagVisibilityOption;
 
-        _boardManager = managerFactory.CreateBoardManager(GameType, gameStateModel.BoardStateModel);
-        _bagManager = managerFactory.CreateBagManager(gameStateModel.BagStateModel);
-        _playerManager = managerFactory.CreatePlayerManager(gameStateModel.PlayersStateModel);
-        _endGameManager = managerFactory.CreateEndGameManager(gameStateModel.EndGameStateModel);
-        _playerMoveManager = managerFactory.CreatePlayerMoveManager(
+        BoardManager = managerFactory.CreateBoardManager(GameType, gameStateModel.BoardStateModel);
+        BagManager = managerFactory.CreateBagManager(gameStateModel.BagStateModel);
+        PlayerManager = managerFactory.CreatePlayerManager(gameStateModel.PlayersStateModel);
+        EndGameManager = managerFactory.CreateEndGameManager(gameStateModel.EndGameStateModel);
+        PlayerMoveManager = managerFactory.CreatePlayerMoveManager(
             gameStateModel.PlayerMoveStateModel, BagManager, BoardManager, PlayerManager, EndGameManager);
-        _challengeManager = managerFactory.CreateChallengeManager(
+        ChallengeManager = managerFactory.CreateChallengeManager(
             gameStateModel.ChallengeStateModel, PlayerMoveManager);
     }
 }

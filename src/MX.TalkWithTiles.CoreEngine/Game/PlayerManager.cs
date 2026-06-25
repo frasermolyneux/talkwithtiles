@@ -60,6 +60,8 @@ public class PlayerManager(IPlayerFactory playerFactory) : IPlayerManager
         Players = [];
 
         foreach (var playerStateModel in playersStateModel.Players)
+        {
             Players.Add(playerFactory.CreateFromStateModel(playerStateModel));
+        }
     }
 }

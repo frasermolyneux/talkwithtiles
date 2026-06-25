@@ -27,7 +27,10 @@ public class Player : IPlayer
     {
         Tiles = tiles;
 
-        for (var i = 0; i < tiles.Count; i++) Tiles[i].RackPosition = i;
+        for (var i = 0; i < tiles.Count; i++)
+        {
+            Tiles[i].RackPosition = i;
+        }
     }
 
     public void AddToScore(int score)

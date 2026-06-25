@@ -36,7 +36,9 @@ public class AccountController(IWebHostEnvironment environment, IConfiguration c
     public new async Task<IActionResult> SignOut()
     {
         if (User.Identity?.IsAuthenticated != true)
+        {
             return RedirectToAction("SignIn");
+        }
 
         if (environment.IsDevelopment()
             && string.Equals(configuration["Testing:Enabled"], "true", StringComparison.OrdinalIgnoreCase))

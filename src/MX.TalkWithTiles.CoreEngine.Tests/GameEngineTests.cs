@@ -8,6 +8,7 @@ using MX.TalkWithTiles.Contracts.StateModels;
 using Xunit;
 
 namespace MX.TalkWithTiles.CoreEngine.Tests;
+
 public class GameEngineTests
 {
     private readonly Mock<IBagManager> _mockBagManager;

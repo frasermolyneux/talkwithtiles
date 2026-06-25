@@ -11,6 +11,7 @@ using MX.TalkWithTiles.CoreEngine.Helpers;
 using Xunit;
 
 namespace MX.TalkWithTiles.CoreEngine.Tests.Game;
+
 public class BagManagerTests
 {
     private readonly ITileFactory _tileFactory;

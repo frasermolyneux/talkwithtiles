@@ -18,10 +18,14 @@ public class ErrorControllerTests
         var httpContext = new DefaultHttpContext();
 
         if (user != null)
+        {
             httpContext.User = user;
+        }
 
         if (exceptionFeature != null)
+        {
             httpContext.Features.Set(exceptionFeature);
+        }
 
         var controller = new ErrorController(_loggerMock.Object)
         {

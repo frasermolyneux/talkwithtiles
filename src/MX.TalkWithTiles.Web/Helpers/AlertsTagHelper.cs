@@ -20,7 +20,9 @@ public class AlertsTagHelper : TagHelper
         output.TagName = "div";
 
         if (TempData[AlertKey] == null)
+        {
             TempData[AlertKey] = JsonSerializer.Serialize(new HashSet<Alert>());
+        }
 
         var alertsJson = TempData[AlertKey]?.ToString() ?? "[]";
         var alerts = JsonSerializer.Deserialize<ICollection<Alert>>(alertsJson) ?? [];
@@ -28,10 +30,12 @@ public class AlertsTagHelper : TagHelper
         var sb = new StringBuilder();
 
         foreach (var alert in alerts)
+        {
             sb.Append($"<div class='alert {alert.Type}' id='inner-alert' role='alert' style='padding-top:10px'>")
               .Append("<button type='button' class='btn-close' data-bs-dismiss='alert' aria-label='Close'></button>")
               .Append(alert.Message)
               .Append("</div>");
+        }
 
         output.Content.SetHtmlContent(sb.ToString());
     }

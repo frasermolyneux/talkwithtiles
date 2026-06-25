@@ -6,6 +6,7 @@ using MX.TalkWithTiles.CoreEngine.Game;
 using Xunit;
 
 namespace MX.TalkWithTiles.CoreEngine.Tests.Game;
+
 public class EndGameManagerTests
 {
     [Fact]

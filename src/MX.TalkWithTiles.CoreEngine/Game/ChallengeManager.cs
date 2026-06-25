@@ -33,7 +33,9 @@ public class ChallengeManager(IPlayerMoveManager playerMoveManager) : IChallenge
     public void IssuePlayerChallenge(Guid playerId, GameChallengeReason gameChallengeReason, string challengeText)
     {
         if (playerMoveManager.LastMoveResult is null)
+        {
             throw new InvalidOperationException("Cannot issue challenge: no previous move recorded.");
+        }
 
         ChallengedPlayerId = playerMoveManager.LastMoveResult.PlayerId;
         ChallengerPlayerId = playerId;

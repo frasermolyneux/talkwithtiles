@@ -52,7 +52,9 @@ public class HealthCheckController : Controller
         var actionResult = new JsonResult(result);
 
         if (!result.IsHealthy)
+        {
             actionResult.StatusCode = 503;
+        }
 
         return actionResult;
     }

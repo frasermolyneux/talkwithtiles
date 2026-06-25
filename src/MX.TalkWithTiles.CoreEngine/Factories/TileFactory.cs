@@ -19,7 +19,9 @@ public class TileFactory : ITileFactory
         var boardTiles = BoardTileHelper.GetBoardTiles(gameType);
 
         if (boardTiles.Any(t => t.PosX == x && t.PosY == y))
+        {
             return boardTiles.Single(t => t.PosX == x && t.PosY == y);
+        }
 
         return new Tile
         {

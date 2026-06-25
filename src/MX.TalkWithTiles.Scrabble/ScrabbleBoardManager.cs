@@ -18,9 +18,12 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     private GameType GameType { get; set; }
     private Tile[,]? _tiles;
     private Tile[,] Tiles => _tiles ?? throw new InvalidOperationException("Board not initialized. Call InitNew or InitFromStateModel first.");
-
     private BoardSize? _boardSize;
-    private BoardSize BoardSize => _boardSize ?? throw new InvalidOperationException("Board not initialized. Call InitNew or InitFromStateModel first.");
+    private BoardSize BoardSize
+    {
+        get => _boardSize ?? throw new InvalidOperationException("Board not initialized. Call InitNew or InitFromStateModel first.");
+        set => _boardSize = value;
+    }
 
     public BoardStateModel BoardStateModel =>
         new()
@@ -34,7 +37,9 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
         var placedTiles = playerMove.Tiles.Where(t => t.RackPosition == -1).ToList();
 
         if (placedTiles.Count == 0)
+        {
             return playerMoveResult;
+        }
 
         // Bounds check
         foreach (var tile in placedTiles)
@@ -103,7 +108,10 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
         ScoreVertical(playerTilesOnBoard, ref playerMoveResult);
 
         if (playerTilesOnBoard.Count == 7)
+        {
             playerMoveResult.Points += 50;
+        }
+
         return playerMoveResult;
     }
 
@@ -124,7 +132,7 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     public void InitNew(GameType gameType)
     {
         GameType = gameType;
-        _boardSize = ScrabbleBoardSizes.Boards[gameType];
+        BoardSize = ScrabbleBoardSizes.Boards[gameType];
         _tiles = new Tile[BoardSize.Width, BoardSize.Height];
 
         for (var i = 0; i < BoardSize.Width; i++)
@@ -140,13 +148,18 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     public void InitFromStateModel(GameType gameType, BoardStateModel boardStateModel)
     {
         GameType = gameType;
-        _boardSize = ScrabbleBoardSizes.Boards[gameType];
+        BoardSize = ScrabbleBoardSizes.Boards[gameType];
 
         if (boardStateModel.Tiles == null)
+        {
             throw new ArgumentException("Cannot initialize board from state model with null tiles.", nameof(boardStateModel));
+        }
 
         _tiles = new Tile[BoardSize.Width, BoardSize.Height];
-        foreach (var tile in boardStateModel.Tiles) _tiles[tile.PosX, tile.PosY] = tile;
+        foreach (var tile in boardStateModel.Tiles)
+        {
+            _tiles[tile.PosX, tile.PosY] = tile;
+        }
     }
 
     private void ScoreHorizontal(IReadOnlyCollection<Tile> tiles, ref PlayerMoveResult playerMoveResult)
@@ -234,10 +247,15 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     {
         var code = Tiles[x, y];
         if (code.TileType == TileType.TripleWordScoreTile)
+        {
             return currentMultiplier * 3;
+        }
+
         if (code.TileType == TileType.DoubleWordScoreTile ||
             code.TileType == TileType.CentreTile)
+        {
             return currentMultiplier * 2;
+        }
 
         return currentMultiplier;
     }
@@ -246,9 +264,14 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
     {
         var code = Tiles[x, y];
         if (code.TileType == TileType.DoubleLetterScoreTile)
+        {
             return 2;
+        }
+
         if (code.TileType == TileType.TripleLetterScoreTile)
+        {
             return 3;
+        }
 
         return 1;
     }
@@ -260,7 +283,9 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
             for (var y = 0; y < BoardSize.Height; y++)
             {
                 if (Tiles[x, y].LetterSet)
+                {
                     return true;
+                }
             }
         }
 
@@ -269,10 +294,25 @@ public class ScrabbleBoardManager(ITileFactory tileFactory) : IBoardManager
 
     private bool HasAdjacentExistingTile(int x, int y)
     {
-        if (x > 0 && Tiles[x - 1, y].LetterSet) return true;
-        if (x < BoardSize.Width - 1 && Tiles[x + 1, y].LetterSet) return true;
-        if (y > 0 && Tiles[x, y - 1].LetterSet) return true;
-        if (y < BoardSize.Height - 1 && Tiles[x, y + 1].LetterSet) return true;
+        if (x > 0 && Tiles[x - 1, y].LetterSet)
+        {
+            return true;
+        }
+
+        if (x < BoardSize.Width - 1 && Tiles[x + 1, y].LetterSet)
+        {
+            return true;
+        }
+
+        if (y > 0 && Tiles[x, y - 1].LetterSet)
+        {
+            return true;
+        }
+
+        if (y < BoardSize.Height - 1 && Tiles[x, y + 1].LetterSet)
+        {
+            return true;
+        }
 
         return false;
     }

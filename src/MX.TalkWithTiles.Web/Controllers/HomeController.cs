@@ -69,7 +69,9 @@ public class HomeController(ILogger<HomeController> logger, IGameInviteRepositor
     public IActionResult SubmitFeedback(Feedback model)
     {
         if (!ModelState.IsValid)
+        {
             return View("Feedback", model);
+        }
 
         logger.LogInformation("User {User} has submitted feedback", User.GetUserName());
 

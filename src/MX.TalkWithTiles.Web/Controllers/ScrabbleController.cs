@@ -76,7 +76,9 @@ public class ScrabbleController(
 
         var privacyOption = GamePrivacyType.Private;
         if (createScrabbleGameModel.PublicGame)
+        {
             privacyOption = GamePrivacyType.Public;
+        }
 
         var challengeResults = new Dictionary<GameChallengeReason, GameChallengeResult>
             {
@@ -143,15 +145,24 @@ public class ScrabbleController(
     public async Task<IActionResult> AcceptInvite(Guid gameId)
     {
         var gameStateModel = await gameStateRepository.GetGameState(gameId);
-        if (gameStateModel == null) return NotFound();
+        if (gameStateModel == null)
+        {
+            return NotFound();
+        }
 
         var userEmail = User.GetEmail();
-        if (string.IsNullOrEmpty(userEmail)) return BadRequest();
+        if (string.IsNullOrEmpty(userEmail))
+        {
+            return BadRequest();
+        }
 
         var invitedPlayer = gameStateModel.PlayersStateModel.Players
             .FirstOrDefault(p => string.Equals(p.PlayerName, userEmail, StringComparison.OrdinalIgnoreCase));
 
-        if (invitedPlayer == null) return NotFound();
+        if (invitedPlayer == null)
+        {
+            return NotFound();
+        }
 
         var oldPlayerId = invitedPlayer.PlayerId;
         var newPlayerId = User.GetUserGuid();
@@ -163,23 +174,37 @@ public class ScrabbleController(
         // Update turn order tracking
         var orderIndex = gameStateModel.PlayerMoveStateModel.PlayerOrderIds.IndexOf(oldPlayerId);
         if (orderIndex >= 0)
+        {
             gameStateModel.PlayerMoveStateModel.PlayerOrderIds[orderIndex] = newPlayerId;
+        }
 
         if (gameStateModel.PlayerMoveStateModel.CurrentPlayerId == oldPlayerId)
+        {
             gameStateModel.PlayerMoveStateModel.CurrentPlayerId = newPlayerId;
+        }
 
         // Update challenge tracking
         if (gameStateModel.ChallengeStateModel.ChallengedPlayerId == oldPlayerId)
+        {
             gameStateModel.ChallengeStateModel.ChallengedPlayerId = newPlayerId;
+        }
+
         if (gameStateModel.ChallengeStateModel.ChallengerPlayerId == oldPlayerId)
+        {
             gameStateModel.ChallengeStateModel.ChallengerPlayerId = newPlayerId;
+        }
 
         // Update end-game tracking
         var winnerIndex = gameStateModel.EndGameStateModel.Winners.IndexOf(oldPlayerId);
         if (winnerIndex >= 0)
+        {
             gameStateModel.EndGameStateModel.Winners[winnerIndex] = newPlayerId;
+        }
+
         if (gameStateModel.EndGameStateModel.SkippedTurns.Remove(oldPlayerId, out var skips))
+        {
             gameStateModel.EndGameStateModel.SkippedTurns[newPlayerId] = skips;
+        }
 
         await gameStateRepository.UpdateGameState(gameId, gameStateModel);
         await gameStateRepository.DeleteGameStateIndex(gameId, oldPlayerId);
@@ -188,7 +213,9 @@ public class ScrabbleController(
         var invites = await gameInviteRepository.GetGameInvites(userEmail);
         var matchingInvite = invites.FirstOrDefault(i => i.GameId == gameId);
         if (matchingInvite != null)
+        {
             await gameInviteRepository.DeleteGameInvite(matchingInvite.InviteId, userEmail);
+        }
 
         // Update contacts for all players
         var players = gameStateModel.Players();
@@ -212,15 +239,24 @@ public class ScrabbleController(
     public async Task<IActionResult> RejectInvite(Guid gameId)
     {
         var gameStateModel = await gameStateRepository.GetGameState(gameId);
-        if (gameStateModel == null) return NotFound();
+        if (gameStateModel == null)
+        {
+            return NotFound();
+        }
 
         var userEmail = User.GetEmail();
-        if (string.IsNullOrEmpty(userEmail)) return BadRequest();
+        if (string.IsNullOrEmpty(userEmail))
+        {
+            return BadRequest();
+        }
 
         var invitedPlayer = gameStateModel.PlayersStateModel.Players
             .FirstOrDefault(p => string.Equals(p.PlayerName, userEmail, StringComparison.OrdinalIgnoreCase));
 
-        if (invitedPlayer == null) return NotFound();
+        if (invitedPlayer == null)
+        {
+            return NotFound();
+        }
 
         var oldPlayerId = invitedPlayer.PlayerId;
 
@@ -236,7 +272,9 @@ public class ScrabbleController(
         var invites = await gameInviteRepository.GetGameInvites(userEmail);
         var matchingInvite = invites.FirstOrDefault(i => i.GameId == gameId);
         if (matchingInvite != null)
+        {
             await gameInviteRepository.DeleteGameInvite(matchingInvite.InviteId, userEmail);
+        }
 
         logger.LogInformation("User {Email} rejected invite to game {GameId}", userEmail, gameId);
 
@@ -247,22 +285,33 @@ public class ScrabbleController(
     [HttpGet]
     public async Task<IActionResult> Play(Guid id, bool hideScreenClutter = false)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var playGameSessionModel =
             httpContextAccessor.HttpContext?.Session.GetObjectFromJson<PlayGameSessionModel>(
                 PlayerGameSessionModelKey)
             ?? new PlayGameSessionModel();
 
         if (playGameSessionModel.HideScreenClutter.ContainsKey(id))
+        {
             playGameSessionModel.HideScreenClutter[id] = hideScreenClutter;
+        }
         else
+        {
             playGameSessionModel.HideScreenClutter.Add(id, hideScreenClutter);
+        }
 
         httpContextAccessor.HttpContext?.Session.SetObjectAsJson(PlayerGameSessionModelKey, playGameSessionModel);
         ViewBag.HideScreenClutter = hideScreenClutter;
 
         var gameStateModel = await gameStateRepository.GetGameState(id);
-        if (gameStateModel == null) return NotFound();
+        if (gameStateModel == null)
+        {
+            return NotFound();
+        }
 
         // Auto-link invited players: when a user accesses a game they were invited to
         // by email, update the placeholder invite GUID with their real identity.
@@ -286,23 +335,37 @@ public class ScrabbleController(
                     // Update turn order tracking
                     var orderIndex = gameStateModel.PlayerMoveStateModel.PlayerOrderIds.IndexOf(oldPlayerId);
                     if (orderIndex >= 0)
+                    {
                         gameStateModel.PlayerMoveStateModel.PlayerOrderIds[orderIndex] = newPlayerId;
+                    }
 
                     if (gameStateModel.PlayerMoveStateModel.CurrentPlayerId == oldPlayerId)
+                    {
                         gameStateModel.PlayerMoveStateModel.CurrentPlayerId = newPlayerId;
+                    }
 
                     // Update challenge tracking (if game is mid-challenge)
                     if (gameStateModel.ChallengeStateModel.ChallengedPlayerId == oldPlayerId)
+                    {
                         gameStateModel.ChallengeStateModel.ChallengedPlayerId = newPlayerId;
+                    }
+
                     if (gameStateModel.ChallengeStateModel.ChallengerPlayerId == oldPlayerId)
+                    {
                         gameStateModel.ChallengeStateModel.ChallengerPlayerId = newPlayerId;
+                    }
 
                     // Update end-game tracking
                     var winnerIndex = gameStateModel.EndGameStateModel.Winners.IndexOf(oldPlayerId);
                     if (winnerIndex >= 0)
+                    {
                         gameStateModel.EndGameStateModel.Winners[winnerIndex] = newPlayerId;
+                    }
+
                     if (gameStateModel.EndGameStateModel.SkippedTurns.Remove(oldPlayerId, out var skips))
+                    {
                         gameStateModel.EndGameStateModel.SkippedTurns[newPlayerId] = skips;
+                    }
 
                     await gameStateRepository.UpdateGameState(id, gameStateModel);
                     await gameStateRepository.DeleteGameStateIndex(id, oldPlayerId);
@@ -312,7 +375,10 @@ public class ScrabbleController(
             }
         }
 
-        if (!gameStateModel.IsUserInGame(User) && !User.IsAdmin()) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User) && !User.IsAdmin())
+        {
+            return Unauthorized();
+        }
 
         GenerateStateOfPlayMessage(gameStateModel);
 
@@ -323,14 +389,22 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GetPlayerMoveResult(Guid id, [FromBody] PlayerMove playerMove)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
         var gameStateModel = await gameStateRepository.GetGameState(id);
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
@@ -342,17 +416,27 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitPlayerMove(Guid id, [FromBody] PlayerMove playerMove)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
         var gameStateModel = await gameStateRepository.GetGameState(id);
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         if (!gameStateModel.IsCurrentPlayer(User))
+        {
             return RedirectToAction("Play", new { id, hideScreenClutter = HideScreenClutterForGame(id) });
+        }
 
         var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
@@ -371,13 +455,22 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GetGameEtag(Guid id)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var gameStateModel = await gameStateRepository.GetGameState(id, true);
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         return Json(new
         {
@@ -389,16 +482,27 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SkipTurn(Guid id)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var gameStateModel = await gameStateRepository.GetGameState(id);
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         if (!gameStateModel.IsCurrentPlayer(User))
+        {
             return RedirectToAction("Play", new { id, hideScreenClutter = HideScreenClutterForGame(id) });
+        }
 
         var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
         gameEngine.SkipMove(User.GetUserGuid());
@@ -411,16 +515,27 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UndoTurn(Guid id)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var gameStateModel = await gameStateRepository.GetGameState(id);
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         if (!gameStateModel.IsLastPlayer(User))
+        {
             return RedirectToAction("Play", new { id, hideScreenClutter = HideScreenClutterForGame(id) });
+        }
 
         var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
         gameEngine.UndoLastTurn(User.GetUserGuid());
@@ -433,22 +548,32 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ExchangeTiles(ExchangeTilesModel exchangeTilesModel)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
         var gameStateModel = await gameStateRepository.GetGameState(exchangeTilesModel.Id.GetValueOrDefault());
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         if (!gameStateModel.IsCurrentPlayer(User))
+        {
             return RedirectToAction("Play",
                 new
                 {
                     id = exchangeTilesModel.Id.GetValueOrDefault(),
                     hideScreenClutter = HideScreenClutterForGame(exchangeTilesModel.Id.GetValueOrDefault())
                 });
+        }
 
         var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
         gameEngine.ExchangeTiles(User.GetUserGuid(),
@@ -464,14 +589,22 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> SubmitChallenge(IssueChallengeModel issueChallengeModel)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
         var gameStateModel = await gameStateRepository.GetGameState(issueChallengeModel.GameId.GetValueOrDefault());
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
@@ -498,13 +631,22 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmAbandon(Guid id)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var gameStateModel = await gameStateRepository.GetGameState(id, true);
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
         gameEngine.AbandonGame(User.GetUserGuid());
@@ -526,13 +668,22 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ConfirmDelete(Guid id)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
+
         var gameStateModel = await gameStateRepository.GetGameState(id, true);
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         await gameStateRepository.DeleteGameStateIndex(id, User.GetUserGuid());
 
@@ -545,31 +696,48 @@ public class ScrabbleController(
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ResolveChallenge(ResolveChallengeModel model)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
+        if (!ModelState.IsValid)
+        {
+            return BadRequest(ModelState);
+        }
 
         var gameStateModel = await gameStateRepository.GetGameState(model.Id.GetValueOrDefault());
 
         if (gameStateModel == null)
+        {
             return NotFound();
+        }
 
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
 
         if (!gameStateModel.IsGameInChallenge())
+        {
             return RedirectToAction("Play", new { id = model.Id.GetValueOrDefault(), hideScreenClutter = HideScreenClutterForGame(model.Id.GetValueOrDefault()) });
+        }
 
         if (!gameStateModel.IsChallengedPlayer(User))
+        {
             return RedirectToAction("Play", new { id = model.Id.GetValueOrDefault(), hideScreenClutter = HideScreenClutterForGame(model.Id.GetValueOrDefault()) });
+        }
 
         var gameEngine = gameEngineFactory.CreateFromStateModel(gameStateModel);
 
         if (gameStateModel.ChallengeStateModel.CanOverrideChallengeOutcome)
+        {
             gameEngine.ResolveChallenge(model.Accept, model.GameChallengeResultOverride.GetValueOrDefault());
+        }
         else
+        {
             gameEngine.ResolveChallenge(model.Accept, null);
+        }
 
         await gameStateRepository.UpdateGameState(model.Id.GetValueOrDefault(), gameEngine.GameStateModel);
 
         if (model.Accept && gameEngine.GameStateModel.ChallengeStateModel.PlayerChallengeResult is { } challengeResult)
+        {
             switch (challengeResult.GameChallengeResult)
             {
                 case GameChallengeResult.RetryPlayerMove:
@@ -584,10 +752,12 @@ public class ScrabbleController(
                         "You have resolved the challenge and nothing will happen. Play will proceed to the next player.");
                     break;
             }
+        }
         else
+        {
             this.AddAlertSuccess(
                 "You have rejected the challenge and nothing will happen. Play will proceed to the next player.");
-
+        }
 
         return RedirectToAction("Play", new { id = model.Id.GetValueOrDefault(), hideScreenClutter = HideScreenClutterForGame(model.Id.GetValueOrDefault()) });
     }
@@ -595,7 +765,9 @@ public class ScrabbleController(
     private void GenerateStateOfPlayMessage(GameStateModel model)
     {
         if (!model.IsGameInProgress())
+        {
             return;
+        }
 
         if (model.IsGameInChallenge())
         {
@@ -611,7 +783,9 @@ public class ScrabbleController(
     private static string GenerateTurnMessage(GameStateModel model, System.Security.Claims.ClaimsPrincipal user)
     {
         if (model.IsCurrentPlayer(user))
+        {
             return $"It's currently <strong>your</strong> turn and the next player will be <strong>{model.NextPlayerName()}</strong>.";
+        }
 
         return model.IsNextPlayer(user)
             ? $"It's <strong>{model.CurrentPlayerName()}'s</strong> turn and the next player will be <strong>you</strong>."
@@ -642,11 +816,16 @@ public class ScrabbleController(
     private static string GenerateGameInChallengeMessage(GameStateModel model, System.Security.Claims.ClaimsPrincipal user)
     {
         if (model.IsChallengedPlayer(user))
+        {
             return $"<strong>{model.ChallengerName()}</strong> has challenged your last move of <strong>{model.LastMoveAndScore()}</strong> with '<strong>{model.ScrabbleChallengeReason()}</strong>'. " +
                    "You now need to accept/reject the challenge for the game to continue.";
+        }
+
         if (model.IsChallengerPlayer(user))
+        {
             return $"<strong>You</strong> have challenged <strong>{model.ChallengedName()}'s</strong> last move of <strong>{model.LastMoveAndScore()}</strong> with '<strong>{model.ScrabbleChallengeReason()}</strong>'. " +
                    $"<strong>{model.ChallengedName()}</strong> needs to accept/reject the challenge for the game to continue.";
+        }
 
         return $"<strong>{model.ChallengerName()}</strong> has challenged <strong>{model.ChallengedName()}'s</strong> last move of <strong>{model.LastMoveAndScore()}</strong> with '<strong>{model.ScrabbleChallengeReason()}</strong>'. " +
                $"<strong>{model.ChallengedName()}</strong> needs to accept/reject the challenge for the game to continue.";
@@ -655,8 +834,16 @@ public class ScrabbleController(
     private async Task<IActionResult> GetGameForConfirmation(Guid id, string viewName)
     {
         var gameStateModel = await gameStateRepository.GetGameState(id, true);
-        if (gameStateModel == null) return NotFound();
-        if (!gameStateModel.IsUserInGame(User)) return Unauthorized();
+        if (gameStateModel == null)
+        {
+            return NotFound();
+        }
+
+        if (!gameStateModel.IsUserInGame(User))
+        {
+            return Unauthorized();
+        }
+
         return View(viewName, gameStateModel);
     }
 
@@ -667,10 +854,15 @@ public class ScrabbleController(
                 PlayerGameSessionModelKey);
 
         if (playGameSessionModel == null)
+        {
             return false;
+        }
 
         if (playGameSessionModel.HideScreenClutter.ContainsKey(id))
+        {
             return playGameSessionModel.HideScreenClutter[id];
+        }
+
         return false;
     }
 }

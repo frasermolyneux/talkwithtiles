@@ -36,7 +36,9 @@ public class PlayerMoveManager(
     public void UndoLastTurn(Guid playerId)
     {
         if (LastMoveResult is null)
+        {
             throw new InvalidOperationException("Cannot undo: no previous move recorded.");
+        }
 
         LastMoveType = LastMoveType.UndoTurn;
 
@@ -102,18 +104,22 @@ public class PlayerMoveManager(
         LastMoveType = LastMoveType.Normal;
 
         if (playerMove.PlayerId != CurrentPlayerId && !dryRun)
+        {
             return new PlayerMoveResult(playerMove.PlayerId)
             {
                 InvalidMessage = "It is not your move"
             };
+        }
 
         var player = playerManager.GetPlayer(playerMove.PlayerId);
 
         if (!playerMove.Tiles.All(t => player.Tiles.Any(pt => pt.Letter == t.Letter)))
+        {
             return new PlayerMoveResult(playerMove.PlayerId)
             {
                 InvalidMessage = "Tiles have been placed that are not in your rack."
             };
+        }
 
         var playerMoveResult = boardManager.MakeMove(playerMove);
 
@@ -185,7 +191,9 @@ public class PlayerMoveManager(
         PlayerOrderIds[PlayerOrderIds.IndexOf(oldPlayerId)] = newPlayerId;
 
         if (CurrentPlayerId == oldPlayerId)
+        {
             CurrentPlayerId = newPlayerId;
+        }
 
         var player = playerManager.GetPlayer(oldPlayerId);
         player.UpdateInvitedPlayer(newPlayerId, newPlayerName);

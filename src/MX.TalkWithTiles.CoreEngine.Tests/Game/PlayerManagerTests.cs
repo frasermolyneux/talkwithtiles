@@ -7,6 +7,7 @@ using MX.TalkWithTiles.CoreEngine.Game;
 using Xunit;
 
 namespace MX.TalkWithTiles.CoreEngine.Tests.Game;
+
 public class PlayerManagerTests
 {
     private readonly Mock<IPlayerFactory> _mockPlayerFactory;

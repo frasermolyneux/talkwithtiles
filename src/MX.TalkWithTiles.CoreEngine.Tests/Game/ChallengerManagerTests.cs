@@ -9,6 +9,7 @@ using MX.TalkWithTiles.CoreEngine.Game;
 using Xunit;
 
 namespace MX.TalkWithTiles.CoreEngine.Tests.Game;
+
 public class ChallengerManagerTests
 {
     private readonly Mock<IPlayerMoveManager> _mockPlayerMoveManager;

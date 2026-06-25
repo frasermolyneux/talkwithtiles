@@ -17,6 +17,9 @@ public static class EnumerableExtensions
             }
         }
 
-        if (nextBatch.Count > 0) yield return nextBatch;
+        if (nextBatch.Count > 0)
+        {
+            yield return nextBatch;
+        }
     }
 }

@@ -28,7 +28,9 @@ public class BagManager(ITileFactory tileFactory) : IBagManager
         for (var i = 0; i < count; i++)
         {
             if (Tiles.Count == 0)
+            {
                 return tiles;
+            }
 
             var tile = Tiles[Random.Shared.Next(0, Tiles.Count)];
             tiles.Add(tile);
@@ -41,7 +43,9 @@ public class BagManager(ITileFactory tileFactory) : IBagManager
     public void ReturnTilesToBag(List<Tile> tiles)
     {
         foreach (var bagTile in tiles.Select(tile => _tileFactory.CreateTileForBag(tile.Letter ?? string.Empty)))
+        {
             Tiles.Add(bagTile);
+        }
     }
 
     public void InitNew(GameType gameType)
@@ -50,11 +54,13 @@ public class BagManager(ITileFactory tileFactory) : IBagManager
 
         var availableTiles = StartingTileHelper.GetStartingTiles(gameType);
         foreach (var availableLetter in availableTiles)
+        {
             for (var i = 0; i < availableLetter.Value; i++)
             {
                 var tile = _tileFactory.CreateTileForBag(availableLetter.Key);
                 Tiles.Add(tile);
             }
+        }
     }
 
     public void InitFromStateModel(BagStateModel bagStateModel)

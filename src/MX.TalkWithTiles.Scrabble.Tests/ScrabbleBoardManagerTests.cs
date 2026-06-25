@@ -9,6 +9,7 @@ using MX.TalkWithTiles.Scrabble.Constants;
 using Xunit;
 
 namespace MX.TalkWithTiles.Scrabble.Tests;
+
 public class ScrabbleBoardManagerTests
 {
     private readonly Mock<ITileFactory> _mockTileFactory;
@@ -367,13 +368,17 @@ public class ScrabbleBoardManagerTests
         var tiles = new Tile[boardWidth, boardHeight];
 
         for (var i = 0; i < boardWidth; i++)
+        {
             for (var j = 0; j < boardHeight; j++)
+            {
                 tiles[i, j] = new Tile
                 {
                     TileId = Guid.NewGuid(),
                     PosX = i,
                     PosY = j
                 };
+            }
+        }
 
         tiles[3, 3].Letter = "A";
         tiles[3, 4].Letter = "B";

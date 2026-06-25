@@ -35,7 +35,9 @@ public class ScrabbleBoardManagerScoringTests
         var tiles = new Tile[boardSize.Width, boardSize.Height];
 
         for (var x = 0; x < boardSize.Width; x++)
+        {
             for (var y = 0; y < boardSize.Height; y++)
+            {
                 tiles[x, y] = new Tile
                 {
                     TileId = Guid.NewGuid(),
@@ -43,14 +45,20 @@ public class ScrabbleBoardManagerScoringTests
                     PosY = y,
                     TileType = TileType.StandardTile
                 };
+            }
+        }
 
         // Apply premium squares from the actual board constants
         foreach (var premiumTile in ScrabbleBoardTiles.Tiles[GameType.StandardBoard])
+        {
             tiles[premiumTile.PosX, premiumTile.PosY].TileType = premiumTile.TileType;
+        }
 
         // Place any existing tiles
         foreach (var (x, y, letter) in existingTiles)
+        {
             tiles[x, y].Letter = letter;
+        }
 
         _boardManager.InitFromStateModel(GameType.StandardBoard, new BoardStateModel { Tiles = tiles });
     }
@@ -59,7 +67,9 @@ public class ScrabbleBoardManagerScoringTests
     {
         var tiles = new List<Tile>();
         foreach (var (x, y, letter) in placements)
+        {
             tiles.Add(new Tile { PosX = x, PosY = y, Letter = letter, RackPosition = -1 });
+        }
 
         return new PlayerMove { PlayerId = Guid.NewGuid(), Tiles = tiles };
     }

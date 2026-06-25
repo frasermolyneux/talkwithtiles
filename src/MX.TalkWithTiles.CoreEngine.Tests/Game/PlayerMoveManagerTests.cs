@@ -10,6 +10,7 @@ using MX.TalkWithTiles.CoreEngine.Game;
 using Xunit;
 
 namespace MX.TalkWithTiles.CoreEngine.Tests.Game;
+
 public class PlayerMoveManagerTests
 {
     // This is the current player
