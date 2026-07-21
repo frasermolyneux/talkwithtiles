@@ -14,7 +14,7 @@
     "@azure/data-tables": "^13.3.2",
     "@playwright/test": "^1.58.2",
     "@types/node": "^25.3.5",
-    "azurite": "^3.35.0",
+    "azurite": "^3.36.0",
     "typescript": "^5.9.3"
   }
 }
