@@ -15,6 +15,8 @@ Talk With Tiles is an ASP.NET Core 9 MVC web application that provides an online
 | `MX.TalkWithTiles.CoreEngine.Tests` | Unit tests for the core engine |
 | `MX.TalkWithTiles.Scrabble.Tests` | Unit tests for Scrabble logic |
 
+The core engine coordinates gameplay through manager interfaces, while game-specific rules remain in the Scrabble project.
+
 ## Authentication
 
 The application uses Microsoft Entra ID (via `Microsoft.Identity.Web`) for authentication, configured with `TenantId: common` to support multi-tenant organisations and personal Microsoft accounts. Game-related controllers require authentication while public pages (Home, About, Health, Error) are accessible anonymously.
