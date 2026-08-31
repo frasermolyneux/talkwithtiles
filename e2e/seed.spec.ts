@@ -6,6 +6,8 @@ import { test, expect } from '@playwright/test';
  * This test bootstraps the app environment so that agents (planner,
  * generator, healer) have an authenticated session to explore and
  * interact with the application.
+ * Its purpose is to verify that the seeded session can reach authenticated
+ * game creation, providing a stable starting point for agent-generated tests.
  *
  * The app runs on https://localhost:5001 with:
  * - Azurite for Azure Table Storage emulation
