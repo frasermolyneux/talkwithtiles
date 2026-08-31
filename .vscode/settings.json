@@ -1,5 +1,5 @@
 {
-    "dotnet.defaultSolution": "src/MX.TalkWithTiles.sln",
+    "dotnet.defaultSolution": "src/MX.TalkWithTiles.slnx",
     "azurite.location": "${workspaceFolder}",
     "azurite.tableHost": "127.0.0.1",
     "azurite.tablePort": 10002

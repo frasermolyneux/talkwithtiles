@@ -18,7 +18,7 @@ jobs:
         id: web-ci
         with:
           dotnet-project: "MX.TalkWithTiles.Web"
-          dotnet-version: 9.0.x
+          dotnet-version: 10.0.x
           src-folder: "src"
 
   terraform-plan-and-apply-dev:

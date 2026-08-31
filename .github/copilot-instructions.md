@@ -34,9 +34,9 @@ Azure Table Storage persistence, and Terraform-managed Azure infrastructure.
 Choose validation proportional to the changed files. The default commands are:
 
 ```pwsh
-dotnet build src\MX.TalkWithTiles.sln
-dotnet test src\MX.TalkWithTiles.sln
-dotnet format src\MX.TalkWithTiles.sln --verify-no-changes
+dotnet build src\MX.TalkWithTiles.slnx
+dotnet test src\MX.TalkWithTiles.slnx
+dotnet format src\MX.TalkWithTiles.slnx --verify-no-changes
 npx playwright test --project=chromium
 terraform -chdir=terraform fmt -check -recursive
 terraform -chdir=terraform validate

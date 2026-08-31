@@ -6,7 +6,7 @@ and Terraform for Azure App Service and Azure Table Storage.
 
 ## Repository layout
 
-- `src/MX.TalkWithTiles.sln` - application and unit-test projects
+- `src/MX.TalkWithTiles.slnx` - application and unit-test projects
 - `src/MX.TalkWithTiles.Web` - MVC application
 - `src/*.Tests` - xUnit test projects
 - `e2e`, `fixtures`, `helpers`, `pages` - Playwright tests and support code
@@ -17,9 +17,9 @@ and Terraform for Azure App Service and Azure Table Storage.
 ## Common commands
 
 ```pwsh
-dotnet build src\MX.TalkWithTiles.sln
-dotnet test src\MX.TalkWithTiles.sln
-dotnet format src\MX.TalkWithTiles.sln --verify-no-changes
+dotnet build src\MX.TalkWithTiles.slnx
+dotnet test src\MX.TalkWithTiles.slnx
+dotnet format src\MX.TalkWithTiles.slnx --verify-no-changes
 
 npm ci
 npx playwright test --project=chromium

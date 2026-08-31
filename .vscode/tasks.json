@@ -7,7 +7,7 @@
             "type": "process",
             "args": [
                 "restore",
-                "${workspaceFolder}/src/MX.TalkWithTiles.sln"
+                "${workspaceFolder}/src/MX.TalkWithTiles.slnx"
             ],
             "problemMatcher": "$msCompile",
             "presentation": {
@@ -21,7 +21,7 @@
             "type": "process",
             "args": [
                 "build",
-                "${workspaceFolder}/src/MX.TalkWithTiles.sln",
+                "${workspaceFolder}/src/MX.TalkWithTiles.slnx",
                 "/property:GenerateFullPaths=true",
                 "/consoleloggerparameters:NoSummary;ForceNoAlign"
             ],
@@ -81,7 +81,7 @@
             "type": "process",
             "args": [
                 "test",
-                "${workspaceFolder}/src/MX.TalkWithTiles.sln",
+                "${workspaceFolder}/src/MX.TalkWithTiles.slnx",
                 "--filter",
                 "FullyQualifiedName!~IntegrationTests",
                 "--verbosity",
@@ -103,7 +103,7 @@
             "type": "process",
             "args": [
                 "clean",
-                "${workspaceFolder}/src/MX.TalkWithTiles.sln"
+                "${workspaceFolder}/src/MX.TalkWithTiles.slnx"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -113,7 +113,7 @@
             "type": "process",
             "args": [
                 "format",
-                "${workspaceFolder}/src/MX.TalkWithTiles.sln",
+                "${workspaceFolder}/src/MX.TalkWithTiles.slnx",
                 "--verify-no-changes"
             ],
             "problemMatcher": "$msCompile"
