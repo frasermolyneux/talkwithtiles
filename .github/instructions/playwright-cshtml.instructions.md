@@ -1,39 +1,19 @@
 ---
-applyTo: "**/*.cshtml"
+description: "Testability rules for Razor views exercised by the Playwright suite."
+applyTo: "src/MX.TalkWithTiles.Web/Views/**/*.cshtml"
 ---
 
-# Razor View Test Automation Support
+# Razor view testability
 
-All `.cshtml` views MUST include `data-testid` attributes on interactive and significant elements to support Playwright E2E tests.
+- Preserve existing `data-testid` attributes used by Playwright tests.
+- Add a stable kebab-case `data-testid` when a new interactive or significant
+  element needs a browser-test locator.
+- Keep existing `id` attributes used by JavaScript, Bootstrap, or ASP.NET model
+  binding.
+- In Razor HTML-helper attribute objects, use `data_testid`; Razor renders it
+  as `data-testid`.
+- Add shared identifiers to `test-ids.ts` when the TypeScript suite should
+  reference them as constants.
 
-## Rules
-
-- Add `data-testid` on: buttons, links, form controls, containers, banners, badges, modals, tables, and any element targeted by tests.
-- Do NOT remove existing `id` attributes — add `data-testid` alongside them. JavaScript and Bootstrap rely on `id`.
-- Use Razor HTML helper syntax for dynamically rendered attributes: `data_testid = "value"` (underscore, not hyphen) — Razor renders it as `data-testid="value"`.
-
-## Naming Convention
-
-Kebab-case: `{area}-{element}[-{qualifier}]`
-
-| Pattern | Example |
-|---------|---------|
-| Navigation | `nav-home`, `nav-scrabble`, `nav-toggler` |
-| Buttons | `btn-submit-turn`, `btn-confirm-abandon` |
-| Containers | `game-controls`, `player-summary`, `additional-players` |
-| Modals | `modal-skip-turn`, `modal-skip-turn-confirm`, `modal-skip-turn-cancel` |
-| Form controls | `select-game-type`, `checkbox-public-game` |
-| Data displays | `turn-score`, `bag-count`, `player-badge` |
-| Tables | `active-games`, `completed-games`, `contacts-table` |
-
-## Existing Test IDs
-
-Reference `test-ids.ts` for the complete registry of all `data-testid` values. When adding a new view element that tests will target, add the ID to both the view and `test-ids.ts`.
-
-## What NOT to add data-testid to
-
-- Individual board cells (`id="cell_X-Y"`) — parameterised, used by JS drag/drop.
-- Individual rack cells (`id="rack_N"`) — parameterised, used by JS tile management.
-- ASP.NET-generated form field IDs (`#PlayerModels_0__Identifier`) — dynamic model binding.
-- Bootstrap collapse/accordion targets (`#collapseOne`) — used by Bootstrap JS.
-- Pure layout wrappers with no test significance (rows, generic card containers).
+Do not add test IDs to parameterized board cells (`cell_X-Y`), rack cells
+(`rack_N`), generated form IDs, Bootstrap targets, or layout-only wrappers.

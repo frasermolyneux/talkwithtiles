@@ -37,6 +37,17 @@ Triggers on manual dispatch. Deploys to the dev environment independently, usefu
 
 Runs on a weekly schedule (Monday at 3 AM UTC) and on manual dispatch. Performs code quality analysis.
 
+## Local Playwright Test MCP
+
+The workspace retains the `playwright-test` server in `.vscode/mcp.json`. It
+runs `node_modules/playwright/cli.js run-test-mcp-server`, so it uses the
+Playwright version pinned by `package-lock.json` and requires `npm ci` first.
+
+This is Playwright's test-runner MCP for test discovery, execution, debugging,
+planning, and generation. It is distinct from a general browser-automation MCP
+server and is used only by the explicitly selected Playwright repository
+agents. Do not enable a second Playwright server for the same workspace.
+
 ## Typical Development Flow
 
 1. Create a `feature/*`, `bugfix/*`, or `hotfix/*` branch from `main`
