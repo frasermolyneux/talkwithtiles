@@ -41,6 +41,7 @@ dotnet_diagnostic.IDE0005.severity = none
 
 # Defer style-only churn in existing code.
 dotnet_diagnostic.IDE0011.severity = warning
+dotnet_diagnostic.IDE0032.severity = suggestion
 dotnet_diagnostic.IDE0046.severity = suggestion
 dotnet_diagnostic.IDE0052.severity = suggestion
 dotnet_diagnostic.IDE0058.severity = suggestion

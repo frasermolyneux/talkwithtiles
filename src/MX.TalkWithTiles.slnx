@@ -1,0 +1,16 @@
+<Solution>
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+    <Platform Name="x86" />
+  </Configurations>
+  <Project Path="MX.TalkWithTiles.Common/MX.TalkWithTiles.Common.csproj" />
+  <Project Path="MX.TalkWithTiles.Contracts/MX.TalkWithTiles.Contracts.csproj" />
+  <Project Path="MX.TalkWithTiles.CoreEngine.Tests/MX.TalkWithTiles.CoreEngine.Tests.csproj" />
+  <Project Path="MX.TalkWithTiles.CoreEngine/MX.TalkWithTiles.CoreEngine.csproj" />
+  <Project Path="MX.TalkWithTiles.Repository/MX.TalkWithTiles.Repository.csproj" />
+  <Project Path="MX.TalkWithTiles.Scrabble.Tests/MX.TalkWithTiles.Scrabble.Tests.csproj" />
+  <Project Path="MX.TalkWithTiles.Scrabble/MX.TalkWithTiles.Scrabble.csproj" />
+  <Project Path="MX.TalkWithTiles.Web.Tests/MX.TalkWithTiles.Web.Tests.csproj" />
+  <Project Path="MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj" />
+</Solution>
