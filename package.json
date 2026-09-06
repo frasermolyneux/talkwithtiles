@@ -13,7 +13,7 @@
   "devDependencies": {
     "@azure/data-tables": "^13.3.2",
     "@playwright/test": "^1.62.1",
-    "@types/node": "^26.4.0",
+    "@types/node": "^26.4.1",
     "azurite": "^3.37.0",
     "typescript": "^7.0.2"
   }
