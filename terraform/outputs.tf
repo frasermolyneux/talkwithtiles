@@ -10,6 +10,10 @@ output "web_app_resource_group_name" {
   value = azurerm_linux_web_app.app.resource_group_name
 }
 
+output "service_plan_name" {
+  value = local.selected_service_plan.name
+}
+
 output "entra_application_client_id" {
   value = azuread_application.web.client_id
 }

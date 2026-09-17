@@ -32,6 +32,16 @@ Each environment deployment uses concurrency groups to prevent parallel deployme
 ### Deploy Dev (`deploy-dev.yml`)
 
 Triggers on manual dispatch. Deploys to the dev environment independently, useful for testing infrastructure changes before merging to main.
+The development Terraform state owns both the web app and its Linux B1 App
+Service plan in `rg-talkwithtiles-dev-swedencentral`.
+
+### Destroy Workflows
+
+Development destroy runs use the same repository development concurrency group
+as deployment. After Terraform destroy, the workflows remove only the exact
+Application Insights Failure Anomalies rule and verify that the workload
+resource group is empty and its workload-owned App Service plan is absent.
+Residual resource IDs fail the workflow visibly.
 
 ### Code Quality (`codequality.yml`)
 

@@ -39,13 +39,16 @@ Application Insights is integrated for telemetry and monitoring, configured per-
 
 Infrastructure is defined in Terraform under the `terraform/` directory and includes:
 
-- **Azure App Service** (Linux, .NET 9.0) on a shared hosting plan from `platform-hosting`
+- **Azure App Service** (Linux, .NET 10.0) using a workload-owned B1 plan in development and the shared `platform-hosting` plan in production
 - **Azure Storage Account** with the five game tables
 - **Microsoft Entra ID** app registration with client credentials
 - **Application Insights** instance
 - **DNS records** (CNAME and TXT) for custom domain
 
 Terraform state is stored remotely in Azure Storage with per-environment backend configurations (`backends/dev.backend.hcl`, `backends/prd.backend.hcl`).
+Development Terraform owns its App Service plan and does not read
+`platform-hosting` state. Production continues to select the existing shared
+production plan from `platform-hosting` remote state.
 
 ## Deployment
 

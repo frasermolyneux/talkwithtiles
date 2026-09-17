@@ -23,6 +23,7 @@ jobs:
     runs-on: ubuntu-latest
     concurrency:
       group: ${{ github.repository }}-${{ inputs.environment }}
+      cancel-in-progress: false
     steps:
       - uses: frasermolyneux/actions/terraform-destroy@terraform-destroy/v1.3
         with:
@@ -32,3 +33,52 @@ jobs:
           AZURE_CLIENT_ID: ${{ vars.AZURE_CLIENT_ID }}
           AZURE_TENANT_ID: ${{ vars.AZURE_TENANT_ID }}
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Login to Azure for destroy verification
+        uses: azure/login@8216e11d8cd9b42fe925c852af8e76311ff067ac
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Verify environment resources were destroyed
+        shell: bash
+        run: |
+          environment="${{ inputs.environment }}"
+          resource_group="rg-talkwithtiles-${environment}-swedencentral"
+          service_plan="asp-talkwithtiles-${environment}-swedencentral-default"
+          failure_anomalies_rule="Failure Anomalies - ai-talkwithtiles-${environment}-swedencentral"
+
+          failure_anomalies_id=$(az resource list \
+            --resource-group "$resource_group" \
+            --resource-type "Microsoft.AlertsManagement/smartDetectorAlertRules" \
+            --query "[?name == '$failure_anomalies_rule'].id | [0]" \
+            --output tsv)
+
+          if [[ -n "$failure_anomalies_id" ]]; then
+            az resource delete --ids "$failure_anomalies_id"
+            az resource wait --deleted --ids "$failure_anomalies_id" --interval 10 --timeout 180
+          fi
+
+          service_plan_ids=$(az resource list \
+            --resource-group "$resource_group" \
+            --resource-type "Microsoft.Web/serverfarms" \
+            --query "[?name == '$service_plan'].id" \
+            --output tsv)
+          residual_ids=$(az resource list \
+            --resource-group "$resource_group" \
+            --query "[].id" \
+            --output tsv)
+
+          if [[ -n "$service_plan_ids" || -n "$residual_ids" ]]; then
+            echo "::error::Destroy left resources in $resource_group."
+            if [[ -n "$service_plan_ids" ]]; then
+              echo "Residual service plan IDs:"
+              printf '%s\n' "$service_plan_ids"
+            fi
+            if [[ -n "$residual_ids" ]]; then
+              echo "Residual resource IDs:"
+              printf '%s\n' "$residual_ids"
+            fi
+            exit 1
+          fi
