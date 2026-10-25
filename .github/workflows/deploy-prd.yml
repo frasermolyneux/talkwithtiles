@@ -43,7 +43,7 @@ jobs:
       state_tainted: ${{ steps.state-check.outputs.state_tainted }}
     steps:
       - id: state-check
-        uses: frasermolyneux/actions/terraform-state-check@terraform-state-check/v1.1
+        uses: frasermolyneux/actions/terraform-state-check@terraform-state-check/v2.0.0
         with:
           terraform-folder: "terraform"
           terraform-var-file: "tfvars/dev.tfvars"
@@ -87,7 +87,7 @@ jobs:
       group: ${{ github.repository }}-dev
     steps:
       - if: needs.detect-changes.outputs.terraform == 'true' || needs.terraform-state-check-dev.outputs.state_tainted == 'true'
-        uses: frasermolyneux/actions/terraform-plan-and-apply@terraform-plan-and-apply/v1.4
+        uses: frasermolyneux/actions/terraform-plan-and-apply@terraform-plan-and-apply/v2.0.0
         with:
           terraform-folder: "terraform"
           terraform-var-file: "tfvars/dev.tfvars"
@@ -97,7 +97,7 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - if: needs.detect-changes.outputs.terraform != 'true' && needs.terraform-state-check-dev.outputs.state_tainted != 'true'
-        uses: frasermolyneux/actions/terraform-output@terraform-output/v1.0
+        uses: frasermolyneux/actions/terraform-output@terraform-output/v2.0.0
         with:
           terraform-folder: "terraform"
           terraform-var-file: "tfvars/dev.tfvars"
@@ -232,11 +232,14 @@ jobs:
     if: |
       !failure() && !cancelled() && (needs.terraform-plan-and-apply-dev.result == 'success' || github.event_name == 'schedule')
     runs-on: ubuntu-latest
+    env:
+      TF_CLI_ARGS_plan: -lock-timeout=10m
+      TF_CLI_ARGS_apply: -lock-timeout=10m
     concurrency:
       group: ${{ github.repository }}-prd
     steps:
       - if: needs.detect-changes.outputs.terraform == 'true'
-        uses: frasermolyneux/actions/terraform-plan-and-apply@terraform-plan-and-apply/v1.4
+        uses: frasermolyneux/actions/terraform-plan-and-apply@terraform-plan-and-apply/v2.0.0
         with:
           terraform-folder: "terraform"
           terraform-var-file: "tfvars/prd.tfvars"
@@ -246,7 +249,7 @@ jobs:
           AZURE_SUBSCRIPTION_ID: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - if: needs.detect-changes.outputs.terraform != 'true'
-        uses: frasermolyneux/actions/terraform-output@terraform-output/v1.0
+        uses: frasermolyneux/actions/terraform-output@terraform-output/v2.0.0
         with:
           terraform-folder: "terraform"
           terraform-var-file: "tfvars/prd.tfvars"
