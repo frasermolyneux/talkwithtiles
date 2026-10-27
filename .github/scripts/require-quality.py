@@ -15,25 +15,42 @@ def gh(path):
     return json.loads(subprocess.check_output(["gh", "api", path], text=True))
 
 
+def latest_contract_producer(sha, repository, default_branch):
+    for page in range(1, 21):
+        runs = gh(
+            f"repos/{repository}/actions/workflows/validate-workload-contract.yml/runs"
+            f"?event=workflow_run&branch={default_branch}&per_page=100&page={page}"
+        )["workflow_runs"]
+        for run in sorted(runs, key=lambda entry: entry["id"], reverse=True):
+            if (run.get("event") != "workflow_run" or run.get("path") != CONTRACT_WORKFLOW
+                    or run.get("head_branch") != default_branch
+                    or run.get("repository", {}).get("full_name") != repository):
+                continue
+            jobs = gh(f"repos/{repository}/actions/runs/{run['id']}/jobs?filter=latest&per_page=100")["jobs"]
+            exact = [job for job in jobs if job["name"] == f"workload-contract ({sha})"]
+            if exact:
+                return run, max(exact, key=lambda job: job["id"])
+        if len(runs) < 100:
+            return None
+    raise RuntimeError("Too many trusted workload contract producers.")
+
+
 def trusted_contract_producer(check, sha, repository, default_branch):
     prefix = f"https://github.com/{repository}/actions/runs/"
     match = re.fullmatch(re.escape(prefix) + r"([1-9][0-9]*)", check.get("details_url", ""))
     if not match:
         raise RuntimeError("Untrusted workload contract producer URL.")
-    run = gh(f"repos/{repository}/actions/runs/{match[1]}")
-    if (run.get("event") != "workflow_run" or run.get("path") != CONTRACT_WORKFLOW
-            or run.get("head_branch") != default_branch
-            or run.get("repository", {}).get("full_name") != repository):
-        raise RuntimeError("Untrusted workload contract workflow.")
+    producer = latest_contract_producer(sha, repository, default_branch)
+    if producer is None:
+        raise RuntimeError("Trusted workload contract job does not validate this SHA.")
+    run, job = producer
     if run["status"] != "completed":
         return False
     if run["conclusion"] != "success":
         raise RuntimeError("Trusted workload contract producer did not succeed.")
-    jobs = gh(f"repos/{repository}/actions/runs/{match[1]}/jobs?filter=latest&per_page=100")["jobs"]
-    # The reviewed producer binds its job name to workflow_run.head_sha.
-    # A same-App forged check cannot borrow a producer run for another SHA.
-    exact = [job for job in jobs if job["name"] == f"workload-contract ({sha})"]
-    if not exact or max(exact, key=lambda job: job["id"])["conclusion"] != "success":
+    if str(run["id"]) != match[1]:
+        raise RuntimeError("Untrusted workload contract check replays an older producer.")
+    if job["conclusion"] != "success":
         raise RuntimeError("Trusted workload contract job does not validate this SHA.")
     return True
 

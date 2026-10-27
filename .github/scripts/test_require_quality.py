@@ -21,6 +21,7 @@ CHECK = {
     "details_url": f"https://github.com/{REPOSITORY}/actions/runs/99",
 }
 PRODUCER = {
+    "id": 99,
     "event": "workflow_run", "path": ".github/workflows/validate-workload-contract.yml",
     "head_branch": "main", "repository": {"full_name": REPOSITORY},
     "status": "completed", "conclusion": "success",
@@ -29,7 +30,8 @@ JOB = {"id": 30, "name": f"workload-contract ({SHA})", "status": "completed", "c
 
 
 class PublicationGateTests(unittest.TestCase):
-    def run_gate(self, qualities=None, checks=None, producer=None, jobs=None, pending_producer=False):
+    def run_gate(self, qualities=None, checks=None, producer=None, jobs=None, pending_producer=False,
+                 newer_producer=None):
         attempts = 0
 
         def output(command, **_):
@@ -41,13 +43,14 @@ class PublicationGateTests(unittest.TestCase):
                 result = {"workflow_runs": [QUALITY] if qualities is None else qualities}
             elif "/check-runs?" in path:
                 result = {"check_runs": [CHECK] if checks is None else checks}
-            elif "/actions/runs/99/jobs?" in path:
-                result = {"jobs": [JOB] if jobs is None else jobs}
-            elif path.endswith("/actions/runs/99"):
+            elif "/actions/workflows/validate-workload-contract.yml/runs?" in path:
                 attempts += 1
                 result = PRODUCER if producer is None else producer
                 if pending_producer and attempts == 1:
                     result = {**result, "status": "in_progress", "conclusion": None}
+                result = {"workflow_runs": [result] + ([newer_producer] if newer_producer else [])}
+            elif "/actions/runs/99/jobs?" in path or "/actions/runs/100/jobs?" in path:
+                result = {"jobs": [JOB] if jobs is None else jobs}
             else:
                 self.fail(f"Unexpected API request: {path}")
             return json.dumps(result)
@@ -93,6 +96,17 @@ class PublicationGateTests(unittest.TestCase):
         for variant in variants:
             with self.subTest(variant=variant), self.assertRaisesRegex(RuntimeError, "[Uu]ntrusted|Trusted workload"):
                 self.run_gate(**copy.deepcopy(variant))
+
+    def test_new_same_app_check_cannot_replay_success_before_newer_producer_failure(self):
+        with self.assertRaisesRegex(RuntimeError, "producer did not succeed"):
+            self.run_gate(
+                checks=[{**CHECK, "id": 200}],
+                newer_producer={**PRODUCER, "id": 100, "conclusion": "failure"},
+            )
+
+    def test_new_same_app_check_must_reference_the_latest_successful_producer(self):
+        with self.assertRaisesRegex(RuntimeError, "replays an older producer"):
+            self.run_gate(newer_producer={**PRODUCER, "id": 100})
 
     def test_completed_check_waits_for_actual_trusted_producer_completion(self):
         self.assertEqual(1, self.run_gate(pending_producer=True))
