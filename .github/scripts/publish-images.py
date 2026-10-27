@@ -4,8 +4,8 @@ import json
 import os
 from pathlib import Path
 import re
+import runpy
 import subprocess
-import time
 from urllib.error import HTTPError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
@@ -21,17 +21,8 @@ def run(*args, capture=False, **kwargs):
 
 
 def wait_quality(sha):
-    for _ in range(90):
-        runs = json.loads(run("gh", "run", "list", "--workflow", "codequality.yml", "--commit", sha,
-                              "--event", "push", "--json", "databaseId,headSha,conclusion,status", capture=True))
-        if runs:
-            latest = max(runs, key=lambda value: value["databaseId"])
-            if latest["status"] == "completed":
-                if latest["headSha"] != sha or latest["conclusion"] != "success":
-                    raise RuntimeError("Exact-head Code Quality did not succeed.")
-                return
-        time.sleep(10)
-    raise RuntimeError("Timed out waiting for exact-head Code Quality.")
+    gate = runpy.run_path(str(Path(__file__).with_name("require-quality.py")))
+    gate["wait_for_quality"](sha, os.environ["GITHUB_REPOSITORY"])
 
 
 def post(path, fields):

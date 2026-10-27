@@ -1,0 +1,83 @@
+name: Validate Workload Contract
+
+on:
+  workflow_run:
+    workflows: [Build and Test, PR Verify, Runtime Quality]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  contract:
+    name: workload-contract (${{ github.event.workflow_run.head_sha }})
+    if: github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: Production
+    permissions:
+      contents: read
+      checks: write
+    steps:
+      # Only default-branch code/policy and the pinned compiler are executable.
+      # Fork/Dependabot/PR revisions contribute workload.json data, never a checkout.
+      - name: Check out reviewed default branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+      - name: Create read-only trusted contract token
+        id: platform-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PEM }}
+          owner: ${{ github.repository_owner }}
+          repositories: platform-baremetal
+          permission-contents: read
+      - name: Check out pinned private compiler
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: frasermolyneux/platform-baremetal
+          ref: 3088169b94996801e42e10d008776f4b1390e49f
+          path: .platform-contract
+          token: ${{ steps.platform-token.outputs.token }}
+          persist-credentials: false
+      - name: Fetch only tested manifest data
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          SOURCE_REPOSITORY: ${{ github.event.workflow_run.head_repository.full_name }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          [[ "$SOURCE_REPOSITORY" =~ ^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$ ]]
+          mkdir -p .contract-input
+          gh api "repos/$SOURCE_REPOSITORY/contents/workload.json?ref=$SOURCE_SHA" \
+            -H "Accept: application/vnd.github.raw+json" >.contract-input/workload.json
+          test "$(wc -c <.contract-input/workload.json)" -le 1048576
+      - name: Compile data using reviewed policy and isolated trusted Python
+        run: |
+          set -euo pipefail
+          mkdir -p .ci-state
+          export TMPDIR="$GITHUB_WORKSPACE/.ci-state"
+          python3 -I -m venv .validation-venv
+          .validation-venv/bin/python -I -m pip install --disable-pip-version-check --require-hashes \
+            -r .platform-contract/.github/actions/validate-workload-manifest/requirements.lock
+          .validation-venv/bin/python -I .platform-contract/ansible/roles/workload_contract/files/compile_manifest.py \
+            .contract-input/workload.json .platform-contract/ansible/roles/workload_contract/files/workload.schema.json \
+            .github/validation/policy.json .platform-contract/ansible/roles/workload_contract/files/policy.schema.json \
+            .ci-state/workload-validation
+      - name: Report exact tested revision with GitHub Actions identity
+        if: always()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          SOURCE_SHA: ${{ github.event.workflow_run.head_sha }}
+          RESULT: ${{ job.status }}
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_SHA" =~ ^[0-9a-f]{40}$ ]]
+          gh api --method POST "repos/$GITHUB_REPOSITORY/check-runs" \
+            -f name=workload-contract -f "head_sha=$SOURCE_SHA" \
+            -f status=completed -f "conclusion=$RESULT" \
+            -f "details_url=$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            --silent

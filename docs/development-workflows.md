@@ -6,11 +6,15 @@
 - `e2e-tests` calls Runtime Quality: real PostgreSQL 18 persistence tests,
   single-worker deterministic Playwright multiplayer flows, builds of both
   constrained images and read-only/non-root persisted-restart checks.
-- `validate-contract` compiles the manifest using the pinned private platform
-  compiler and `.github/validation/policy.json`. This fixture grants no host
-  authority and cannot activate placeholders; parent-owned host policy is final.
-  The read-only contract checkout requires the Production GitHub App installation
-  to include `platform-baremetal`; private contract source is never published.
+- PR Runtime Quality never receives private App credentials or executes private
+  contract code, including for same-repository Dependabot PRs.
+- `Validate Workload Contract` runs only through default-branch `workflow_run`.
+  It checks out reviewed default-branch code/policy and private compiler
+  `3088169b94996801e42e10d008776f4b1390e49f`, fetching only the tested SHA's
+  `workload.json` as data (also for forks and Dependabot). Its isolated Python
+  never imports PR-controlled workspace files. The Production-only read-only App
+  token is not forwarded to a PR workflow. Its validation fixture grants no host
+  authority; parent-owned host policy is final.
 - Existing Code Quality, Sonar, dependency review and DevOps security scanning
   remain unchanged. Unit-only runners skip PostgreSQL tests when
   `TEST_POSTGRES_PASSWORD` is absent; Runtime Quality always supplies it.
@@ -18,7 +22,10 @@
   produce an exact-source publication marker. Digest-only/documentation changes
   cannot recursively publish images.
 - Publish Image consumes only successful same-repository `main` push validation,
-  additionally waits for successful exact-source Code Quality, builds both
+  additionally requires exact-source Code Quality and `workload-contract` from
+  GitHub Actions App15368. It verifies the latter's trusted workflow-run producer
+  and SHA-bound job, not just its name or App slug. Missing, spoofed, stale or
+  failed results fail closed before cloud login/publication. It builds both
   images, uses OIDC with repository-scoped ACR tokens, and locks source tags and
   digests against overwrite/deletion.
 - Promote Image opens a digest-only PR. It rejects newer source/image changes,
@@ -49,3 +56,20 @@ npx playwright test --project=chromium
 
 The Playwright test-runner MCP in `.vscode/mcp.json` uses the pinned local package.
 Do not enable a second Playwright server for the same workspace.
+
+## Initial trusted-validator bootstrap
+
+The new trusted workflow is inactive until its PR merges into the default branch;
+do not bypass this by dispatching privileged candidate code or adding
+`pull_request_target`. For initial review, fetch the compiler, both schemas and
+its hash-locked requirements at the exact pin above into an ignored project
+directory, and use an isolated virtual environment there. Compile the candidate
+`workload.json` as data against the **reviewed default branch's**
+`.github/validation/policy.json`, writing output only under that ignored project
+directory. This performs no deployment and does not synthesize a trusted GitHub
+check; publication remains blocked until the default-branch workflow reports.
+
+```powershell
+python -m unittest discover -s .github\scripts -p 'test_*.py'
+python -m unittest discover -s deployment -p 'test_*.py'
+```

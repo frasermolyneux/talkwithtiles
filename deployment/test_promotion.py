@@ -1,5 +1,6 @@
 import importlib.util
 import json
+import os
 from pathlib import Path
 import unittest
 from unittest.mock import patch
@@ -44,15 +45,14 @@ class PromotionTests(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError, "Unresolved review threads"):
                 promotion.wait_review("example/repository", 1, head)
 
-    def test_publication_requires_successful_latest_exact_head_quality(self):
+    def test_publication_gate_failure_prevents_image_build_and_registry_access(self):
         head = "a" * 40
-        runs = [
-            {"databaseId": 1, "headSha": head, "status": "completed", "conclusion": "success"},
-            {"databaseId": 2, "headSha": head, "status": "completed", "conclusion": "failure"},
-        ]
-        with patch.object(publication, "run", return_value=json.dumps(runs)):
+        with patch.dict(os.environ, {"SOURCE_SHA": head, "GITHUB_REPOSITORY": "example/repository"}), \
+                patch.object(publication, "run") as commands, \
+                patch.object(publication, "wait_quality", side_effect=RuntimeError("Exact-head Code Quality did not succeed.")):
             with self.assertRaisesRegex(RuntimeError, "Exact-head Code Quality did not succeed"):
-                publication.wait_quality(head)
+                publication.main()
+            commands.assert_called_once_with("git", "merge-base", "--is-ancestor", head, "origin/main")
 
     def test_new_source_inputs_supersede_old_image_publication(self):
         def run(*args, **kwargs):
