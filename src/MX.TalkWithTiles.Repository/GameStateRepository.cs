@@ -1,207 +1,228 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Text.Json;
 using System.Threading.Tasks;
-using Azure;
-using Azure.Data.Tables;
-using Microsoft.Extensions.Options;
-using MX.TalkWithTiles.Contracts.Models;
+using MX.TalkWithTiles.Contracts.Constants;
 using MX.TalkWithTiles.Contracts.StateModels;
-using MX.TalkWithTiles.CoreEngine.Helpers;
-using MX.TalkWithTiles.Repository.CloudEntities;
-using MX.TalkWithTiles.Repository.Config;
-using MX.TalkWithTiles.Repository.Extensions;
+using MX.TalkWithTiles.Repository.Dtos;
 using MX.TalkWithTiles.Repository.Interfaces;
 using MX.TalkWithTiles.Repository.Models;
+using Npgsql;
+using NpgsqlTypes;
 
 namespace MX.TalkWithTiles.Repository;
 
-public class GameStateRepository(IOptions<AppDataOptions> options) : AppDataRepository(options), IGameStateRepository
+public sealed class GameStateRepository(NpgsqlDataSource dataSource) : IGameStateRepository
 {
     public async Task<GameStateModel?> GetGameState(Guid gameId, bool skipTileFetch = false)
     {
-        GameStateCloudEntity gameStateModelCloudEntity;
-        try
-        {
-            var response = await GameStateTable.GetEntityAsync<GameStateCloudEntity>("scrabble", gameId.ToString());
-            gameStateModelCloudEntity = response.Value;
-        }
-        catch (RequestFailedException ex) when (ex.Status == 404)
-        {
-            return null;
-        }
-
-        // Read computed properties once — each getter access deserializes
-        // from JSON, so repeated access creates new throwaway objects.
-        var bagStateModel = gameStateModelCloudEntity.BagStateModel ?? new BagStateModel();
-        var boardStateModel = gameStateModelCloudEntity.BoardStateModel ?? new BoardStateModel();
-
-        if (!skipTileFetch)
-        {
-            if (bagStateModel.Tiles == null)
-            {
-                var bagTiles = await GetTiles($"{gameId}-bag");
-                bagStateModel.Tiles = bagTiles;
-            }
-
-            if (boardStateModel.Tiles == null)
-            {
-                var boardTileList = await GetTiles($"{gameId}-board");
-
-                var boardSize = BoardSizeHelper.GetSize(gameStateModelCloudEntity.GameType);
-                var boardTiles = new Tile[boardSize.Width, boardSize.Height];
-
-                foreach (var tile in boardTileList)
-                {
-                    boardTiles[tile.PosX, tile.PosY] = tile;
-                }
-
-                boardStateModel.Tiles = boardTiles;
-            }
-        }
-
-        return new GameStateModel
-        {
-            GameId = Guid.Parse(gameStateModelCloudEntity.RowKey),
-            GameEtag = gameStateModelCloudEntity.Timestamp?.ToUnixTimeMilliseconds().ToString(),
-            LastUpdated = gameStateModelCloudEntity.Timestamp ?? DateTimeOffset.MinValue,
-            GameType = gameStateModelCloudEntity.GameType,
-            TileBagVisibilityOption = gameStateModelCloudEntity.TileBagVisibilityOption,
-            GamePrivacyType = gameStateModelCloudEntity.GamePrivacyType,
-            BoardStateModel = boardStateModel,
-            BagStateModel = bagStateModel,
-            EndGameStateModel = gameStateModelCloudEntity.EndGameStateModel ?? new EndGameStateModel(),
-            PlayersStateModel = gameStateModelCloudEntity.PlayersStateModel ?? new PlayersStateModel(),
-            PlayerMoveStateModel = gameStateModelCloudEntity.PlayerMoveStateModel ?? new PlayerMoveStateModel(),
-            ChallengeStateModel = gameStateModelCloudEntity.ChallengeStateModel ?? new ChallengeStateModel()
-        };
+        // Tiles are part of the same snapshot, including when a caller only needs metadata.
+        await using var command = dataSource.CreateCommand(
+            "SELECT state::text, version, updated_at FROM games WHERE id = $1");
+        command.Parameters.AddWithValue(gameId);
+        await using var reader = await command.ExecuteReaderAsync();
+        return await reader.ReadAsync() ? ReadState(reader) : null;
     }
 
-    public async Task UpdateGameState(Guid gameId, GameStateModel gameStateModel)
+    public Task UpdateGameState(Guid gameId, GameStateModel gameStateModel) =>
+        SaveGame(gameId, gameStateModel, []);
+
+    public async Task CreateGame(GameStateModel gameStateModel, IReadOnlyList<GameInviteDto> invites)
     {
-        // Save tiles separately before constructing cloud entity to avoid
-        // serializing Tile[,] which System.Text.Json does not support.
-        if (gameStateModel.BagStateModel.Tiles != null)
+        ArgumentNullException.ThrowIfNull(gameStateModel);
+        if (gameStateModel.GameEtag != null || invites.Any(i => i.GameId != gameStateModel.GameId ||
+            !gameStateModel.PlayersStateModel.Players.Any(p => p.PlayerId == i.InviteId)))
         {
-            await SaveTiles($"{gameStateModel.GameId}-bag", gameStateModel.BagStateModel.Tiles);
+            throw new ArgumentException("Invites must belong to this new game.", nameof(invites));
         }
 
-        if (gameStateModel.BoardStateModel.Tiles != null)
+        await SaveGame(gameStateModel.GameId, gameStateModel, invites);
+    }
+
+    private async Task SaveGame(Guid gameId, GameStateModel state, IReadOnlyList<GameInviteDto> invites)
+    {
+        ArgumentNullException.ThrowIfNull(state);
+        if (gameId == Guid.Empty || gameId != state.GameId)
         {
-            await SaveTiles($"{gameStateModel.GameId}-board",
-                gameStateModel.BoardStateModel.Tiles.Cast<Tile>().ToArray());
+            throw new ArgumentException("Game identity does not match the snapshot.", nameof(gameId));
         }
 
-        gameStateModel.BagStateModel.Tiles = null;
-        gameStateModel.BoardStateModel.Tiles = null;
-
-        var gameStateCloudEntity = new GameStateCloudEntity(gameId, gameStateModel);
-
-        await GameStateTable.UpsertEntityAsync(gameStateCloudEntity, TableUpdateMode.Merge);
-
-        foreach (var scrabblePlayerStateModel in gameStateModel.PlayersStateModel.Players)
+        var json = JsonSerializer.Serialize(state, GameJson.Options);
+        await using var connection = await dataSource.OpenConnectionAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        await using var command = new NpgsqlCommand(
+            "SELECT state = $2, version, updated_at FROM games WHERE id = $1 FOR UPDATE", connection, transaction);
+        command.Parameters.AddWithValue(gameId);
+        command.Parameters.AddWithValue(NpgsqlDbType.Jsonb, json);
+        long version = 0;
+        DateTimeOffset updatedAt = default;
+        bool unchanged = false;
+        await using (var reader = await command.ExecuteReaderAsync())
         {
-            var scrabbleGameStateIndexCloudEntity =
-                new GameStateIndexCloudEntity(
-                    scrabblePlayerStateModel.PlayerId,
-                    gameStateModel.GameId,
-                    gameStateModel.GamePrivacyType,
-                    gameStateModel.EndGameStateModel.GameStateType,
-                    gameStateModel.GameType);
+            if (await reader.ReadAsync())
+            {
+                unchanged = reader.GetBoolean(0);
+                version = reader.GetInt64(1);
+                updatedAt = reader.GetFieldValue<DateTimeOffset>(2);
+            }
+        }
 
-            await GameStateIndexTable.UpsertEntityAsync(scrabbleGameStateIndexCloudEntity, TableUpdateMode.Merge);
+        if (version != 0 && unchanged)
+        {
+            await transaction.CommitAsync();
+            state.GameEtag = version.ToString(CultureInfo.InvariantCulture);
+            state.LastUpdated = updatedAt;
+            return;
+        }
+
+        if ((version != 0 && state.GameEtag != version.ToString(CultureInfo.InvariantCulture)) ||
+            (version == 0 && state.GameEtag != null))
+        {
+            throw new GameConcurrencyException();
+        }
+
+        command.Parameters.Clear();
+        command.CommandText = """
+            INSERT INTO games (id, state, privacy) VALUES ($1, $2, $3)
+            ON CONFLICT (id) DO UPDATE SET state = EXCLUDED.state, privacy = EXCLUDED.privacy,
+                version = games.version + 1, updated_at = clock_timestamp()
+            RETURNING version, updated_at
+            """;
+        command.Parameters.AddWithValue(gameId);
+        command.Parameters.AddWithValue(NpgsqlDbType.Jsonb, json);
+        command.Parameters.AddWithValue((int)state.GamePrivacyType);
+        // Concurrent first saves have no existing row to lock. Never let an upsert overwrite one.
+        if (version == 0)
+        {
+            command.CommandText = """
+                INSERT INTO games (id, state, privacy) VALUES ($1, $2, $3)
+                ON CONFLICT (id) DO NOTHING RETURNING version, updated_at
+                """;
+        }
+
+        await using (var reader = await command.ExecuteReaderAsync())
+        {
+            if (!await reader.ReadAsync())
+            {
+                throw new GameConcurrencyException();
+            }
+
+            version = reader.GetInt64(0);
+            updatedAt = reader.GetFieldValue<DateTimeOffset>(1);
+        }
+
+        await SaveRelatedState(command, state, invites);
+        await transaction.CommitAsync();
+        state.GameEtag = version.ToString(CultureInfo.InvariantCulture);
+        state.LastUpdated = updatedAt;
+    }
+
+    private static async Task SaveRelatedState(NpgsqlCommand command, GameStateModel state, IReadOnlyList<GameInviteDto> invites)
+    {
+        HashSet<Guid> previousPlayerIds = [];
+        command.Parameters.Clear();
+        command.CommandText = "SELECT player_id FROM game_players WHERE game_id = $1";
+        command.Parameters.AddWithValue(state.GameId);
+        await using (var reader = await command.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                previousPlayerIds.Add(reader.GetGuid(0));
+            }
+        }
+
+        var playerIds = state.PlayersStateModel.Players.Select(p => p.PlayerId).ToArray();
+        command.Parameters.Clear();
+        command.Parameters.AddWithValue(state.GameId);
+        command.Parameters.AddWithValue(playerIds);
+        foreach (var sql in new[]
+        {
+            "DELETE FROM game_players WHERE game_id = $1 AND NOT (player_id = ANY($2))",
+            "DELETE FROM invites WHERE game_id = $1 AND NOT (invite_id = ANY($2))",
+            "INSERT INTO game_players (game_id, player_id) SELECT $1, unnest($2::uuid[]) ON CONFLICT DO NOTHING"
+        })
+        {
+            command.CommandText = sql;
+            await command.ExecuteNonQueryAsync();
+        }
+
+        foreach (var invite in invites)
+        {
+            command.Parameters.Clear();
+            command.CommandText = """
+                INSERT INTO invites (email, invite_id, game_id) VALUES ($1, $2, $3)
+                ON CONFLICT (email, invite_id) DO NOTHING
+                """;
+            command.Parameters.AddWithValue(GameInviteRepository.NormalizeEmail(invite.Email));
+            command.Parameters.AddWithValue(invite.InviteId);
+            command.Parameters.AddWithValue(state.GameId);
+            await command.ExecuteNonQueryAsync();
+        }
+
+        // Different games share contacts: acquire their row locks in the same order.
+        var players = state.PlayersStateModel.Players.OrderBy(p => p.PlayerId).ToArray();
+        foreach (var player in players)
+        {
+            foreach (var other in players.Where(p => p.PlayerId != player.PlayerId &&
+                (!previousPlayerIds.Contains(player.PlayerId) || !previousPlayerIds.Contains(p.PlayerId))))
+            {
+                command.Parameters.Clear();
+                command.CommandText = """
+                    INSERT INTO contacts (user_id, contact_id, name) VALUES ($1, $2, $3)
+                    ON CONFLICT (user_id, contact_id) DO UPDATE
+                        SET name = EXCLUDED.name, last_played = clock_timestamp()
+                    """;
+                command.Parameters.AddWithValue(player.PlayerId);
+                command.Parameters.AddWithValue(other.PlayerId);
+                command.Parameters.AddWithValue(other.PlayerName ?? string.Empty);
+                await command.ExecuteNonQueryAsync();
+            }
         }
     }
 
     public async Task<List<GameStateModel>> GetGameStates(GameStateFilterModel filterModel)
     {
-        if (filterModel == null)
+        ArgumentNullException.ThrowIfNull(filterModel);
+        await using var command = dataSource.CreateCommand("""
+            SELECT g.state::text, g.version, g.updated_at FROM games g
+            WHERE ($1 = '00000000-0000-0000-0000-000000000000'::uuid OR
+                EXISTS (SELECT 1 FROM game_players p WHERE p.game_id = g.id AND p.player_id = $1 AND NOT p.hidden))
+                AND ($2 OR g.privacy = $3)
+            ORDER BY
+                CASE WHEN $4 THEN g.updated_at END ASC,
+                CASE WHEN NOT $4 THEN g.updated_at END DESC, g.id
+            """);
+        command.Parameters.AddWithValue(filterModel.PlayerId);
+        command.Parameters.AddWithValue(filterModel.GamePrivacyFilter == GamePrivacyType.All);
+        command.Parameters.AddWithValue((int)filterModel.GamePrivacyFilter);
+        command.Parameters.AddWithValue(filterModel.Order == GameStateFilterModel.OrderBy.UpdatedAsc);
+        await using var reader = await command.ExecuteReaderAsync();
+        List<GameStateModel> results = [];
+        while (await reader.ReadAsync())
         {
-            throw new ArgumentNullException(nameof(filterModel));
+            results.Add(ReadState(reader));
         }
 
-        var indexResults = new List<GameStateIndexCloudEntity>();
-        var filter = GameStateIndexCloudEntityExtensions.BuildFilter(filterModel);
-
-        await foreach (var entity in GameStateIndexTable.QueryAsync<GameStateIndexCloudEntity>(filter))
-        {
-            indexResults.Add(entity);
-        }
-
-        var gameIds = indexResults.Select(i => i.RowKey).Distinct().ToList();
-
-        var results = new List<GameStateModel>();
-        foreach (var gameId in gameIds)
-        {
-            var gameStateModel = await GetGameState(Guid.Parse(gameId), filterModel.SkipTileFetch);
-
-            if (gameStateModel != null)
-            {
-                results.Add(gameStateModel);
-            }
-        }
-
-        return results.ToList();
+        return results;
     }
 
     public async Task DeleteGameStateIndex(Guid id, Guid playerId)
     {
-        await GameStateIndexTable.DeleteEntityAsync(playerId.ToString(), id.ToString(), ETag.All);
+        await using var command = dataSource.CreateCommand(
+            "UPDATE game_players SET hidden = true WHERE game_id = $1 AND player_id = $2");
+        command.Parameters.AddWithValue(id);
+        command.Parameters.AddWithValue(playerId);
+        await command.ExecuteNonQueryAsync();
     }
 
-    private async Task<List<Tile>> GetTiles(string partitionKey)
+    private static GameStateModel ReadState(NpgsqlDataReader reader)
     {
-        var result = new List<Tile>();
-
-        await foreach (var tileEntity in TilesTable.QueryAsync<TileCloudEntity>(x => x.PartitionKey == partitionKey))
-        {
-            if (tileEntity.Tile is { } tile)
-            {
-                result.Add(tile);
-            }
-        }
-
-        return result;
-    }
-
-    private async Task SaveTiles(string partitionKey, IEnumerable<Tile> tiles)
-    {
-        // Delete existing tiles in batches
-        var entitiesToDelete = new List<TableEntity>();
-        await foreach (var entity in TilesTable.QueryAsync<TableEntity>(x => x.PartitionKey == partitionKey, select: new[] { "PartitionKey", "RowKey" }))
-        {
-            entitiesToDelete.Add(entity);
-        }
-
-        var deleteBatches = entitiesToDelete.Batch(100);
-        foreach (var deleteBatch in deleteBatches)
-        {
-            var batch = new List<TableTransactionAction>();
-            foreach (var entity in deleteBatch)
-            {
-                batch.Add(new TableTransactionAction(TableTransactionActionType.Delete, entity, ETag.All));
-            }
-            await TilesTable.SubmitTransactionAsync(batch);
-        }
-
-        // Insert new tiles in batches
-        var bagTileBatches = tiles.Batch(100);
-        foreach (var bagTileBatch in bagTileBatches)
-        {
-            var batch = new List<TableTransactionAction>();
-
-            foreach (var tile in bagTileBatch)
-            {
-                var tileEntity = new TileCloudEntity(tile)
-                {
-                    PartitionKey = partitionKey,
-                    RowKey = Guid.NewGuid().ToString()
-                };
-
-                batch.Add(new TableTransactionAction(TableTransactionActionType.UpsertReplace, tileEntity));
-            }
-
-            await TilesTable.SubmitTransactionAsync(batch);
-        }
+        var state = JsonSerializer.Deserialize<GameStateModel>(reader.GetString(0), GameJson.Options)
+            ?? throw new JsonException("Missing game snapshot.");
+        state.GameEtag = reader.GetInt64(1).ToString(CultureInfo.InvariantCulture);
+        state.LastUpdated = reader.GetFieldValue<DateTimeOffset>(2);
+        return state;
     }
 }

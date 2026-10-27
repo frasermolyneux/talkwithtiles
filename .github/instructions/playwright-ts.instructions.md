@@ -5,7 +5,7 @@ applyTo: "e2e/**/*.ts,fixtures/**/*.ts,helpers/**/*.ts,pages/**/*.ts,playwright.
 
 # Playwright TypeScript
 
-- Keep `workers: 1`; browser tests share game state in Azurite.
+- Keep `workers: 1`; browser tests share game state in disposable PostgreSQL 18.
 - Use relative navigation and URL assertions. `baseURL` is defined in
   `playwright.config.ts`.
 - Authenticate with `signIn` from `helpers/auth.helper.ts`. Use
@@ -22,8 +22,9 @@ applyTo: "e2e/**/*.ts,fixtures/**/*.ts,helpers/**/*.ts,pages/**/*.ts,playwright.
 - Use the existing drag-and-drop shim for tile placement rather than replacing
   it with Playwright's generic `dragTo`.
 
-Playwright starts Azurite and the .NET application through `webServer`
-configuration. Install dependencies with `npm ci`; install Chromium only when a
+Playwright starts the .NET application through `webServer` against an existing
+disposable PostgreSQL database. See `docs/container-runtime.md` for test-only
+credentials and startup. Install dependencies with `npm ci`; install Chromium only when a
 browser run requires it.
 
 Run the smallest relevant spec or project while iterating, for example:

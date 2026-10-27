@@ -5,6 +5,7 @@ using MX.TalkWithTiles.Contracts.Interfaces;
 using MX.TalkWithTiles.Contracts.Models;
 using MX.TalkWithTiles.Contracts.StateModels;
 using MX.TalkWithTiles.Repository.Interfaces;
+using MX.TalkWithTiles.Repository.Dtos;
 using MX.TalkWithTiles.Repository.Models;
 using MX.TalkWithTiles.Web.Extensions;
 using MX.TalkWithTiles.Web.Models;
@@ -96,13 +97,19 @@ public class ScrabbleController(
 
         gameEngine.AddPlayer(playerId, User.GetUserName());
 
+        var invites = new List<GameInviteDto>();
         foreach (var modelPlayerModel in createScrabbleGameModel.PlayerModels)
         {
             if (modelPlayerModel.Identifier.IsEmail())
             {
                 var inviteId = Guid.NewGuid();
                 gameEngine.AddPlayer(inviteId, modelPlayerModel.Identifier);
-                await gameInviteRepository.UpdateGameInvite(inviteId, modelPlayerModel.Identifier, gameEngine.GameStateModel.GameId);
+                invites.Add(new GameInviteDto
+                {
+                    InviteId = inviteId,
+                    Email = modelPlayerModel.Identifier,
+                    GameId = gameEngine.GameStateModel.GameId
+                });
             }
             else
             {
@@ -122,20 +129,9 @@ public class ScrabbleController(
         gameEngine.SetRandomPlayerOrder();
 
         var gameStateModel = gameEngine.GameStateModel;
-        await gameStateRepository.UpdateGameState(gameStateModel.GameId, gameStateModel);
+        await gameStateRepository.CreateGame(gameStateModel, invites);
 
         logger.LogInformation("User has created a new game of '{GameType}'", createScrabbleGameModel.GameType);
-
-        // Update the contacts for all the players
-        var players = gameStateModel.Players();
-        var contactUpdates = players.SelectMany(
-            player => players.Where(p => p.PlayerId != player.PlayerId),
-            (player, other) => (player.PlayerId, other.PlayerId, other.PlayerName));
-
-        foreach (var (sourcePlayerId, targetPlayerId, targetPlayerName) in contactUpdates)
-        {
-            await contactsRepository.UpdateContact(sourcePlayerId, targetPlayerId, targetPlayerName);
-        }
 
         return RedirectToAction("Play", new { id = gameStateModel.GameId });
     }
@@ -156,8 +152,9 @@ public class ScrabbleController(
             return BadRequest();
         }
 
+        var invite = (await gameInviteRepository.GetGameInvites(userEmail)).FirstOrDefault(i => i.GameId == gameId);
         var invitedPlayer = gameStateModel.PlayersStateModel.Players
-            .FirstOrDefault(p => string.Equals(p.PlayerName, userEmail, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(p => p.PlayerId == invite?.InviteId);
 
         if (invitedPlayer == null)
         {
@@ -207,26 +204,6 @@ public class ScrabbleController(
         }
 
         await gameStateRepository.UpdateGameState(gameId, gameStateModel);
-        await gameStateRepository.DeleteGameStateIndex(gameId, oldPlayerId);
-
-        // Delete the invite record
-        var invites = await gameInviteRepository.GetGameInvites(userEmail);
-        var matchingInvite = invites.FirstOrDefault(i => i.GameId == gameId);
-        if (matchingInvite != null)
-        {
-            await gameInviteRepository.DeleteGameInvite(matchingInvite.InviteId, userEmail);
-        }
-
-        // Update contacts for all players
-        var players = gameStateModel.Players();
-        var contactUpdates = players.SelectMany(
-            player => players.Where(p => p.PlayerId != player.PlayerId),
-            (player, other) => (player.PlayerId, other.PlayerId, other.PlayerName));
-
-        foreach (var (sourcePlayerId, targetPlayerId, targetPlayerName) in contactUpdates)
-        {
-            await contactsRepository.UpdateContact(sourcePlayerId, targetPlayerId, targetPlayerName);
-        }
 
         logger.LogInformation("User {UserId} accepted invite to game {GameId}", newPlayerId, gameId);
 
@@ -250,8 +227,9 @@ public class ScrabbleController(
             return BadRequest();
         }
 
+        var invite = (await gameInviteRepository.GetGameInvites(userEmail)).FirstOrDefault(i => i.GameId == gameId);
         var invitedPlayer = gameStateModel.PlayersStateModel.Players
-            .FirstOrDefault(p => string.Equals(p.PlayerName, userEmail, StringComparison.OrdinalIgnoreCase));
+            .FirstOrDefault(p => p.PlayerId == invite?.InviteId);
 
         if (invitedPlayer == null)
         {
@@ -266,15 +244,6 @@ public class ScrabbleController(
         gameStateModel.EndGameStateModel.SkippedTurns.Remove(oldPlayerId);
 
         await gameStateRepository.UpdateGameState(gameId, gameStateModel);
-        await gameStateRepository.DeleteGameStateIndex(gameId, oldPlayerId);
-
-        // Delete the invite record
-        var invites = await gameInviteRepository.GetGameInvites(userEmail);
-        var matchingInvite = invites.FirstOrDefault(i => i.GameId == gameId);
-        if (matchingInvite != null)
-        {
-            await gameInviteRepository.DeleteGameInvite(matchingInvite.InviteId, userEmail);
-        }
 
         logger.LogInformation("User {Email} rejected invite to game {GameId}", userEmail, gameId);
 
@@ -320,8 +289,9 @@ public class ScrabbleController(
             var userEmail = User.GetEmail();
             if (!string.IsNullOrEmpty(userEmail))
             {
+                var invite = (await gameInviteRepository.GetGameInvites(userEmail)).FirstOrDefault(i => i.GameId == id);
                 var invitedPlayer = gameStateModel.PlayersStateModel.Players
-                    .FirstOrDefault(p => string.Equals(p.PlayerName, userEmail, StringComparison.OrdinalIgnoreCase));
+                    .FirstOrDefault(p => p.PlayerId == invite?.InviteId);
 
                 if (invitedPlayer != null)
                 {
@@ -368,7 +338,6 @@ public class ScrabbleController(
                     }
 
                     await gameStateRepository.UpdateGameState(id, gameStateModel);
-                    await gameStateRepository.DeleteGameStateIndex(id, oldPlayerId);
                     logger.LogInformation("Linked invited player {Email} to user {UserId} in game {GameId}",
                         userEmail, newPlayerId, id);
                 }
