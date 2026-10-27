@@ -16,7 +16,7 @@ host talkwithtiles talkwithtiles 0.0.0.0/0 scram-sha-256
 host talkwithtiles talkwithtiles ::/0 scram-sha-256
 HBA
 pg_ctl --pgdata="$PGDATA" --wait \
-    --options="-c listen_addresses=127.0.0.1 -c unix_socket_directories=/tmp" start
+    --options="-c listen_addresses='' -c unix_socket_directories=/tmp" start
 trap 'pg_ctl --pgdata="$PGDATA" --mode=fast --wait stop' EXIT
 psql --host=/tmp --username=talkwithtiles_bootstrap --dbname=postgres --set=ON_ERROR_STOP=1 <<'SQL'
 SET log_min_error_statement=panic;

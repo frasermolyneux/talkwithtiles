@@ -32,12 +32,13 @@ def wait_healthy(container):
     raise RuntimeError(f"{container} did not become healthy")
 
 
-def constrained(name, image, user, mounts):
+def constrained(name, image, user, mounts, extra_args=()):
     command = ["docker", "run", "--detach", "--name", name,
                "--network", PREFIX, "--user", user, "--read-only",
                "--cap-drop=ALL", "--security-opt=no-new-privileges:true",
                "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
                "--pids-limit", "128", "--memory", "512m", "--cpus", "1"]
+    command.extend(extra_args)
     for source, target, writable in mounts:
         mount_type = "bind" if isinstance(source, Path) else "volume"
         command.extend(["--mount", f"type={mount_type},src={source},dst={target}" + ("" if writable else ",readonly")])
@@ -81,6 +82,14 @@ def main():
     runtime["ForwardedHeaders"]["KnownProxies"] = ["127.0.0.1"]
     runtime["Testing"] = {"Enabled": True}  # Must not enable test identity in Production.
     (ROOT / "runtime-configuration").write_text(json.dumps(runtime), encoding="utf-8")
+    bootstrap_probe = ROOT / "psql"
+    bootstrap_probe.write_text(
+        "#!/bin/bash\nset -euo pipefail\n"
+        "touch /tmp/ci-bootstrap-waiting\n"
+        "while [[ ! -e /tmp/ci-bootstrap-release ]]; do sleep 0.1; done\n"
+        'exec /usr/lib/postgresql/18/bin/psql "$@"\n', encoding="utf-8", newline="\n")
+    if os.name != "nt":
+        bootstrap_probe.chmod(0o555)
     for file in ("database-password", "client-certificate", "runtime-configuration"):
         if os.name != "nt":
             run("sudo", "chown", "0:1654", str(ROOT / file))
@@ -96,13 +105,35 @@ def main():
     try:
         constrained(postgres, "talkwithtiles-postgres:ci", "999:1654", [
             (state_mounts["postgres"], "/var/lib/postgresql/data", True),
-            (password, "/run/secrets/database-password", False)])
+            (password, "/run/secrets/database-password", False),
+            (bootstrap_probe, "/ci/psql", False)],
+            extra_args=["--env", "PATH=/ci:/usr/lib/postgresql/18/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"])
+        # Pause role/database creation while the temporary server is running.
+        for _ in range(90):
+            probe = subprocess.run(["docker", "exec", postgres, "test", "-f", "/tmp/ci-bootstrap-waiting"], check=False)
+            if probe.returncode == 0:
+                break
+            time.sleep(1)
+        else:
+            raise RuntimeError("PostgreSQL did not reach the bootstrap probe")
+        run("docker", "exec", postgres, "pg_isready", "--host=/tmp",
+            "--username=talkwithtiles_bootstrap", "--dbname=postgres")
+        probe = subprocess.run(["docker", "exec", postgres, "pg_isready", "--host=127.0.0.1",
+                                "--username=talkwithtiles", "--dbname=talkwithtiles"], check=False)
+        assert probe.returncode != 0, "Bootstrap TCP incorrectly passed the production healthcheck"
+        run("docker", "exec", postgres, "touch", "/tmp/ci-bootstrap-release")
         wait_healthy(postgres)
         mounts = [(state_mounts["keys"], "/app/state/keys", True)] + [
             (ROOT / file, f"/run/secrets/{file}", False)
             for file in ("database-password", "client-certificate", "runtime-configuration")]
         constrained(web, "talkwithtiles-web:ci", "1654:1654", mounts)
         wait_healthy(web)
+        response = run("docker", "exec", postgres, "bash", "-c",
+                       'exec 3<>/dev/tcp/$1/8080; printf "%s" "$2" >&3; cat <&3', "probe", web,
+                       "GET /game%20path?next=%2Fplay%3Fx%3D1 HTTP/1.1\r\n"
+                       "Host: www.talkwithtiles.com\r\nConnection: close\r\n\r\n", capture=True)
+        assert response.startswith("HTTP/1.1 308"), response
+        assert "Location: https://talkwithtiles.com/game%20path?next=%2Fplay%3Fx%3D1" in response, response
         # A committed row must survive both processes being removed and recreated.
         sql = "INSERT INTO contacts VALUES ('10000000-0000-0000-0000-000000000001','10000000-0000-0000-0000-000000000002','CI restart marker',clock_timestamp())"
         run("docker", "exec", postgres, "psql", "-h", "/tmp", "-U", "talkwithtiles_bootstrap",

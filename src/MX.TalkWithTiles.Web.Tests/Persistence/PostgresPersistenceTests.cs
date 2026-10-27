@@ -57,7 +57,8 @@ public class PostgresPersistenceTests
         Assert.Null(loaded.BoardStateModel.Tiles[0, 0]);
         Assert.Equal(state.BagStateModel.Tiles![0].TileId, loaded.BagStateModel.Tiles![0].TileId);
         Assert.Equal(state.PlayersStateModel.Players[0].Tiles[0].TileId, loaded.PlayersStateModel.Players[0].Tiles[0].TileId);
-        Assert.Single(await new GameInviteRepository(restartedSource).GetGameInvites("friend@example.invalid"));
+        Assert.Contains(await new GameInviteRepository(restartedSource).GetGameInvites("friend@example.invalid"),
+            invite => invite.InviteId == inviteId && invite.GameId == state.GameId);
         Assert.Contains(await repository.GetGameStates(new GameStateFilterModel
         {
             PlayerId = state.PlayersStateModel.Players[0].PlayerId,
@@ -150,6 +151,69 @@ public class PostgresPersistenceTests
         Assert.Single(await invites.GetGameInvites(email));
         await invites.DeleteGameInvite(inviteId, email);
         await invites.DeleteGameInvite(inviteId, email);
+    }
+
+    [PostgresFact]
+    public async Task Save_DeletedContactsStayDeletedWhenExistingPlayersMoveOrAnotherPlayerJoins()
+    {
+        await using var source = OpenDataSource();
+        await new AppDataRepository(source).Initialize();
+        var repository = new GameStateRepository(source);
+        var contacts = new ContactsRepository(source);
+        var state = NewGame();
+        var owner = state.PlayersStateModel.Players[0].PlayerId;
+        var friend = Guid.NewGuid();
+        state.PlayersStateModel.Players.Add(new PlayerStateModel { PlayerId = friend, PlayerName = "Friend" });
+        await repository.CreateGame(state, []);
+        Assert.Single(await contacts.GetContacts(new ContactsFilterModel { UserId = owner }));
+
+        await contacts.DeleteContact(owner, friend);
+        state.PlayersStateModel.Players[0].Score++;
+        await repository.UpdateGameState(state.GameId, state);
+        Assert.Empty(await contacts.GetContacts(new ContactsFilterModel { UserId = owner }));
+
+        var newcomer = Guid.NewGuid();
+        state.PlayersStateModel.Players.Add(new PlayerStateModel { PlayerId = newcomer, PlayerName = "Newcomer" });
+        await repository.UpdateGameState(state.GameId, state);
+        Assert.Equal(newcomer, Assert.Single(await contacts.GetContacts(new ContactsFilterModel { UserId = owner })).Id);
+        Assert.Contains(await contacts.GetContacts(new ContactsFilterModel { UserId = newcomer }), c => c.Id == owner);
+    }
+
+    [PostgresFact]
+    public async Task Create_ConcurrentGamesWithReversedPlayersDoNotDeadlockOnContacts()
+    {
+        await using var source = OpenDataSource();
+        await new AppDataRepository(source).Initialize();
+        var repository = new GameStateRepository(source);
+        var first = NewGame();
+        first.PlayersStateModel.Players.Add(new PlayerStateModel { PlayerId = Guid.NewGuid(), PlayerName = "Friend" });
+        var second = NewGame();
+        second.PlayersStateModel.Players = [.. first.PlayersStateModel.Players.AsEnumerable().Reverse()];
+        var function = $"delay_contacts_{Guid.NewGuid():N}";
+        await using var command = source.CreateCommand($"""
+            CREATE FUNCTION {function}() RETURNS trigger LANGUAGE plpgsql AS $$
+            BEGIN
+                IF NEW.user_id IN ('{first.PlayersStateModel.Players[0].PlayerId}', '{first.PlayersStateModel.Players[1].PlayerId}') THEN
+                    PERFORM pg_sleep(0.5);
+                END IF;
+                RETURN NEW;
+            END $$;
+            CREATE TRIGGER {function} AFTER INSERT ON contacts
+                FOR EACH ROW EXECUTE FUNCTION {function}();
+            """);
+        await command.ExecuteNonQueryAsync();
+        try
+        {
+            // Hold the first contact lock long enough for an opposite-order writer to overlap.
+            await Task.WhenAll(repository.CreateGame(first, []), repository.CreateGame(second, []));
+            Assert.NotNull(await repository.GetGameState(first.GameId));
+            Assert.NotNull(await repository.GetGameState(second.GameId));
+        }
+        finally
+        {
+            command.CommandText = $"DROP TRIGGER {function} ON contacts; DROP FUNCTION {function}()";
+            await command.ExecuteNonQueryAsync();
+        }
     }
 
     [PostgresFact]

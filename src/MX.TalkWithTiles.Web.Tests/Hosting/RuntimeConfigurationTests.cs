@@ -93,17 +93,26 @@ public class RuntimeConfigurationTests
         Assert.IsType<NotFoundResult>(result);
     }
 
-    [Fact]
-    public async Task Concurrency_ConflictIsNotConvertedToGenericServerError()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Concurrency_ConflictIsNotConvertedToGenericServerError(bool development)
     {
         var builder = WebApplication.CreateBuilder();
         builder.WebHost.UseTestServer();
         await using var app = builder.Build();
-        app.UseExceptionHandler(error => error.Run(context =>
+        if (development)
         {
-            context.Response.StatusCode = 500;
-            return Task.CompletedTask;
-        }));
+            app.UseDeveloperExceptionPage();
+        }
+        else
+        {
+            app.UseExceptionHandler(error => error.Run(context =>
+            {
+                context.Response.StatusCode = 500;
+                return Task.CompletedTask;
+            }));
+        }
         app.UseMiddleware<GameConcurrencyMiddleware>();
         app.Run(_ => throw new GameConcurrencyException());
         await app.StartAsync();
@@ -111,6 +120,41 @@ public class RuntimeConfigurationTests
         client.DefaultRequestHeaders.Host = "talkwithtiles.com";
         using var response = await client.GetAsync("/");
         Assert.Equal(System.Net.HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("http", "www.talkwithtiles.com:8080")]
+    [InlineData("https", "WWW.talkwithtiles.com")]
+    public async Task CanonicalHost_WwwRedirectsToHttpsApexWithoutLosingPathOrQuery(string scheme, string host)
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+        {
+            ["AllowedHosts"] = "talkwithtiles.com;www.talkwithtiles.com"
+        });
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+        app.UseMiddleware<CanonicalHostMiddleware>();
+        app.Run(context => context.Response.WriteAsync("Unexpected downstream handler"));
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+        using var request = new HttpRequestMessage(HttpMethod.Post, $"{scheme}://{host}/game%20path?next=%2Fplay%3Fx%3D1");
+        using var response = await client.SendAsync(request);
+        Assert.Equal(System.Net.HttpStatusCode.PermanentRedirect, response.StatusCode);
+        Assert.Equal("https://talkwithtiles.com/game%20path?next=%2Fplay%3Fx%3D1", response.Headers.Location!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task CanonicalHost_ApexDoesNotRedirectAgain()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+        app.UseMiddleware<CanonicalHostMiddleware>();
+        app.Run(context => context.Response.WriteAsync("Canonical"));
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+        Assert.Equal("Canonical", await client.GetStringAsync("https://talkwithtiles.com/"));
     }
 
     [Fact]

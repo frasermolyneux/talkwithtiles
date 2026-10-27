@@ -113,9 +113,29 @@ public sealed class GameStateRepository(NpgsqlDataSource dataSource) : IGameStat
             updatedAt = reader.GetFieldValue<DateTimeOffset>(1);
         }
 
+        await SaveRelatedState(command, state, invites);
+        await transaction.CommitAsync();
+        state.GameEtag = version.ToString(CultureInfo.InvariantCulture);
+        state.LastUpdated = updatedAt;
+    }
+
+    private static async Task SaveRelatedState(NpgsqlCommand command, GameStateModel state, IReadOnlyList<GameInviteDto> invites)
+    {
+        HashSet<Guid> previousPlayerIds = [];
+        command.Parameters.Clear();
+        command.CommandText = "SELECT player_id FROM game_players WHERE game_id = $1";
+        command.Parameters.AddWithValue(state.GameId);
+        await using (var reader = await command.ExecuteReaderAsync())
+        {
+            while (await reader.ReadAsync())
+            {
+                previousPlayerIds.Add(reader.GetGuid(0));
+            }
+        }
+
         var playerIds = state.PlayersStateModel.Players.Select(p => p.PlayerId).ToArray();
         command.Parameters.Clear();
-        command.Parameters.AddWithValue(gameId);
+        command.Parameters.AddWithValue(state.GameId);
         command.Parameters.AddWithValue(playerIds);
         foreach (var sql in new[]
         {
@@ -137,13 +157,16 @@ public sealed class GameStateRepository(NpgsqlDataSource dataSource) : IGameStat
                 """;
             command.Parameters.AddWithValue(GameInviteRepository.NormalizeEmail(invite.Email));
             command.Parameters.AddWithValue(invite.InviteId);
-            command.Parameters.AddWithValue(gameId);
+            command.Parameters.AddWithValue(state.GameId);
             await command.ExecuteNonQueryAsync();
         }
 
-        foreach (var player in state.PlayersStateModel.Players)
+        // Different games share contacts: acquire their row locks in the same order.
+        var players = state.PlayersStateModel.Players.OrderBy(p => p.PlayerId).ToArray();
+        foreach (var player in players)
         {
-            foreach (var other in state.PlayersStateModel.Players.Where(p => p.PlayerId != player.PlayerId))
+            foreach (var other in players.Where(p => p.PlayerId != player.PlayerId &&
+                (!previousPlayerIds.Contains(player.PlayerId) || !previousPlayerIds.Contains(p.PlayerId))))
             {
                 command.Parameters.Clear();
                 command.CommandText = """
@@ -157,10 +180,6 @@ public sealed class GameStateRepository(NpgsqlDataSource dataSource) : IGameStat
                 await command.ExecuteNonQueryAsync();
             }
         }
-
-        await transaction.CommitAsync();
-        state.GameEtag = version.ToString(CultureInfo.InvariantCulture);
-        state.LastUpdated = updatedAt;
     }
 
     public async Task<List<GameStateModel>> GetGameStates(GameStateFilterModel filterModel)

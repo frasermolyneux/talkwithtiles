@@ -8,6 +8,9 @@ preserved. The host owns ingress, certificate/secret delivery, backups and
 activation. `workload.json` is compile-only until **both** zero digest placeholders
 are replaced by reviewed published digests; pulling a placeholder must fail.
 There is no hosted Development or database host port in production.
+Production also accepts `www.talkwithtiles.com` and redirects it with HTTP 308 to
+the HTTPS apex, preserving path/query and method, before starting authentication.
+The host must route and terminate TLS for both names.
 
 | Service | UID:GID | Writable bind |
 |---|---|---|
@@ -40,7 +43,8 @@ See the exact non-secret schema in
 - `ForwardedHeaders:KnownProxies`: **explicit IP addresses of Caddy**, rendered by
   the host trusted-proxy adapter; Production fails without them. Only forwarded
   scheme/client IP are used, never forwarded Host. Unknown proxies are ignored.
-- `DataProtection:KeyPath`: `/app/state/keys`; `AllowedHosts`: `talkwithtiles.com`.
+- `DataProtection:KeyPath`: `/app/state/keys`; `AllowedHosts`:
+  `talkwithtiles.com;www.talkwithtiles.com`.
 
 Text secrets:
 
@@ -72,6 +76,9 @@ committed in the same game transaction. Reads cannot observe partially replaced
 tiles. Saves retain the engine's optimistic version: conflicting stale writers
 return HTTP 409, requiring reload; identical aggregate retries are no-ops.
 Dashboard hiding remains scoped to a player and survives later game saves.
+Contact creation is limited to newly formed player pairs; moves or unrelated
+membership changes do not recreate a contact a player deleted. Shared contact
+locks are acquired in consistent player-ID order across games.
 Contact/invite mutations and deletions are scoped and retry-safe. Invite
 acceptance requires the current email's persisted invitation, not a display name.
 
@@ -79,7 +86,8 @@ acceptance requires the current email's persisted invitation, not a display name
 writer and expected schema. Startup fails if persistence is unavailable. The
 image healthcheck calls readiness and fails on database loss. The PostgreSQL
 image initializes the bind directory as UID999 without inherited anonymous
-volumes, then runs the server directly.
+volumes. Its temporary bootstrap server is Unix-socket-only; the TCP healthcheck
+cannot pass before role/database initialization and the final network listener.
 
 In-memory sessions intentionally reset on web restart (display preferences,
 alerts and other ephemeral UI state); there is no Redis. Games, contacts and

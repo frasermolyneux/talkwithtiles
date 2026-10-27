@@ -1,5 +1,5 @@
 {
-  "AllowedHosts": "talkwithtiles.com",
+  "AllowedHosts": "talkwithtiles.com;www.talkwithtiles.com",
   "Database": {
     "Host": "talkwithtiles-postgres",
     "Port": 5432,

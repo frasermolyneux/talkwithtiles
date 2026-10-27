@@ -13,7 +13,7 @@ public sealed class GameConcurrencyMiddleware(RequestDelegate next)
         catch (GameConcurrencyException)
         {
             context.Response.StatusCode = StatusCodes.Status409Conflict;
-            await context.Response.WriteAsync("The game changed. Reload it before trying again.");
+            await context.Response.WriteAsync("The game changed. Reload it before trying again.", context.RequestAborted);
         }
     }
 }

@@ -121,6 +121,11 @@ else
 }
 
 app.UseMiddleware<GameConcurrencyMiddleware>();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseMiddleware<CanonicalHostMiddleware>();
+}
+
 app.UseStatusCodePagesWithReExecute("/Error/PageNotFound");
 
 app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api/health"),
