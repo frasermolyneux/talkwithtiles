@@ -66,6 +66,13 @@ Disabling GSS also avoids Windows domain-discovery stalls in the local harness.
 Recreate containers after secret/configuration changes. Do not put secret values
 or private certificates in source control or CI artefacts.
 
+The protected main-only credential and Origin TLS workflows check weekly on
+Monday at 06:40 and 06:55 UTC respectively, with manual dispatch retained.
+Certificates renew only within 30 days of expiry. Existing database passwords
+and unrelated/unexpired Entra credentials are retained; missing established
+credentials fail closed rather than resetting the runtime. These jobs do not
+deploy images or retire Azure resources.
+
 ## Persistence, readiness and restart
 
 Startup performs the versioned schema initialization in one transaction under a
