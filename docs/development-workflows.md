@@ -1,9 +1,16 @@
 # Development workflows
 
 - Feature pushes retain `build-and-test`; PR Verify retains its build/test summary.
+- Docker, deployment, manifest and CI changes also execute runtime validation.
+  PR concurrency is isolated by exact head, never cancelling an older stateful run.
 - `e2e-tests` calls Runtime Quality: real PostgreSQL 18 persistence tests,
   single-worker deterministic Playwright multiplayer flows, builds of both
   constrained images and read-only/non-root persisted-restart checks.
+- `validate-contract` compiles the manifest using the pinned private platform
+  compiler and `.github/validation/policy.json`. This fixture grants no host
+  authority and cannot activate placeholders; parent-owned host policy is final.
+  The read-only contract checkout requires the Production GitHub App installation
+  to include `platform-baremetal`; private contract source is never published.
 - Existing Code Quality, Sonar, dependency review and DevOps security scanning
   remain unchanged. Unit-only runners skip PostgreSQL tests when
   `TEST_POSTGRES_PASSWORD` is absent; Runtime Quality always supplies it.

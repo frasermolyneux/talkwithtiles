@@ -9,6 +9,51 @@ on:
 permissions: {}
 
 jobs:
+  validate-contract:
+    if: github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: Production
+    permissions:
+      contents: read
+    env:
+      PYTHONPATH: ${{ github.workspace }}/.ci-state/contract-deps
+      TMPDIR: ${{ github.workspace }}/.ci-state
+      PYTHONDONTWRITEBYTECODE: "1"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+      - name: Create read-only platform contract token
+        id: platform-token
+        uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PEM }}
+          owner: ${{ github.repository_owner }}
+          repositories: platform-baremetal
+          permission-contents: read
+      - name: Check out pinned private platform contract
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          repository: frasermolyneux/platform-baremetal
+          ref: 285d279cfd99bbc28498068246f8c0affe99b848
+          path: .platform-contract
+          token: ${{ steps.platform-token.outputs.token }}
+          persist-credentials: false
+      - name: Compile constrained workload contract without deployment
+        run: |
+          mkdir -p .ci-state
+          python3 -m pip install --disable-pip-version-check --require-hashes \
+            --target .ci-state/contract-deps \
+            --requirement .platform-contract/.github/actions/validate-workload-manifest/requirements.lock
+          python3 .platform-contract/ansible/roles/workload_contract/files/compile_manifest.py \
+            workload.json \
+            .platform-contract/ansible/roles/workload_contract/files/workload.schema.json \
+            .github/validation/policy.json \
+            .platform-contract/ansible/roles/workload_contract/files/policy.schema.json \
+            .ci-state/compiled-contract
+
   postgres-and-containers:
     runs-on: ubuntu-latest
     timeout-minutes: 35

@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "workloadId": "talkwithtiles",
+  "allowedMounts": [
+    { "id": "keyring", "hostPath": "/srv/workloads/talkwithtiles/keyring", "sourceType": "directory", "readOnly": false },
+    { "id": "postgres", "hostPath": "/srv/workloads/talkwithtiles/postgres", "sourceType": "directory", "readOnly": false }
+  ],
+  "allowedSecrets": [
+    {
+      "id": "runtime-configuration",
+      "hostPath": "/etc/platform-workloads/talkwithtiles/runtime-configuration",
+      "vaultName": "kv-58e2ccc94365",
+      "vaultSecret": "runtime-configuration",
+      "groupId": 1654,
+      "mode": "0640"
+    },
+    {
+      "id": "client-certificate",
+      "hostPath": "/etc/platform-workloads/talkwithtiles/client-certificate",
+      "vaultName": "kv-58e2ccc94365",
+      "vaultSecret": "client-certificate",
+      "groupId": 1654,
+      "mode": "0640"
+    },
+    {
+      "id": "database-password",
+      "hostPath": "/etc/platform-workloads/talkwithtiles/database-password",
+      "vaultName": "kv-58e2ccc94365",
+      "vaultSecret": "database-password",
+      "groupId": 1654,
+      "mode": "0640"
+    }
+  ],
+  "allowedNetworks": [
+    { "name": "database", "internetAccess": false },
+    { "name": "public-proxy", "internetAccess": true, "externalName": "platform-ingress" }
+  ],
+  "allowedIngress": [],
+  "resourceCeiling": { "cpus": 1, "memoryMb": 512, "pids": 128 }
+}
