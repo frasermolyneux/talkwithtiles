@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -11,6 +12,8 @@ using Moq;
 using MX.TalkWithTiles.Web.Controllers;
 using MX.TalkWithTiles.Web.Hosting;
 using MX.TalkWithTiles.Repository;
+using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 
 namespace MX.TalkWithTiles.Web.Tests.Hosting;
 
@@ -108,5 +111,40 @@ public class RuntimeConfigurationTests
         client.DefaultRequestHeaders.Host = "talkwithtiles.com";
         using var response = await client.GetAsync("/");
         Assert.Equal(System.Net.HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public void Runtime_CertificateUsesConfidentialCodeRedemptionWithPersonalAccountRefreshScope()
+    {
+        var directory = Path.GetFullPath(Path.Combine(".ci-state", $"auth-{Guid.NewGuid():N}"));
+        Directory.CreateDirectory(directory);
+        try
+        {
+            using var rsa = RSA.Create(2048);
+            var request = new CertificateRequest("CN=ci-only.invalid", rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+            using var certificate = request.CreateSelfSigned(DateTimeOffset.UtcNow.AddMinutes(-1), DateTimeOffset.UtcNow.AddHours(1));
+            var file = Path.Combine(directory, "certificate-base64");
+            File.WriteAllText(file, Convert.ToBase64String(certificate.Export(X509ContentType.Pfx)));
+            var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = "Production" });
+            builder.Configuration.AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ForwardedHeaders:KnownProxies:0"] = "127.0.0.1",
+                ["AzureAd:Instance"] = "https://login.microsoftonline.com/",
+                ["AzureAd:TenantId"] = "common",
+                ["AzureAd:ClientId"] = "72ea5049-afe4-452a-92cc-a2c204a049e4",
+                ["AzureAd:ClientCertificateFile"] = file
+            });
+            builder.AddRuntimeServices(testingEnabled: false);
+            using var services = builder.Services.BuildServiceProvider();
+            var options = services.GetRequiredService<IOptionsMonitor<OpenIdConnectOptions>>()
+                .Get(OpenIdConnectDefaults.AuthenticationScheme);
+            Assert.Equal("code", options.ResponseType);
+            Assert.Contains("offline_access", options.Scope);
+            Assert.NotNull(services.GetRequiredService<Microsoft.Identity.Web.ITokenAcquisition>());
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
     }
 }

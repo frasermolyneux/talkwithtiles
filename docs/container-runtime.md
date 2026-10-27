@@ -34,6 +34,9 @@ See the exact non-secret schema in
   `AzureADandPersonalMicrosoftAccount` registration. Both organisational Entra and
   personal Microsoft accounts remain supported. Canonical callback is
   `https://talkwithtiles.com/signin-oidc`.
+  Authorization codes are redeemed through MSAL using the certificate; the
+  personal-account `offline_access` scope is retained. The token cache is
+  in-process only and requests no additional downstream API permissions.
 - `ForwardedHeaders:KnownProxies`: **explicit IP addresses of Caddy**, rendered by
   the host trusted-proxy adapter; Production fails without them. Only forwarded
   scheme/client IP are used, never forwarded Host. Unknown proxies are ignored.

@@ -78,7 +78,9 @@ public static class RuntimeConfiguration
                     builder.Configuration.Bind("AzureAd", options);
                     options.ClientSecret = null;
                     options.ClientCertificates = [CertificateDescription.FromCertificate(certificate)];
-                });
+                })
+                .EnableTokenAcquisitionToCallDownstreamApi()
+                .AddInMemoryTokenCaches();
         }
     }
 }
