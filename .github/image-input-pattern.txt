@@ -1,0 +1,1 @@
+^(src/|deployment/|Dockerfile$|[.]dockerignore$|global[.]json$|Directory[.]Build[.]props$|version[.]json$|package(-lock)?[.]json$|playwright[.]config[.]ts$|global-setup[.]ts$|e2e/|fixtures/|helpers/|pages/|[.]github/workflows/(runtime-quality|publish-image|promote-image)[.]yml$|[.]github/scripts/|[.]github/image-input-pattern[.]txt$)

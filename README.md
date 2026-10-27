@@ -13,7 +13,11 @@
 
 ## Overview
 
-Talk With Tiles (MX.TalkWithTiles) is an online tile-based word game platform built with ASP.NET Core 10 MVC and deployed to Azure. Players can create and join Scrabble-style games, manage contacts, and send game invitations. The application uses Microsoft Entra ID for authentication supporting multi-tenant and personal Microsoft accounts, Azure Table Storage for persisting game state, and Application Insights for telemetry. Infrastructure is managed with Terraform and deployed via GitHub Actions to Azure App Service, using a workload-owned development plan and the existing shared production plan.
+Talk With Tiles is an ASP.NET Core 10 MVC word-game application. Players create games, manage contacts and accept invitations using personal Microsoft or organisational Entra accounts. The new constrained-container runtime uses dedicated PostgreSQL 18, certificate-backed authentication and a durable local Data Protection keyring.
+
+The migration starts with a **fresh database**; Azure Table Storage data is not transferred. The initial `workload.json` deliberately contains non-deployable digest placeholders. Azure application deployment is blocked; legacy Terraform, identities and destroy workflows remain for separately coordinated retirement. No hosted Development environment is provisioned.
+
+See [runtime, local startup and recovery](docs/container-runtime.md) and [development workflows](docs/development-workflows.md).
 
 ## Contributing
 

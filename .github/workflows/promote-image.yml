@@ -1,0 +1,61 @@
+name: Promote Image
+
+on:
+  workflow_run:
+    workflows: [Publish Image]
+    types: [completed]
+
+permissions: {}
+
+jobs:
+  promote:
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      actions: read
+      contents: read
+    concurrency:
+      group: ${{ github.repository }}-promote-images
+      cancel-in-progress: false
+    steps:
+      - name: Find promotion payload
+        id: payload
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: |
+          set -euo pipefail
+          count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" --jq '[.artifacts[] | select(.name == "image-promotion" and .expired == false)] | length')"
+          test "$count" -le 1
+          if [[ "$count" == 1 ]]; then echo "available=true" >>"$GITHUB_OUTPUT"; fi
+      - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+        if: steps.payload.outputs.available == 'true'
+        id: app-token
+        with:
+          app-id: ${{ vars.GH_APP_ID }}
+          private-key: ${{ secrets.GH_APP_PEM }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.repository.name }}
+          permission-actions: write
+          permission-contents: write
+          permission-pull-requests: write
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        if: steps.payload.outputs.available == 'true'
+        with:
+          ref: main
+          fetch-depth: 0
+          token: ${{ steps.app-token.outputs.token }}
+      - name: Download trusted publication payload
+        if: steps.payload.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RUN_ID: ${{ github.event.workflow_run.id }}
+        run: gh run download "$RUN_ID" --repo "$GITHUB_REPOSITORY" --name image-promotion --dir promotion
+      - name: Open and gate digest-only promotion
+        if: steps.payload.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: python3 .github/scripts/promote-workload-images.py

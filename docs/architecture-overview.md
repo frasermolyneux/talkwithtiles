@@ -1,5 +1,11 @@
 # Architecture Overview
 
+> **Runtime migration:** the current .NET 10 application uses dedicated PostgreSQL
+> 18 and certificate-backed common-tenant Microsoft authentication. See
+> [container-runtime.md](container-runtime.md) for authoritative persistence,
+> proxy, container and recovery contracts. Azure/Table descriptions below document
+> the retained legacy installation only; no Azure resources have been removed.
+
 ## Application
 
 Talk With Tiles is an ASP.NET Core 9 MVC web application that provides an online platform for playing tile-based word games (Scrabble-style). The solution is structured as a multi-project .NET solution:

@@ -1,8 +1,9 @@
 # Talk With Tiles agent brief
 
-Talk With Tiles is an ASP.NET Core 9 MVC application for playing Scrabble-style
-word games. The repository also contains xUnit tests, Playwright browser tests,
-and Terraform for Azure App Service and Azure Table Storage.
+Talk With Tiles is an ASP.NET Core 10 MVC application with PostgreSQL 18,
+certificate-backed Microsoft/Entra authentication and constrained container
+packaging. Retained Azure Terraform/destroy workflows are retirement context,
+not the new runtime. See `docs/container-runtime.md` before runtime changes.
 
 ## Repository layout
 
@@ -30,17 +31,22 @@ terraform -chdir=terraform validate
 ```
 
 Use the narrowest relevant build, test, or format command while iterating. The
-Playwright configuration starts Azurite and the web application for browser
-tests.
+Playwright configuration starts the app against a disposable PostgreSQL 18
+database. Set `TEST_POSTGRES_PASSWORD` and `TEST_POSTGRES_PASSWORD_FILE`; retain
+one worker. Runtime Quality provides real PostgreSQL and constrained image tests.
 
 ## Repository constraints
 
 - Use the SDK selected by `global.json`.
 - Preserve the `GameEngine` and manager-factory architecture described in the
   repository Copilot instructions.
-- Authentication and Azure access use Microsoft Entra ID, OIDC, managed
-  identities, and `DefaultAzureCredential`; do not introduce client secrets.
-- Playwright tests share Azurite state and must remain single-worker.
+- Authentication uses Microsoft.Identity.Web, tenant common and the existing
+  organisational/personal Microsoft registration, with an ephemeral private PFX
+  loaded from a base64 text secret. Do not introduce client secrets.
+- Playwright tests share PostgreSQL state and must remain single-worker.
+- Never trust arbitrary forwarded headers; Production requires explicit Caddy IPs.
+- Keep Azure deploy workflows blocked; do not remove legacy resources, identity
+  ownership or destroy workflows without a separately approved retirement.
 - Keep infrastructure changes within the existing Terraform environment,
   naming, backend, and variable layout.
 

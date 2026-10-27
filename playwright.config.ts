@@ -34,21 +34,18 @@ export default defineConfig({
 
   webServer: [
     {
-      command: `node ${require.resolve('azurite/dist/src/table/main.js')} --tableHost 127.0.0.1 --tablePort 10002 --silent`,
-      url: 'http://127.0.0.1:10002',
-      reuseExistingServer: true,
-      timeout: 10_000,
-    },
-    {
       command: `dotnet run${process.env.CI ? ' --no-build' : ''} --project src/MX.TalkWithTiles.Web/MX.TalkWithTiles.Web.csproj --launch-profile MX.TalkWithTiles.Web`,
-      url: `${baseURL}/api/health/live`,
+      url: `${baseURL}/api/health/ready`,
       reuseExistingServer: !process.env.CI,
       ignoreHTTPSErrors: true,
       timeout: 30_000,
       env: {
         ASPNETCORE_ENVIRONMENT: 'Development',
         'Testing__Enabled': 'true',
-        'AppData__StorageConnectionString': 'DefaultEndpointsProtocol=http;AccountName=devstoreaccount1;AccountKey=Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==;TableEndpoint=http://127.0.0.1:10002/devstoreaccount1;',
+        'Database__Host': process.env.TEST_POSTGRES_HOST ?? '127.0.0.1',
+        'Database__Port': process.env.TEST_POSTGRES_PORT ?? '5432',
+        'Database__PasswordFile': process.env.TEST_POSTGRES_PASSWORD_FILE ?? `${process.cwd()}/.local/database-password`,
+        'DataProtection__KeyPath': `${process.cwd()}/.local/keys`,
       },
     },
   ],

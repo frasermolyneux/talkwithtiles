@@ -89,6 +89,8 @@ public class GameEngineTests
         // Arrange
         var gameEngine = new GameEngine(_mockManagerFactory.Object);
         var defaultGameStateModel = DefaultGameStateModel();
+        defaultGameStateModel.GameEtag = "42";
+        defaultGameStateModel.LastUpdated = DateTimeOffset.UtcNow;
 
         // Act
         gameEngine.InitFromStateModel(defaultGameStateModel);
@@ -100,6 +102,8 @@ public class GameEngineTests
         Assert.Equal(GamePrivacyType.Public, result.GamePrivacyType);
         Assert.Equal(GameType.StandardBoard, result.GameType);
         Assert.Equal(TileBagVisibilityOption.OnlyShowRemainingCount, result.TileBagVisibilityOption);
+        Assert.Equal(defaultGameStateModel.GameEtag, result.GameEtag);
+        Assert.Equal(defaultGameStateModel.LastUpdated, result.LastUpdated);
     }
 
     [Fact]
