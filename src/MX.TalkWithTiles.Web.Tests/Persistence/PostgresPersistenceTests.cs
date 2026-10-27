@@ -60,7 +60,8 @@ public class PostgresPersistenceTests
         Assert.Single(await new GameInviteRepository(restartedSource).GetGameInvites("friend@example.invalid"));
         Assert.Contains(await repository.GetGameStates(new GameStateFilterModel
         {
-            PlayerId = state.PlayersStateModel.Players[0].PlayerId, GamePrivacyFilter = GamePrivacyType.All
+            PlayerId = state.PlayersStateModel.Players[0].PlayerId,
+            GamePrivacyFilter = GamePrivacyType.All
         }), g => g.GameId == state.GameId);
         var contacts = await new ContactsRepository(restartedSource).GetContacts(new ContactsFilterModel
         {
@@ -95,7 +96,8 @@ public class PostgresPersistenceTests
         Assert.Single(actual.BagStateModel.Tiles!);
         Assert.Empty(await repository.GetGameStates(new GameStateFilterModel
         {
-            PlayerId = stale.PlayersStateModel.Players[1].PlayerId, GamePrivacyFilter = GamePrivacyType.All
+            PlayerId = stale.PlayersStateModel.Players[1].PlayerId,
+            GamePrivacyFilter = GamePrivacyType.All
         }));
     }
 
@@ -148,6 +150,26 @@ public class PostgresPersistenceTests
         Assert.Single(await invites.GetGameInvites(email));
         await invites.DeleteGameInvite(inviteId, email);
         await invites.DeleteGameInvite(inviteId, email);
+    }
+
+    [PostgresFact]
+    public async Task Initialize_UnsupportedSchemaFailsClosed()
+    {
+        await using var source = OpenDataSource();
+        var repository = new AppDataRepository(source);
+        await repository.Initialize();
+        await using var command = source.CreateCommand("INSERT INTO schema_version VALUES (99)");
+        await command.ExecuteNonQueryAsync();
+        try
+        {
+            await Assert.ThrowsAsync<InvalidOperationException>(repository.Initialize);
+            Assert.False((await repository.HealthCheck()).Item1);
+        }
+        finally
+        {
+            command.CommandText = "DELETE FROM schema_version WHERE version = 99";
+            await command.ExecuteNonQueryAsync();
+        }
     }
 
     internal static GameStateModel NewGame()

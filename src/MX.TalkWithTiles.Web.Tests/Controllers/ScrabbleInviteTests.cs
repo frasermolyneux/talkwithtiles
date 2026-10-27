@@ -20,7 +20,8 @@ public class ScrabbleInviteTests
         var state = PostgresPersistenceTests.NewGame();
         state.PlayersStateModel.Players.Add(new PlayerStateModel
         {
-            PlayerId = Guid.NewGuid(), PlayerName = "test@example.invalid"
+            PlayerId = Guid.NewGuid(),
+            PlayerName = "test@example.invalid"
         });
         var games = new Mock<IGameStateRepository>();
         games.Setup(g => g.GetGameState(state.GameId, false)).ReturnsAsync(state);

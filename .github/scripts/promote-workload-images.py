@@ -56,7 +56,14 @@ def wait_review(repository, number, head):
         reviewThreads(first:100,after:$after){nodes{isResolved}pageInfo{hasNextPage endCursor}}
       }}}"""
     for _ in range(120):
-        reviews = gh("api", "--paginate", f"repos/{repository}/pulls/{number}/reviews")
+        reviews = []
+        page = 1
+        while True:
+            batch = gh("api", f"repos/{repository}/pulls/{number}/reviews?per_page=100&page={page}")
+            reviews.extend(batch)
+            if len(batch) < 100:
+                break
+            page += 1
         matching = [r for r in reviews if r["commit_id"] == head and r["user"]["login"] in
                     {"copilot-pull-request-reviewer", "copilot-pull-request-reviewer[bot]"}]
         if matching:

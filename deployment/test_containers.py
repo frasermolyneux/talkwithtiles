@@ -39,19 +39,30 @@ def constrained(name, image, user, mounts):
                "--tmpfs", "/tmp:rw,noexec,nosuid,size=64m",
                "--pids-limit", "128", "--memory", "512m", "--cpus", "1"]
     for source, target, writable in mounts:
-        command.extend(["--mount", f"type=bind,src={source},dst={target}" + ("" if writable else ",readonly")])
+        mount_type = "bind" if isinstance(source, Path) else "volume"
+        command.extend(["--mount", f"type={mount_type},src={source},dst={target}" + ("" if writable else ",readonly")])
     command.append(image)
     run(*command)
 
 
 def main():
     ROOT.mkdir(parents=True, exist_ok=True)
+    state_mounts = {}
     for directory, uid in (("postgres", 999), ("keys", 1654)):
         target = ROOT / directory
         target.mkdir(exist_ok=True)
         if os.name != "nt":
             run("sudo", "chown", f"{uid}:1654", str(target))
             run("sudo", "chmod", "0770", str(target))
+            state_mounts[directory] = target
+        else:
+            # Desktop's NTFS bind adapter cannot implement PostgreSQL chmod(0700).
+            volume = f"{PREFIX}-{directory}"
+            run("docker", "volume", "create", volume)
+            run("docker", "run", "--rm", "--user", "0:0", "--entrypoint", "/bin/bash",
+                "--mount", f"type=volume,src={volume},dst=/state", "talkwithtiles-postgres:ci",
+                "-c", f"chown {uid}:1654 /state && chmod 0770 /state")
+            state_mounts[directory] = volume
     password = ROOT / "database-password"
     password.write_text(secrets.token_urlsafe(32), encoding="utf-8")
     certificate = ROOT / "client-certificate"
@@ -84,10 +95,10 @@ def main():
     web = f"{PREFIX}-web"
     try:
         constrained(postgres, "talkwithtiles-postgres:ci", "999:1654", [
-            (ROOT / "postgres", "/var/lib/postgresql/data", True),
+            (state_mounts["postgres"], "/var/lib/postgresql/data", True),
             (password, "/run/secrets/database-password", False)])
         wait_healthy(postgres)
-        mounts = [(ROOT / "keys", "/app/state/keys", True)] + [
+        mounts = [(state_mounts["keys"], "/app/state/keys", True)] + [
             (ROOT / file, f"/run/secrets/{file}", False)
             for file in ("database-password", "client-certificate", "runtime-configuration")]
         constrained(web, "talkwithtiles-web:ci", "1654:1654", mounts)
@@ -99,7 +110,7 @@ def main():
         run("docker", "stop", web, postgres)
         run("docker", "rm", web, postgres)
         constrained(postgres, "talkwithtiles-postgres:ci", "999:1654", [
-            (ROOT / "postgres", "/var/lib/postgresql/data", True),
+            (state_mounts["postgres"], "/var/lib/postgresql/data", True),
             (password, "/run/secrets/database-password", False)])
         wait_healthy(postgres)
         constrained(web, "talkwithtiles-web:ci", "1654:1654", mounts)
@@ -117,6 +128,9 @@ def main():
         subprocess.run(["docker", "network", "rm", PREFIX], check=False, stdout=subprocess.DEVNULL)
         if os.name != "nt":
             run("sudo", "chown", "-R", f"{os.getuid()}:{os.getgid()}", str(ROOT))
+        else:
+            for volume in state_mounts.values():
+                subprocess.run(["docker", "volume", "rm", volume], check=False, stdout=subprocess.DEVNULL)
         shutil.rmtree(ROOT)
 
 

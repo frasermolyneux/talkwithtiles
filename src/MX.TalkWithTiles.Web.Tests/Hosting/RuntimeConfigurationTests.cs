@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using MX.TalkWithTiles.Web.Controllers;
 using MX.TalkWithTiles.Web.Hosting;
+using MX.TalkWithTiles.Repository;
 
 namespace MX.TalkWithTiles.Web.Tests.Hosting;
 
@@ -82,8 +83,30 @@ public class RuntimeConfigurationTests
         var controller = new TestAuthController(hostEnvironment.Object, configuration);
         var result = await controller.SignIn(new TestSignInRequest
         {
-            UserId = Guid.NewGuid().ToString(), UserName = "Test", Email = "test@example.invalid"
+            UserId = Guid.NewGuid().ToString(),
+            UserName = "Test",
+            Email = "test@example.invalid"
         });
         Assert.IsType<NotFoundResult>(result);
+    }
+
+    [Fact]
+    public async Task Concurrency_ConflictIsNotConvertedToGenericServerError()
+    {
+        var builder = WebApplication.CreateBuilder();
+        builder.WebHost.UseTestServer();
+        await using var app = builder.Build();
+        app.UseExceptionHandler(error => error.Run(context =>
+        {
+            context.Response.StatusCode = 500;
+            return Task.CompletedTask;
+        }));
+        app.UseMiddleware<GameConcurrencyMiddleware>();
+        app.Run(_ => throw new GameConcurrencyException());
+        await app.StartAsync();
+        using var client = app.GetTestClient();
+        client.DefaultRequestHeaders.Host = "talkwithtiles.com";
+        using var response = await client.GetAsync("/");
+        Assert.Equal(System.Net.HttpStatusCode.Conflict, response.StatusCode);
     }
 }

@@ -46,7 +46,7 @@ public sealed class AppDataRepository(NpgsqlDataSource dataSource) : IAppDataRep
             CREATE INDEX IF NOT EXISTS invites_by_game ON invites(game_id);
             """, connection, transaction);
         await command.ExecuteNonQueryAsync();
-        command.CommandText = "SELECT version FROM schema_version";
+        command.CommandText = "SELECT CASE WHEN count(*) = 1 THEN max(version) ELSE -1 END FROM schema_version";
         var version = (int?)await command.ExecuteScalarAsync();
         if (version != 1)
         {
@@ -62,6 +62,7 @@ public sealed class AppDataRepository(NpgsqlDataSource dataSource) : IAppDataRep
         {
             await using var command = dataSource.CreateCommand("""
                 SELECT version FROM schema_version WHERE version = 1
+                AND (SELECT count(*) FROM schema_version) = 1
                 AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'games')
                 AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'game_players')
                 AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'invites')

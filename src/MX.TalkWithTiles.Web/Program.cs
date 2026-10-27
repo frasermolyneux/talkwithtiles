@@ -45,6 +45,12 @@ if (!string.IsNullOrEmpty(aiConnectionString))
 var testingEnabled = builder.Environment.IsDevelopment()
     && string.Equals(builder.Configuration["Testing:Enabled"], "true", StringComparison.OrdinalIgnoreCase);
 builder.AddRuntimeServices(testingEnabled);
+if (!builder.Environment.IsDevelopment())
+{
+    builder.Services.AddHttpsRedirection(options => options.HttpsPort = 443);
+    builder.Services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme,
+        options => options.Cookie.SecurePolicy = CookieSecurePolicy.Always);
+}
 
 if (testingEnabled)
 {
@@ -54,6 +60,9 @@ if (testingEnabled)
             options.LoginPath = "/sign-in";
             options.Cookie.HttpOnly = true;
             options.Cookie.IsEssential = true;
+            options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+                ? CookieSecurePolicy.SameAsRequest
+                : CookieSecurePolicy.Always;
         });
 }
 
@@ -101,19 +110,6 @@ builder.Services.AddHealthChecks()
 var app = builder.Build();
 await app.Services.GetRequiredService<IAppDataRepository>().Initialize();
 app.UseForwardedHeaders();
-app.Use(async (context, next) =>
-{
-    try
-    {
-        await next(context);
-    }
-    catch (GameConcurrencyException)
-    {
-        context.Response.StatusCode = StatusCodes.Status409Conflict;
-        await context.Response.WriteAsync("The game changed. Reload it before trying again.");
-    }
-});
-
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
@@ -124,6 +120,7 @@ else
     app.UseHsts();
 }
 
+app.UseMiddleware<GameConcurrencyMiddleware>();
 app.UseStatusCodePagesWithReExecute("/Error/PageNotFound");
 
 app.UseWhen(context => !context.Request.Path.StartsWithSegments("/api/health"),

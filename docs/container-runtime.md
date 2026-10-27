@@ -52,6 +52,10 @@ Text secrets:
    at startup. The bootstrap superuser has no TCP authentication rule; the app
    role is NOSUPERUSER/NOCREATEDB/NOCREATEROLE/NOREPLICATION.
 
+Database connections use SCRAM on the dedicated private network (TLS and GSS
+encryption negotiation are disabled; the database must never be published).
+Disabling GSS also avoids Windows domain-discovery stalls in the local harness.
+
 Recreate containers after secret/configuration changes. Do not put secret values
 or private certificates in source control or CI artefacts.
 

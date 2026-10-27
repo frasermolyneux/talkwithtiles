@@ -47,6 +47,10 @@ jobs:
         run: dotnet test src/MX.TalkWithTiles.slnx --nologo
       - name: Install browser dependencies
         run: npm ci && npx playwright install chromium --with-deps
+      - name: Validate browser harness and promotion gates
+        run: |
+          npx tsc --noEmit
+          python3 -m unittest discover -s deployment -p 'test_*.py'
       - name: Test deterministic multiplayer flows
         run: npx playwright test --project=chromium
       - name: Build constrained images
