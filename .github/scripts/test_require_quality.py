@@ -20,6 +20,7 @@ CHECK = {
     "app": {"id": 15368, "slug": "github-actions"},
     "status": "completed", "conclusion": "success",
     "details_url": f"https://github.com/{REPOSITORY}/actions/runs/99",
+    "external_id": "trusted-workload-contract:99",
 }
 PRODUCER = {
     "run_started_at": "2026-10-27T18:00:00Z", "run_attempt": 1,
@@ -69,6 +70,13 @@ class PublicationGateTests(unittest.TestCase):
     def test_exact_quality_and_sha_bound_trusted_contract_allow_publication(self):
         self.assertEqual(0, self.run_gate())
 
+    def test_normalized_display_url_cannot_break_or_replace_explicit_producer_binding(self):
+        normalized = {**CHECK, "details_url": f"https://github.com/{REPOSITORY}/runs/20"}
+        self.assertEqual(0, self.run_gate(checks=[normalized]))
+        for binding in ("", "trusted-workload-contract:100", "untrusted:99"):
+            with self.subTest(binding=binding), self.assertRaisesRegex(RuntimeError, "Untrusted"):
+                self.run_gate(checks=[{**normalized, "external_id": binding}])
+
     def test_latest_failed_quality_or_contract_cannot_reuse_old_success(self):
         for field in ("quality", "contract"):
             with self.subTest(field=field), self.assertRaisesRegex(RuntimeError, "did not succeed"):
@@ -93,7 +101,7 @@ class PublicationGateTests(unittest.TestCase):
 
     def test_same_app_check_cannot_borrow_wrong_workflow_or_other_sha_producer(self):
         variants = [
-            {"checks": [{**CHECK, "details_url": "https://github.com/other/repo/actions/runs/99"}]},
+            {"checks": [{**CHECK, "external_id": "untrusted:99"}]},
             {"producer": {**PRODUCER, "event": "pull_request"}},
             {"producer": {**PRODUCER, "path": ".github/workflows/untrusted.yml"}},
             {"producer": {**PRODUCER, "head_branch": "feature/untrusted"}},
