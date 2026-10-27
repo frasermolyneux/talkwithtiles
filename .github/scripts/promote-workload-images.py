@@ -4,8 +4,12 @@ import json
 import os
 from pathlib import Path
 import re
+import runpy
 import subprocess
 import time
+
+
+wait_contract = runpy.run_path(str(Path(__file__).with_name("require-quality.py")))["wait_for_contract"]
 
 
 def run(*args, capture=False):
@@ -133,6 +137,7 @@ def main():
     mutation = """mutation($id:ID!){requestReviewsByLogin(input:{pullRequestId:$id,botLogins:["copilot-pull-request-reviewer"],union:true}){pullRequest{id}}}"""
     gh("api", "graphql", "-f", f"query={mutation}", "-f", f"id={node_id}")
     wait_review(repository, number, head)
+    wait_contract(head, repository)
     if superseded(source) or gh("pr", "view", str(number), "--json", "headRefOid,baseRefName") != {"baseRefName": "main", "headRefOid": head}:
         raise RuntimeError("Promotion was superseded or its exact head/base changed.")
     print(f"Promotion PR #{number} passed exact-head gates; remains open for reviewed merge.")
