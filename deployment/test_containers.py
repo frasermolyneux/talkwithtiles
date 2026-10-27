@@ -149,7 +149,13 @@ def main():
         count = run("docker", "exec", postgres, "psql", "-h", "/tmp", "-U", "talkwithtiles_bootstrap",
                     "-d", "talkwithtiles", "-Atc", "SELECT count(*) FROM contacts", capture=True)
         assert count == "1"
+        connections = run("docker", "exec", postgres, "psql", "-h", "/tmp", "-U", "talkwithtiles_bootstrap",
+                          "-d", "talkwithtiles", "-Atc",
+                          "SELECT count(*) FROM pg_stat_activity WHERE usename = 'talkwithtiles'", capture=True)
+        assert int(connections) > 0, "Shutdown regression requires a live web connection"
         run("docker", "stop", postgres)
+        state = json.loads(run("docker", "inspect", postgres, capture=True))[0]["State"]
+        assert state["ExitCode"] == 0, "PostgreSQL was forcibly killed instead of shutting down cleanly"
         result = subprocess.run(["docker", "exec", web, "dotnet", "MX.TalkWithTiles.Web.dll", "--healthcheck"], check=False)
         assert result.returncode != 0, "Readiness incorrectly survived database loss"
         print("Constrained images, non-root initialization, persisted recreation and database readiness passed.")

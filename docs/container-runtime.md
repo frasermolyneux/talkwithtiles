@@ -88,6 +88,8 @@ image healthcheck calls readiness and fails on database loss. The PostgreSQL
 image initializes the bind directory as UID999 without inherited anonymous
 volumes. Its temporary bootstrap server is Unix-socket-only; the TCP healthcheck
 cannot pass before role/database initialization and the final network listener.
+The image restores PostgreSQL's SIGINT fast-shutdown signal so a stop closes
+pooled client sessions cleanly rather than waiting until Docker forcibly kills it.
 
 In-memory sessions intentionally reset on web restart (display preferences,
 alerts and other ephemeral UI state); there is no Redis. Games, contacts and
