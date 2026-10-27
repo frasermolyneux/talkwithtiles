@@ -5,6 +5,9 @@ on:
     branches: [main]
   workflow_dispatch:
   workflow_call:
+    secrets:
+      GH_APP_PEM:
+        required: false
 
 permissions: {}
 

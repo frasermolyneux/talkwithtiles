@@ -33,6 +33,8 @@ jobs:
     if: github.event.pull_request.draft == false
     needs: build-and-test
     uses: ./.github/workflows/runtime-quality.yml
+    secrets:
+      GH_APP_PEM: ${{ secrets.GH_APP_PEM }}
 
   terraform-plan-dev:
     permissions:

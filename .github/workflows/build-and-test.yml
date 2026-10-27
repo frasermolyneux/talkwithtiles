@@ -51,6 +51,8 @@ jobs:
     permissions:
       contents: read
     uses: ./.github/workflows/runtime-quality.yml
+    secrets:
+      GH_APP_PEM: ${{ secrets.GH_APP_PEM }}
 
   terraform-plan-dev:
     needs: detect-changes
