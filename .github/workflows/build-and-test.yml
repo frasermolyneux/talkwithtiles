@@ -18,20 +18,19 @@ jobs:
       src: ${{ steps.changes.outputs.src }}
       terraform: ${{ steps.changes.outputs.terraform }}
       playwright: ${{ steps.changes.outputs.playwright }}
-      runtime: ${{ steps.changes.outputs.runtime }}
     steps:
       - id: changes
         uses: frasermolyneux/actions/detect-changes@detect-changes/v1.0
+        # The shared action exposes fixed output names; src covers all runtime inputs.
         with:
           filters: |
-            src:src/**
+            src:src/**,Dockerfile,deployment/**,.dockerignore,workload.json,global.json,Directory.Build.props,version.json,package-lock.json,.github/**
             terraform:terraform/**
             playwright:e2e/**,playwright.config.ts,global-setup.ts,fixtures/**,helpers/**,pages/**,package.json
-            runtime:Dockerfile,deployment/**,.dockerignore,workload.json,global.json,Directory.Build.props,version.json,package-lock.json,.github/**
 
   build-and-test:
     needs: detect-changes
-    if: needs.detect-changes.outputs.src == 'true' || needs.detect-changes.outputs.runtime == 'true'
+    if: needs.detect-changes.outputs.src == 'true'
     permissions:
       contents: read
     runs-on: ubuntu-latest
@@ -48,7 +47,7 @@ jobs:
       - detect-changes
       - build-and-test
     if: |
-      !failure() && !cancelled() && (needs.detect-changes.outputs.src == 'true' || needs.detect-changes.outputs.playwright == 'true' || needs.detect-changes.outputs.runtime == 'true')
+      !failure() && !cancelled() && (needs.detect-changes.outputs.src == 'true' || needs.detect-changes.outputs.playwright == 'true')
     permissions:
       contents: read
     uses: ./.github/workflows/runtime-quality.yml
