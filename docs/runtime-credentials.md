@@ -32,7 +32,9 @@ Existing database passwords are never implicitly rotated. An unchanged
 reviewed configuration creates no new secret version. Trusted Caddy
 addresses are resolved and injected only by the host.
 
-Weekly checks renew 180-day Entra certificates within 30 days of expiry.
+Credential and TLS workflows are manual-only during initial rollout. Enable
+their weekly renewal schedules in a reviewed post-acceptance change.
+Certificate checks renew 180-day Entra certificates within 30 days of expiry.
 Unrelated public keys and unexpired previous certificates are retained; only
 this workflow's expired keys are eligible for removal after seven days.
 The independent origin workflow requests a 365-day Origin CA certificate for
@@ -40,7 +42,8 @@ The independent origin workflow requests a 365-day Origin CA certificate for
 does not modify DNS or routes. Its separate exact-zone
 `CLOUDFLARE_ORIGIN_API_TOKEN` is supplied by the workload catalog.
 
-Unexpected ownership, disabled secrets, expiring database passwords or changed
+Missing established credentials, unexpected ownership, disabled secrets,
+expiring database passwords or changed
 certificate bindings stop publication and require explicit recovery. A failed
 bootstrap can leave an unused public certificate; retry without deleting
 existing keys. Verify real organisational and personal-account sign-in and

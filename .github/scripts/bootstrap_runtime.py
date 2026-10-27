@@ -161,12 +161,14 @@ def rotate_certificate(workload, vault, app, tenant, token, now):
         if (tags.get("application-id") != app["appId"] or tags.get("application-object-id") != app["id"]
                 or not isinstance(expiry, int) or not tags.get("credential-key-id")):
             raise BootstrapError("Existing certificate has unexpected application/lifecycle metadata.")
-        if expiry > int((now + timedelta(days=30)).timestamp()) and any(
+        if not any(
             entry["keyId"] == tags["credential-key-id"]
             and (entry.get("displayName") or "").startswith(prefix)
             and datetime.fromisoformat(entry["endDateTime"].replace("Z", "+00:00")).timestamp() >= expiry
             for entry in registered
         ):
+            raise BootstrapError("Existing certificate registration changed or was revoked; explicit recovery required.")
+        if expiry > int((now + timedelta(days=30)).timestamp()):
             print("Retained certificate; renewal is not due.")
             return
     with tempfile.TemporaryDirectory(prefix=prefix) as directory:
@@ -211,15 +213,17 @@ def main():
     workload, vault, app, tenant, token, config = discover()
     password = metadata(vault, "database-password", token, workload)
     existing = metadata(vault, "runtime-configuration", token, workload)
-    metadata(vault, "client-certificate", token, workload)
+    certificate = metadata(vault, "client-certificate", token, workload)
+    if existing is not None and (password is None or certificate is None):
+        raise BootstrapError("Established runtime credentials are missing; explicit recovery required.")
+    if password is not None and password["properties"]["attributes"].get("exp") is not None:
+        raise BootstrapError("Database password is expiring; explicit coordinated rotation required.")
+    rotate_certificate(workload, vault, app, tenant, token, datetime.now(timezone.utc))
     if password is None:
         publish(vault, "database-password", token, workload, secrets.token_urlsafe(48))
         print("Created database password.")
-    elif password["properties"]["attributes"].get("exp") is not None:
-        raise BootstrapError("Database password is expiring; explicit coordinated rotation required.")
     else:
         print("Retained database password.")
-    rotate_certificate(workload, vault, app, tenant, token, datetime.now(timezone.utc))
     digest = hashlib.sha256(json.dumps(config, sort_keys=True).encode()).hexdigest()
     if existing is None or (existing.get("tags") or {}).get("configuration-sha256") != digest:
         publish(vault, "runtime-configuration", token, workload, json.dumps(config),
