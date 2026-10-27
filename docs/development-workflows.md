@@ -1,66 +1,51 @@
-# Development Workflows
+# Development workflows
 
-## Branch Strategy
+- Feature pushes retain `build-and-test`; PR Verify retains its build/test summary.
+- Docker, deployment, manifest and CI changes also execute runtime validation.
+  PR concurrency is isolated by exact head, never cancelling an older stateful run.
+- `e2e-tests` calls Runtime Quality: real PostgreSQL 18 persistence tests,
+  single-worker deterministic Playwright multiplayer flows, builds of both
+  constrained images and read-only/non-root persisted-restart checks.
+- `validate-contract` compiles the manifest using the pinned private platform
+  compiler and `.github/validation/policy.json`. This fixture grants no host
+  authority and cannot activate placeholders; parent-owned host policy is final.
+  The read-only contract checkout requires the Production GitHub App installation
+  to include `platform-baremetal`; private contract source is never published.
+- Existing Code Quality, Sonar, dependency review and DevOps security scanning
+  remain unchanged. Unit-only runners skip PostgreSQL tests when
+  `TEST_POSTGRES_PASSWORD` is absent; Runtime Quality always supplies it.
+- Runtime Quality also runs on `main` and explicit dispatch. Image input changes
+  produce an exact-source publication marker. Digest-only/documentation changes
+  cannot recursively publish images.
+- Publish Image consumes only successful same-repository `main` push validation,
+  additionally waits for successful exact-source Code Quality, builds both
+  images, uses OIDC with repository-scoped ACR tokens, and locks source tags and
+  digests against overwrite/deletion.
+- Promote Image opens a digest-only PR. It rejects newer source/image changes,
+  requires exact-head dispatched Runtime Quality, PR Verify, Code Quality and
+  Copilot review without unresolved threads. It **never merges or deploys**.
+  Promotion requires the repository GitHub App credentials and Production ACR
+  variables provisioned by the platform catalog.
 
-The repository follows a trunk-based development model with short-lived feature branches:
+Azure Deploy Dev/Deploy Prd now fail explicitly on dispatch and have no push or
+scheduled triggers: PostgreSQL builds must not overwrite the old App Service.
+Development plans are disabled; a retained Production plan is opt-in through
+`run-prd-plan` for retirement work. Terraform resources, app registrations,
+provider locks and both destroy workflows are retained unchanged. Retirement and
+host activation are separately reviewed operations, not application CI effects.
 
-- **`main`** - Production branch. Merges to main trigger the full deployment pipeline.
-- **`feature/*`** - New feature development branches.
-- **`bugfix/*`** - Bug fix branches.
-- **`hotfix/*`** - Urgent fix branches.
+## Local commands
 
-## CI/CD Workflows
+See [container-runtime.md](container-runtime.md) for the disposable database setup.
 
-### Build and Test (`build-and-test.yml`)
+```powershell
+dotnet build src\MX.TalkWithTiles.slnx
+dotnet test src\MX.TalkWithTiles.slnx
+dotnet format src\MX.TalkWithTiles.slnx --verify-no-changes
+npm ci
+npx tsc --noEmit
+npx playwright test --project=chromium
+```
 
-Triggers on pushes to `feature/*`, `bugfix/*`, and `hotfix/*` branches. Builds the .NET solution and runs all unit tests to provide fast feedback during development.
-
-### PR Verify (`pr-verify.yml`)
-
-Triggers on pull request events (opened, synchronize, reopened, ready_for_review, labeled, unlabeled) excluding drafts. Runs the build-and-test step followed by a Terraform plan against the dev environment to verify infrastructure changes. Skips the Terraform plan for Dependabot PRs with the `deploy-dev` label.
-
-### Deploy Prd (`deploy-prd.yml`)
-
-Triggers on pushes to `main`, manual dispatch, or a weekly schedule (Thursday at 3 AM UTC). Runs the full deployment pipeline:
-
-1. Build and test the application
-2. Terraform plan and apply to the **dev** environment
-3. Terraform plan and apply to the **prd** environment
-
-Each environment deployment uses concurrency groups to prevent parallel deployments to the same environment.
-
-### Deploy Dev (`deploy-dev.yml`)
-
-Triggers on manual dispatch. Deploys to the dev environment independently, useful for testing infrastructure changes before merging to main.
-The development Terraform state owns both the web app and its Linux B1 App
-Service plan in `rg-talkwithtiles-dev-swedencentral`.
-
-### Destroy Workflows
-
-Development destroy runs use the same repository development concurrency group
-as deployment. After Terraform destroy, the workflows remove only the exact
-Application Insights Failure Anomalies rule and verify that the workload
-resource group is empty and its workload-owned App Service plan is absent.
-Residual resource IDs fail the workflow visibly.
-
-### Code Quality (`codequality.yml`)
-
-Runs on a weekly schedule (Monday at 3 AM UTC) and on manual dispatch. Performs code quality analysis.
-
-## Local Playwright Test MCP
-
-The workspace retains the `playwright-test` server in `.vscode/mcp.json`. It
-runs `node_modules/playwright/cli.js run-test-mcp-server`, so it uses the
-Playwright version pinned by `package-lock.json` and requires `npm ci` first.
-
-This is Playwright's test-runner MCP for test discovery, execution, debugging,
-planning, and generation. It is distinct from a general browser-automation MCP
-server and is used only by the explicitly selected Playwright repository
-agents. Do not enable a second Playwright server for the same workspace.
-
-## Typical Development Flow
-
-1. Create a `feature/*`, `bugfix/*`, or `hotfix/*` branch from `main`
-2. Push commits — `build-and-test.yml` runs automatically
-3. Open a pull request — `pr-verify.yml` runs build, test, and Terraform plan
-4. Merge to `main` — `deploy-prd.yml` deploys through dev then prd
+The Playwright test-runner MCP in `.vscode/mcp.json` uses the pinned local package.
+Do not enable a second Playwright server for the same workspace.

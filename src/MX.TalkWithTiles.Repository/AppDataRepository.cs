@@ -1,62 +1,82 @@
 using System;
 using System.Threading.Tasks;
-using Azure.Data.Tables;
-using Azure.Identity;
-using Microsoft.Extensions.Options;
-using MX.TalkWithTiles.Repository.Config;
 using MX.TalkWithTiles.Repository.Interfaces;
+using Npgsql;
 
 namespace MX.TalkWithTiles.Repository;
 
-public class AppDataRepository : IAppDataRepository
+public sealed class AppDataRepository(NpgsqlDataSource dataSource) : IAppDataRepository
 {
-    private readonly TableServiceClient _tableServiceClient;
-
-    public AppDataRepository(IOptions<AppDataOptions> options)
+    public async Task Initialize()
     {
-        if (!string.IsNullOrEmpty(options.Value.StorageConnectionString))
+        await using var connection = await dataSource.OpenConnectionAsync();
+        await using var transaction = await connection.BeginTransactionAsync();
+        // Serialize schema initialization across overlapping old/new container starts.
+        await using var command = new NpgsqlCommand("""
+            SELECT pg_advisory_xact_lock(746982151);
+            CREATE TABLE IF NOT EXISTS schema_version (version integer PRIMARY KEY);
+            INSERT INTO schema_version VALUES (1) ON CONFLICT DO NOTHING;
+            CREATE TABLE IF NOT EXISTS games (
+                id uuid PRIMARY KEY,
+                state jsonb NOT NULL,
+                version bigint NOT NULL DEFAULT 1,
+                updated_at timestamptz NOT NULL DEFAULT clock_timestamp(),
+                privacy integer NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS game_players (
+                game_id uuid NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+                player_id uuid NOT NULL,
+                hidden boolean NOT NULL DEFAULT false,
+                PRIMARY KEY (game_id, player_id)
+            );
+            CREATE INDEX IF NOT EXISTS game_players_by_player ON game_players(player_id, game_id);
+            CREATE TABLE IF NOT EXISTS contacts (
+                user_id uuid NOT NULL,
+                contact_id uuid NOT NULL,
+                name text NOT NULL,
+                last_played timestamptz NOT NULL DEFAULT clock_timestamp(),
+                PRIMARY KEY (user_id, contact_id)
+            );
+            CREATE TABLE IF NOT EXISTS invites (
+                email text NOT NULL,
+                invite_id uuid NOT NULL,
+                game_id uuid NOT NULL REFERENCES games(id) ON DELETE CASCADE,
+                PRIMARY KEY (email, invite_id)
+            );
+            CREATE INDEX IF NOT EXISTS invites_by_game ON invites(game_id);
+            """, connection, transaction);
+        await command.ExecuteNonQueryAsync();
+        command.CommandText = "SELECT CASE WHEN count(*) = 1 THEN max(version) ELSE -1 END FROM schema_version";
+        var version = (int?)await command.ExecuteScalarAsync();
+        if (version != 1)
         {
-            _tableServiceClient = new TableServiceClient(options.Value.StorageConnectionString);
-        }
-        else
-        {
-            _tableServiceClient = new TableServiceClient(
-                new Uri(options.Value.StorageAccountUri),
-                new DefaultAzureCredential());
+            throw new InvalidOperationException("Unsupported database schema version.");
         }
 
-        ContactsTable = _tableServiceClient.GetTableClient(options.Value.ContactsTableName);
-        GameInviteTable = _tableServiceClient.GetTableClient(options.Value.GameInviteTableName);
-        GameStateTable = _tableServiceClient.GetTableClient(options.Value.GameStateTableName);
-        GameStateIndexTable = _tableServiceClient.GetTableClient(options.Value.GameStateIndexTableName);
-        TilesTable = _tableServiceClient.GetTableClient(options.Value.TilesTableName);
-    }
-
-    public TableClient ContactsTable { get; }
-    public TableClient GameInviteTable { get; }
-    public TableClient GameStateTable { get; }
-    public TableClient GameStateIndexTable { get; }
-    public TableClient TilesTable { get; }
-
-    public async Task CreateTablesIfNotExist()
-    {
-        await ContactsTable.CreateIfNotExistsAsync();
-        await GameInviteTable.CreateIfNotExistsAsync();
-        await GameStateTable.CreateIfNotExistsAsync();
-        await GameStateIndexTable.CreateIfNotExistsAsync();
-        await TilesTable.CreateIfNotExistsAsync();
+        await transaction.CommitAsync();
     }
 
     public async Task<Tuple<bool, string>> HealthCheck()
     {
         try
         {
-            await _tableServiceClient.GetPropertiesAsync();
-            return new Tuple<bool, string>(true, "OK");
+            await using var command = dataSource.CreateCommand("""
+                SELECT version FROM schema_version WHERE version = 1
+                AND (SELECT count(*) FROM schema_version) = 1
+                AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'games')
+                AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'game_players')
+                AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'invites')
+                AND EXISTS (SELECT 1 FROM pg_tables WHERE tablename = 'contacts')
+                AND NOT pg_is_in_recovery()
+                AND current_setting('transaction_read_only') = 'off'
+                """);
+            return (int?)await command.ExecuteScalarAsync() == 1
+                ? Tuple.Create(true, "Ready")
+                : Tuple.Create(false, "Schema or database writer unavailable");
         }
-        catch (Exception ex)
+        catch (NpgsqlException)
         {
-            return new Tuple<bool, string>(false, ex.Message);
+            return Tuple.Create(false, "Database unavailable");
         }
     }
 }

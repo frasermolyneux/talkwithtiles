@@ -10,11 +10,10 @@
     "resolveJsonModule": true,
     "outDir": "./dist",
     "rootDir": ".",
-    "baseUrl": ".",
     "paths": {
-      "@pages/*": ["pages/*"],
-      "@helpers/*": ["helpers/*"],
-      "@fixtures/*": ["fixtures/*"]
+      "@pages/*": ["./pages/*"],
+      "@helpers/*": ["./helpers/*"],
+      "@fixtures/*": ["./fixtures/*"]
     }
   },
   "include": ["**/*.ts"],

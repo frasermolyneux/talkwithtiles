@@ -4,6 +4,9 @@
 
 # Node
 node_modules/
+.local/
+.ci-state/
+**/__pycache__/
 
 # .NET build artifacts
 [Bb]in/

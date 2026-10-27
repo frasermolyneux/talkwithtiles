@@ -1,0 +1,20 @@
+{
+  "AllowedHosts": "talkwithtiles.com;www.talkwithtiles.com",
+  "Database": {
+    "Host": "talkwithtiles-postgres",
+    "Port": 5432,
+    "Name": "talkwithtiles",
+    "Username": "talkwithtiles",
+    "PasswordFile": "/run/secrets/database-password"
+  },
+  "AzureAd": {
+    "Instance": "https://login.microsoftonline.com/",
+    "TenantId": "common",
+    "ClientId": "72ea5049-afe4-452a-92cc-a2c204a049e4",
+    "CallbackPath": "/signin-oidc",
+    "SignedOutCallbackPath": "/signout-callback-oidc",
+    "ClientCertificateFile": "/run/secrets/client-certificate"
+  },
+  "ForwardedHeaders": { "KnownProxies": ["RENDER_KNOWN_CADDY_IP"] },
+  "DataProtection": { "KeyPath": "/app/state/keys" }
+}

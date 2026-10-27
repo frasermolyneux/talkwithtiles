@@ -53,6 +53,8 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
     }
 
     private Guid GameId { get; set; }
+    private string? GameEtag { get; set; }
+    private DateTimeOffset LastUpdated { get; set; }
     private GamePrivacyType GamePrivacyType { get; set; }
     public GameType GameType { get; set; }
     public TileBagVisibilityOption TileBagVisibilityOption { get; set; }
@@ -61,6 +63,8 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
         new()
         {
             GameId = GameId,
+            GameEtag = GameEtag,
+            LastUpdated = LastUpdated,
             GamePrivacyType = GamePrivacyType,
             GameType = GameType,
             TileBagVisibilityOption = TileBagVisibilityOption,
@@ -131,6 +135,8 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
         Dictionary<GameChallengeReason, GameChallengeResult> challengeResults)
     {
         GameId = Guid.NewGuid();
+        GameEtag = null;
+        LastUpdated = default;
         GamePrivacyType = gamePrivacyType;
         GameType = gameType;
         TileBagVisibilityOption = tileBagVisibilityOption;
@@ -148,6 +154,8 @@ public class GameEngine(IManagerFactory managerFactory) : IGameEngine
     public void InitFromStateModel(GameStateModel gameStateModel)
     {
         GameId = gameStateModel.GameId;
+        GameEtag = gameStateModel.GameEtag;
+        LastUpdated = gameStateModel.LastUpdated;
         GamePrivacyType = gameStateModel.GamePrivacyType;
         GameType = gameStateModel.GameType;
         TileBagVisibilityOption = gameStateModel.TileBagVisibilityOption;

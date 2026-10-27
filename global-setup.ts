@@ -1,40 +1,22 @@
-import { TableClient, AzureNamedKeyCredential } from '@azure/data-tables';
-
-const account = 'devstoreaccount1';
-const accountKey =
-  'Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw==';
-const tableEndpoint = 'http://127.0.0.1:10002/devstoreaccount1';
-
-const tableNames = ['GameState', 'GameStateIndex', 'GameStateBag', 'GameStateBoard'];
-
-async function clearTable(tableName: string): Promise<void> {
-  const credential = new AzureNamedKeyCredential(account, accountKey);
-  const client = new TableClient(tableEndpoint, tableName, credential, {
-    allowInsecureConnection: true,
-  });
-
-  try {
-    const entities = client.listEntities();
-    for await (const entity of entities) {
-      await client.deleteEntity(entity.partitionKey!, entity.rowKey!);
-    }
-    console.log(`  Cleared table: ${tableName}`);
-  } catch (error: unknown) {
-    const err = error as { statusCode?: number };
-    if (err.statusCode === 404) {
-      console.log(`  Table ${tableName} does not exist (will be auto-created)`);
-    } else {
-      throw error;
-    }
-  }
-}
+import { Client } from 'pg';
+import { readFileSync } from 'node:fs';
 
 async function globalSetup(): Promise<void> {
-  console.log('Global setup: clearing Azurite tables...');
-  for (const table of tableNames) {
-    await clearTable(table);
+  const client = new Client({
+    host: process.env.TEST_POSTGRES_HOST ?? '127.0.0.1',
+    port: Number(process.env.TEST_POSTGRES_PORT ?? '5432'),
+    database: 'talkwithtiles',
+    user: 'talkwithtiles',
+    password: process.env.TEST_POSTGRES_PASSWORD
+      ?? readFileSync(process.env.TEST_POSTGRES_PASSWORD_FILE ?? '.local/database-password', 'utf8').trimEnd(),
+  });
+  await client.connect();
+  try {
+    // This harness only targets the disposable local/CI database.
+    await client.query('TRUNCATE games, game_players, invites, contacts CASCADE');
+  } finally {
+    await client.end();
   }
-  console.log('Global setup complete.');
 }
 
 export default globalSetup;

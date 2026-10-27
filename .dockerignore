@@ -1,0 +1,13 @@
+.git
+.github-copilot
+**/bin
+**/obj
+node_modules
+terraform
+.local
+.ci-state
+playwright-report
+test-results
+**/*.pfx
+**/*.pem
+**/*.key
