@@ -110,7 +110,7 @@ class PublicationGateTests(unittest.TestCase):
         normalized = {**CHECK, "details_url": f"https://github.com/{REPOSITORY}/runs/20"}
         self.assertEqual(0, self.run_gate(checks=[normalized]))
         for binding in ("", "trusted-workload-contract:100", "untrusted:99"):
-            with self.subTest(binding=binding), self.assertRaisesRegex(RuntimeError, "Untrusted"):
+            with self.subTest(binding=binding), self.assertRaisesRegex(RuntimeError, "Timed out"):
                 self.run_gate(checks=[{**normalized, "external_id": binding}])
 
     def test_latest_failed_quality_or_contract_cannot_reuse_old_success(self):
@@ -145,7 +145,7 @@ class PublicationGateTests(unittest.TestCase):
             {"jobs": [{**JOB, "name": f"workload-contract ({'b' * 40})"}]},
         ]
         for variant in variants:
-            with self.subTest(variant=variant), self.assertRaisesRegex(RuntimeError, "[Uu]ntrusted|Trusted workload"):
+            with self.subTest(variant=variant), self.assertRaisesRegex(RuntimeError, "Timed out|Trusted workload"):
                 self.run_gate(**copy.deepcopy(variant))
 
     def test_new_same_app_check_cannot_replay_success_before_newer_producer_failure(self):
@@ -156,8 +156,14 @@ class PublicationGateTests(unittest.TestCase):
             )
 
     def test_new_same_app_check_must_reference_the_latest_successful_producer(self):
-        with self.assertRaisesRegex(RuntimeError, "replays an older producer"):
+        with self.assertRaisesRegex(RuntimeError, "Timed out"):
             self.run_gate(newer_producer={**PRODUCER, "id": 100})
+
+    def test_reverse_completion_uses_check_bound_to_newest_trusted_producer(self):
+        self.assertEqual(0, self.run_gate(newer_producer={**PRODUCER, "id": 100}, checks=[
+            {**CHECK, "external_id": "trusted-workload-contract:100"},
+            {**CHECK, "id": 21},
+        ]))
 
     def test_lower_id_rerun_failure_cannot_be_hidden_by_newer_id_success(self):
         for field in ("contract", "quality"):
