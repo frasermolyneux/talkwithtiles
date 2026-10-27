@@ -4,6 +4,16 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'src/**'
+      - 'terraform/**'
+      - 'e2e/**'
+      - 'playwright.config.ts'
+      - 'global-setup.ts'
+      - 'fixtures/**'
+      - 'helpers/**'
+      - 'pages/**'
+      - 'package.json'
   workflow_dispatch:
   schedule:
     - cron: "0 4 * * 4"
