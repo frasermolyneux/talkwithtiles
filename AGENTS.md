@@ -58,4 +58,6 @@ one worker. Runtime Quality provides real PostgreSQL and constrained image tests
 - [Playwright configuration](playwright.config.ts)
 
 
-CI-only main pushes are excluded by deployment push-path filters before workflow concurrency; they do not enqueue or displace cloud/backend deployments. Automatic deployment requires a change to the workload inputs already declared by the deployment filters; scheduled maintenance and explicit workflow dispatch retain their existing behavior. A deployment-workflow-only change requires explicit dispatch to exercise cloud operations.
+Azure application deployments are explicitly blocked during migration, including
+scheduled and dispatched deployments. Development is local/CI only. Keep legacy
+destroy workflows and Terraform identity ownership until coordinated retirement.
