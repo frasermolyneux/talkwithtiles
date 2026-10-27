@@ -22,7 +22,7 @@ jobs:
       src: ${{ steps.changes.outputs.src }}
       terraform: ${{ steps.changes.outputs.terraform }}
       playwright: ${{ steps.changes.outputs.playwright }}
-      workload: ${{ steps.changes.outputs.workload }}
+      workload: ${{ steps.workload.outputs.src }}
     steps:
       - id: changes
         uses: frasermolyneux/actions/detect-changes@detect-changes/v1.0
@@ -31,7 +31,14 @@ jobs:
             src:src/**
             terraform:terraform/**
             playwright:e2e/**,playwright.config.ts,global-setup.ts,fixtures/**,helpers/**,pages/**,package.json
-            workload:src/**,terraform/**,e2e/**,playwright.config.ts,global-setup.ts,fixtures/**,helpers/**,pages/**,package.json
+      - name: Detect deployable workload inputs
+        id: workload
+        uses: frasermolyneux/actions/detect-changes@detect-changes/v1.0
+        with:
+          perform-checkout: 'false'
+          filters: |
+            src:src/**,terraform/**,e2e/**,playwright.config.ts,global-setup.ts,fixtures/**,helpers/**,pages/**,package.json
+
   terraform-state-check-dev:
     needs: [detect-changes]
     if: |
