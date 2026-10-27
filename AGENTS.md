@@ -50,3 +50,6 @@ tests.
 - [Architecture overview](docs/architecture-overview.md)
 - [Development workflows](docs/development-workflows.md)
 - [Playwright configuration](playwright.config.ts)
+
+
+CI-only main pushes run change detection but skip cloud/backend deployment jobs. Automatic deployment requires a change to the workload inputs already declared by the deployment filters; scheduled maintenance and explicit workflow dispatch retain their existing behavior. A deployment-workflow-only change requires explicit dispatch to exercise cloud operations.
