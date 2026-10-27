@@ -24,12 +24,12 @@ def latest_contract_producer(sha, repository, default_branch):
         for run in sorted(runs, key=lambda entry: entry["id"], reverse=True):
             if (run.get("event") != "workflow_run" or run.get("path") != CONTRACT_WORKFLOW
                     or run.get("head_branch") != default_branch
+                    or run.get("display_title") != f"Validate workload contract {sha}"
                     or run.get("repository", {}).get("full_name") != repository):
                 continue
             jobs = gh(f"repos/{repository}/actions/runs/{run['id']}/jobs?filter=latest&per_page=100")["jobs"]
             exact = [job for job in jobs if job["name"] == f"workload-contract ({sha})"]
-            if exact:
-                return run, max(exact, key=lambda job: job["id"])
+            return run, max(exact, key=lambda job: job["id"]) if exact else None
         if len(runs) < 100:
             return None
     raise RuntimeError("Too many trusted workload contract producers.")
@@ -50,7 +50,7 @@ def trusted_contract_producer(check, sha, repository, default_branch):
         raise RuntimeError("Trusted workload contract producer did not succeed.")
     if str(run["id"]) != match[1]:
         raise RuntimeError("Untrusted workload contract check replays an older producer.")
-    if job["conclusion"] != "success":
+    if job is None or job["conclusion"] != "success":
         raise RuntimeError("Trusted workload contract job does not validate this SHA.")
     return True
 

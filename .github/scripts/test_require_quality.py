@@ -22,6 +22,7 @@ CHECK = {
 }
 PRODUCER = {
     "id": 99,
+    "display_title": f"Validate workload contract {SHA}",
     "event": "workflow_run", "path": ".github/workflows/validate-workload-contract.yml",
     "head_branch": "main", "repository": {"full_name": REPOSITORY},
     "status": "completed", "conclusion": "success",

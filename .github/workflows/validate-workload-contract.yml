@@ -1,4 +1,5 @@
 name: Validate Workload Contract
+run-name: Validate workload contract ${{ github.event.workflow_run.head_sha }}
 
 on:
   workflow_run:
