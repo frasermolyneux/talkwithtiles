@@ -18,6 +18,43 @@ publication = load("tiles_publication", "publish-images.py")
 
 
 class PromotionTests(unittest.TestCase):
+    def test_promotion_cannot_report_success_without_trusted_exact_head_contract(self):
+        head = "b" * 40
+        payload = {
+            "source_sha": "a" * 40,
+            "images": {
+                name: f"acr7ca0fd3326df.azurecr.io/workloads/talkwithtiles/{image}@sha256:{'1' * 64}"
+                for name, image in (("talkwithtiles-web", "web"), ("talkwithtiles-postgres", "postgres"))
+            },
+        }
+        manifest = {"services": [{"name": name, "image": image}
+                                 for name, image in payload["images"].items()]}
+
+        def commands(*args, **_):
+            if args[:2] == ("git", "show"):
+                return json.dumps(manifest)
+            if args[:2] == ("git", "diff"):
+                return "workload.json"
+            return ""
+
+        def github(*args):
+            if args[:2] == ("pr", "list"):
+                return [{"number": 1, "headRefOid": head, "baseRefName": "main"}]
+            return {"id": "test-node"}
+
+        with patch.dict(os.environ, {"GITHUB_REPOSITORY": "example/repository"}), \
+                patch.object(Path, "read_text", return_value=json.dumps(payload)), \
+                patch.object(promotion, "superseded", return_value=False), \
+                patch.object(promotion, "run", side_effect=commands), \
+                patch.object(promotion, "gh", side_effect=github), \
+                patch.object(promotion, "wait_workflow"), patch.object(promotion, "wait_review"), \
+                patch.object(promotion, "wait_contract", side_effect=RuntimeError("contract failure")) as contract, \
+                patch("builtins.print") as output:
+            with self.assertRaisesRegex(RuntimeError, "contract failure"):
+                promotion.main()
+            contract.assert_called_once_with(head, "example/repository")
+            output.assert_not_called()
+
     def test_placeholder_digest_is_rejected_before_repository_mutation(self):
         payload = {
             "source_sha": "a" * 40,

@@ -16,6 +16,7 @@ jobs:
     timeout-minutes: 90
     permissions:
       actions: read
+      checks: read
       contents: read
     concurrency:
       group: ${{ github.repository }}-promote-images
@@ -58,4 +59,5 @@ jobs:
         if: steps.payload.outputs.available == 'true'
         env:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          GH_READ_TOKEN: ${{ github.token }}
         run: python3 .github/scripts/promote-workload-images.py
