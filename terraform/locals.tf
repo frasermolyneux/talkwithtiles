@@ -18,11 +18,14 @@ locals {
   app_insights_name                = "ai-${var.workload}-${var.environment}-${var.location}"
   public_hostname                  = "${var.dns.subdomain}.${var.dns.domain}"
   entra_app_display_name           = "${var.workload}-${var.environment}-web"
-  entra_redirect_uris = distinct([
+  entra_redirect_uris = distinct(concat([
     "https://${local.public_hostname}/signin-oidc",
     "https://${local.web_app_name}.azurewebsites.net/signin-oidc",
-    "https://localhost:5001/signin-oidc"
-  ])
+    "https://localhost:5001/signin-oidc",
+    ], var.environment == "prd" ? [
+    "https://talkwithtiles.com/signin-oidc",
+    "https://www.talkwithtiles.com/signin-oidc"
+  ] : []))
   entra_logout_url       = "https://${local.public_hostname}/signout-callback-oidc"
   storage_account_prefix = substr(replace(var.workload, "-", ""), 0, 8)
   storage_account_name   = lower("st${local.storage_account_prefix}${var.environment}${random_id.storage.hex}")
