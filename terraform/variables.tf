@@ -3,7 +3,11 @@ variable "workload" {
 }
 
 variable "environment" {
-  default = "dev"
+  default = "prd"
+  validation {
+    condition     = var.environment == "prd"
+    error_message = "Hosted Development is retired; this root manages Production only."
+  }
 }
 
 variable "location" {

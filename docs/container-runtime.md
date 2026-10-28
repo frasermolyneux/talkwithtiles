@@ -2,6 +2,14 @@
 
 ## Deployment boundary
 
+Following verified off-server restores and operator acceptance, legacy Azure
+App Service, Table Storage, Application Insights, Azure-only DNS/certificates
+and the old application password are retired. The production-only Terraform
+root protects and retains the existing Entra application/service principal and
+runtime vault/host access. Cloudflare ingress is still owned by the platform.
+Runtime Infrastructure is the supported full-plan/manual-apply path; this
+cleanup does not promote images or modify the live PostgreSQL database.
+
 Production is `https://talkwithtiles.com`, through Cloudflare and the host's
 trusted Caddy proxy. Anonymous landing pages and authenticated game flows are
 preserved. The host owns ingress, certificate/secret delivery, backups and
