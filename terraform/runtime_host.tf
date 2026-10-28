@@ -43,6 +43,9 @@ resource "azurerm_key_vault" "runtime" {
     default_action = "Deny"
     ip_rules       = var.runtime_host_ipv4_cidrs
   }
+  lifecycle {
+    prevent_destroy = true
+  }
 }
 
 resource "azurerm_role_assignment" "runtime_deploy_secrets_officer" {
