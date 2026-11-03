@@ -75,7 +75,7 @@ public class ErrorControllerTests
     }
 
     [Fact]
-    public void Index_AdminUser_WithException_ShowsExceptionDetail()
+    public void Index_AdminUser_WithException_HidesExceptionDetail()
     {
         var exceptionFeature = CreateExceptionFeature("/game/create", "Something broke");
         var controller = CreateController(CreateAdminUser(), exceptionFeature.Object);
@@ -83,9 +83,10 @@ public class ErrorControllerTests
         var result = controller.Index() as ViewResult;
 
         var model = Assert.IsType<ErrorViewModel>(result?.Model);
-        Assert.True(model.ShowExceptionDetail);
-        Assert.Equal("/game/create", model.ExceptionPath);
-        Assert.Contains("Something broke", model.ExceptionMessage);
+        Assert.False(model.ShowExceptionDetail);
+        Assert.Null(model.ExceptionPath);
+        Assert.Null(model.ExceptionMessage);
+        Assert.Null(model.ExceptionStackTrace);
     }
 
     [Fact]

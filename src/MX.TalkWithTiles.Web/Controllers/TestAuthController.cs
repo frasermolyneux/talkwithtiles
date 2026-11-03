@@ -16,6 +16,7 @@ namespace MX.TalkWithTiles.Web.Controllers;
 public class TestAuthController(IWebHostEnvironment environment, IConfiguration configuration) : ControllerBase
 {
     [HttpPost("signin")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> SignIn([FromBody] TestSignInRequest request)
     {
         if (!IsTestingEnabled())
@@ -47,6 +48,7 @@ public class TestAuthController(IWebHostEnvironment environment, IConfiguration 
     }
 
     [HttpPost("signout")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> SignOutUser()
     {
         if (!IsTestingEnabled())

@@ -158,8 +158,13 @@ function makeTileDraggable(tileEl) {
 function addTileToBoard(tile, position) {
     const cell = document.getElementById(position);
     console.log(`Adding '${tile.letter}' to board in postion ${position}`);
-    cell.insertAdjacentHTML("beforeend",
-        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter.toLowerCase()}.jpg" class="scrabbleTile scrabbleTile--placed" alt="${tile.letter}" draggable="true">`);
+    const tileEl = document.createElement("img");
+    tileEl.id = tile.tileId;
+    tileEl.src = `/img/tiles/${tile.letter.toLowerCase()}.jpg`;
+    tileEl.className = "scrabbleTile scrabbleTile--placed";
+    tileEl.alt = tile.letter;
+    tileEl.draggable = true;
+    cell.appendChild(tileEl);
 
     const cellRegex = new RegExp("^cell_([0-9]{1,2})-([0-9]{1,2})$");
     const match = cellRegex.exec(position);
@@ -169,9 +174,8 @@ function addTileToBoard(tile, position) {
 
     tile.rackPosition = -1;
 
-    updateMoveScore();
+    void updateMoveScore();
 
-    const tileEl = document.getElementById(tile.tileId);
     makeTileDraggable(tileEl);
 
     tileEl.addEventListener("click", function () {
@@ -183,8 +187,13 @@ function addTileToBoard(tile, position) {
 function addTileToRack(tile, position) {
     const rackCell = document.getElementById(position);
     console.log(`Adding '${tile.letter}' to rack in postion ${tile.rackPosition}`);
-    rackCell.insertAdjacentHTML("beforeend",
-        `<img id="${tile.tileId}" src="/img/tiles/${tile.letter.toLowerCase()}.jpg" class="rackScrabbleTile" alt="${tile.letter}" draggable="true">`);
+    const tileEl = document.createElement("img");
+    tileEl.id = tile.tileId;
+    tileEl.src = `/img/tiles/${tile.letter.toLowerCase()}.jpg`;
+    tileEl.className = "rackScrabbleTile";
+    tileEl.alt = tile.letter;
+    tileEl.draggable = true;
+    rackCell.appendChild(tileEl);
 
     const rackRegex = new RegExp("^rack_([0-9]{1,2})$");
     const match = rackRegex.exec(position);
@@ -194,9 +203,8 @@ function addTileToRack(tile, position) {
 
     tile.rackPosition = parseInt(match[1]);
 
-    updateMoveScore();
+    void updateMoveScore();
 
-    const tileEl = document.getElementById(tile.tileId);
     makeTileDraggable(tileEl);
 
     tileEl.addEventListener("click", function () {
@@ -367,7 +375,7 @@ function recallTiles() {
         }
     }
 
-    updateMoveScore();
+    void updateMoveScore();
 }
 
 function shuffle(array) {

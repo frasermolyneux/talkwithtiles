@@ -44,7 +44,7 @@
                         else
                         {
                             var additionalPoints = Model.Players().Where(p => p.PlayerId != player.PlayerId)
-                                .Sum(p => p.Tiles.Sum(t => ScrabbleTileScoreHelper.GetTileScore(t.Letter!)));
+                                .Sum((MX.TalkWithTiles.Contracts.StateModels.PlayerStateModel p) => p.Tiles.Sum(t => ScrabbleTileScoreHelper.GetTileScore(t.Letter!)));
 
                             var playerScore = player.Score - additionalPoints;
 

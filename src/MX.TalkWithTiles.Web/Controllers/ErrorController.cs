@@ -12,8 +12,6 @@ public class ErrorController(ILogger<ErrorController> logger) : Controller
     public IActionResult Index()
     {
         var httpContextTraceIdentifier = Activity.Current?.Id ?? HttpContext.TraceIdentifier;
-        var isAdmin = User.Identity?.IsAuthenticated == true && User.IsAdmin();
-
         var viewModel = new ErrorViewModel { RequestId = httpContextTraceIdentifier };
 
         try
@@ -28,13 +26,6 @@ public class ErrorController(ILogger<ErrorController> logger) : Controller
 
                 logger.LogError(exception, "Error at path: '{Path}'", path);
 
-                if (isAdmin)
-                {
-                    viewModel.ShowExceptionDetail = true;
-                    viewModel.ExceptionPath = path;
-                    viewModel.ExceptionMessage = exception.ToString();
-                    viewModel.ExceptionStackTrace = exception.StackTrace;
-                }
             }
         }
         catch (Exception ex)
