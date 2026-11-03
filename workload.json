@@ -15,7 +15,7 @@
   "services": [
     {
       "name": "talkwithtiles-web",
-      "image": "acr7ca0fd3326df.azurecr.io/workloads/talkwithtiles/web@sha256:cc5cb101bde91c23f4c8446e42253c2518e38a5fd10a6a96a418fd92f5a997b6",
+      "image": "acr7ca0fd3326df.azurecr.io/workloads/talkwithtiles/web@sha256:e6e7de858392d47b598c6283d9758957568c68ccfe0c51bef64e9964638f7e21",
       "runAs": "1654:1654",
       "environment": {
         "ASPNETCORE_ENVIRONMENT": "Production",
@@ -70,7 +70,7 @@
     },
     {
       "name": "talkwithtiles-postgres",
-      "image": "acr7ca0fd3326df.azurecr.io/workloads/talkwithtiles/postgres@sha256:efd22702ba364e70ddf5d4e41f8bdd2e59d3488bf40c8047ab663cfb2e3fbd19",
+      "image": "acr7ca0fd3326df.azurecr.io/workloads/talkwithtiles/postgres@sha256:cd0f735ae249a7cde6fc5b23d1e014f247bdeca5fb5698348106046e2686ee3c",
       "runAs": "999:1654",
       "networks": [
         "database"
