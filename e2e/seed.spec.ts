@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { signIn } from '../helpers/auth.helper';
 
 /**
  * Seed test for Playwright Test Agents.
@@ -13,14 +14,10 @@ import { test, expect } from '@playwright/test';
  * - webServer auto-start via playwright.config.ts
  */
 test('seed', async ({ page }) => {
-  // Sign in via the TestAuth API
-  await page.request.post('/api/test/signin', {
-    data: {
-      userId: '11111111-1111-1111-1111-111111111111',
-      userName: 'Alice',
-      email: 'alice@test.local',
-      role: null,
-    },
+  await signIn(page, {
+    userId: '11111111-1111-1111-1111-111111111111',
+    userName: 'Alice',
+    email: 'alice@test.local',
   });
 
   // Navigate to the home page and verify we are signed in

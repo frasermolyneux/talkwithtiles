@@ -39,7 +39,10 @@
                 async function devSignIn(userId, userName, email) {
                     const response = await fetch('/api/test/signin', {
                         method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': antiforgeryToken
+                        },
                         body: JSON.stringify({ userId, userName, email })
                     });
                     if (response.ok) {

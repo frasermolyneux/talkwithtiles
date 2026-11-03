@@ -245,7 +245,7 @@ public class ScrabbleController(
 
         await gameStateRepository.UpdateGameState(gameId, gameStateModel);
 
-        logger.LogInformation("User {Email} rejected invite to game {GameId}", userEmail, gameId);
+        logger.LogInformation("An invite was rejected for game {GameId}", gameId);
 
         this.AddAlertInfo("You have declined the game invite.");
         return RedirectToAction("Index");
@@ -338,8 +338,7 @@ public class ScrabbleController(
                     }
 
                     await gameStateRepository.UpdateGameState(id, gameStateModel);
-                    logger.LogInformation("Linked invited player {Email} to user {UserId} in game {GameId}",
-                        userEmail, newPlayerId, id);
+                    logger.LogInformation("Linked an invited player in game {GameId}", id);
                 }
             }
         }

@@ -28,17 +28,35 @@ function addAdditionalPlayer() {
     }
 
     const additionalPlayers = document.getElementById("additionalPlayers");
-    additionalPlayers.insertAdjacentHTML("beforebegin", `<div class="form-group">
-                            <div class="input-group">
-                                <input class="form-control" data-val="true" data-val-required="This field is required." id="PlayerModels_${playerCount}__Identifier" name="PlayerModels[${playerCount}].Identifier" type="text" value="" placeholder="Enter your opponents username or email here">
-                                <button id="removeAdditionalPlayer-${playerCount}" 
-                                    class="btn btn-danger" type="button"> <i class="fas fa-trash"></i></button>
-                            </div>
-                            <span class="field-validation-valid text-danger" data-valmsg-for="PlayerModels[${playerCount}].Identifier" data-valmsg-replace="true"></span>
-                        </div>`);
+    const formGroup = document.createElement("div");
+    formGroup.className = "form-group";
+    const inputGroup = document.createElement("div");
+    inputGroup.className = "input-group";
+    const input = document.createElement("input");
+    input.className = "form-control";
+    input.dataset.val = "true";
+    input.dataset.valRequired = "This field is required.";
+    input.id = `PlayerModels_${playerCount}__Identifier`;
+    input.name = `PlayerModels[${playerCount}].Identifier`;
+    input.type = "text";
+    input.placeholder = "Enter your opponents username or email here";
+    const removeButton = document.createElement("button");
+    removeButton.id = `removeAdditionalPlayer-${playerCount}`;
+    removeButton.className = "btn btn-danger";
+    removeButton.type = "button";
+    const removeIcon = document.createElement("i");
+    removeIcon.className = "fas fa-trash";
+    removeButton.appendChild(removeIcon);
+    inputGroup.append(input, removeButton);
+    const validationMessage = document.createElement("span");
+    validationMessage.className = "field-validation-valid text-danger";
+    validationMessage.dataset.valmsgFor = `PlayerModels[${playerCount}].Identifier`;
+    validationMessage.dataset.valmsgReplace = "true";
+    formGroup.append(inputGroup, validationMessage);
+    additionalPlayers.before(formGroup);
 
     const removeButtonId = playerCount;
-    document.getElementById(`removeAdditionalPlayer-${removeButtonId}`).addEventListener("click", function () {
+    removeButton.addEventListener("click", function () {
         this.parentNode.parentNode.remove();
 
         if (document.querySelectorAll('[id^="removeAdditionalPlayer-"]').length < 2) {
@@ -46,7 +64,7 @@ function addAdditionalPlayer() {
         }
     });
 
-    const newInput = document.getElementById(`PlayerModels_${playerCount}__Identifier`);
+    const newInput = input;
     newInput.required = true;
     setupAutocomplete(newInput);
 }
