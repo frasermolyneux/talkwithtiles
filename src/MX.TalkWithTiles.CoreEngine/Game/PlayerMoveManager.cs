@@ -147,7 +147,7 @@ public class PlayerMoveManager(
                 // The user has placed all of their tiles and the game is effectively over.
                 // Note: challenges on the last move are not currently supported.
                 var remainingTilePoints = playerManager.Players
-                    .Sum(playerStateModel => playerStateModel.Tiles.Sum(t => boardManager.LetterValue(t.Letter ?? string.Empty)));
+                    .Sum((IPlayer playerStateModel) => playerStateModel.Tiles.Sum(t => boardManager.LetterValue(t.Letter ?? string.Empty)));
                 playerManager.AddToScore(playerMove.PlayerId, remainingTilePoints);
 
                 foreach (var otherPlayer in playerManager.Players.Where(p => p.PlayerId != playerMove.PlayerId))
