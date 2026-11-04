@@ -32,7 +32,7 @@ jobs:
           count="$(gh api "repos/$GITHUB_REPOSITORY/actions/runs/$RUN_ID/artifacts?per_page=100" --jq '[.artifacts[] | select(.name == "image-promotion" and .expired == false)] | length')"
           test "$count" -le 1
           if [[ "$count" == 1 ]]; then echo "available=true" >>"$GITHUB_OUTPUT"; fi
-      - uses: actions/create-github-app-token@fee1f7d63c2ff003460e3d139729b119787bc349
+      - uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510
         if: steps.payload.outputs.available == 'true'
         id: app-token
         with:
