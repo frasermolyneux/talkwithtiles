@@ -1,5 +1,4 @@
 .git
-.github-copilot
 **/bin
 **/obj
 node_modules
