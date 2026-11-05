@@ -15,8 +15,8 @@ published. The shared setup still enforces the committed CLI/provider pins.
 The approved-main apply creates and consumes its saved plan in one isolated
 job, without uploading it for repository-wide download.
 
-After the catalog's scoped delegation and the reviewed vault/host permissions
-are applied, dispatch:
+After the scoped delegation and reviewed vault/host permissions are applied,
+dispatch:
 
 ```powershell
 gh workflow run bootstrap-runtime.yml --repo frasermolyneux/talkwithtiles --ref main
@@ -45,7 +45,7 @@ this workflow's expired keys are eligible for removal after seven days.
 The independent origin workflow requests a 365-day Origin CA certificate for
 `talkwithtiles.com` and `www.talkwithtiles.com` and renews within 30 days. It
 does not modify DNS or routes. Its separate exact-zone
-`CLOUDFLARE_ORIGIN_API_TOKEN` is supplied by the workload catalog.
+`CLOUDFLARE_ORIGIN_API_TOKEN` is read from the repository Actions secret.
 
 Missing established credentials, unexpected ownership, disabled secrets,
 expiring database passwords or changed

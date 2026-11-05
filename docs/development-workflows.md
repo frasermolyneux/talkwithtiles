@@ -32,7 +32,7 @@
   requires exact-head dispatched Runtime Quality, PR Verify, Code Quality and
   Copilot review without unresolved threads. It **never merges or deploys**.
   Promotion requires the repository GitHub App credentials and Production ACR
-  variables provisioned by the platform catalog.
+  variables configured in repository Actions settings.
 
 Azure Deploy Dev/Deploy Prd now fail explicitly on dispatch and have no push or
 scheduled triggers: PostgreSQL builds must not overwrite the old App Service.
