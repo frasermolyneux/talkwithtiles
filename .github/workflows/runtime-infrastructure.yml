@@ -23,9 +23,11 @@ jobs:
       id-token: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
-      - uses: frasermolyneux/actions/terraform-setup@terraform-setup/v1.1.0
+      # terraform-setup/v1.1.0 @ 594500f81ee7fdb65616bba793f8cdf9025d57b2
+      - uses: frasermolyneux/actions/terraform-setup@594500f81ee7fdb65616bba793f8cdf9025d57b2
         with:
           terraform-folder: terraform
+          terraform-version: 1.17.0
           terraform_wrapper: "false"
       - name: Review Production changes without saving sensitive state as an artifact
         shell: bash
@@ -53,8 +55,11 @@ jobs:
       contents: read
       id-token: write
     steps:
-      - uses: frasermolyneux/actions/terraform-plan-and-apply@terraform-plan-and-apply/v2.0.1
+      # terraform-plan-and-apply/v5.0.0 @ 027d7e31bb32b734090aaed01b36d74f1d658b61
+      - uses: frasermolyneux/actions/terraform-plan-and-apply@027d7e31bb32b734090aaed01b36d74f1d658b61
         with:
+          terraform-version: 1.17.0
+          terraform-environment: prd
           terraform-folder: terraform
           terraform-var-file: tfvars/prd.tfvars
           terraform-backend-file: backends/prd.backend.hcl
