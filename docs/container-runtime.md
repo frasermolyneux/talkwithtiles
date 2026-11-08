@@ -18,7 +18,9 @@ are replaced by reviewed published digests; pulling a placeholder must fail.
 There is no hosted Development or database host port in production.
 Production also accepts `www.talkwithtiles.com` and redirects it with HTTP 308 to
 the HTTPS apex, preserving path/query and method, before starting authentication.
-The host must route and terminate TLS for both names.
+The host must route and terminate TLS for both names. The planned host
+configuration uses Caddy's automatic HTTPS and persistent `/data` for
+certificate storage and renewal.
 
 | Service | UID:GID | Writable bind |
 |---|---|---|
@@ -74,12 +76,12 @@ Disabling GSS also avoids Windows domain-discovery stalls in the local harness.
 Recreate containers after secret/configuration changes. Do not put secret values
 or private certificates in source control or CI artefacts.
 
-The protected main-only credential and Origin TLS workflows check weekly on
-Monday at 06:40 and 06:55 UTC respectively, with manual dispatch retained.
-Certificates renew only within 30 days of expiry. Existing database passwords
-and unrelated/unexpired Entra credentials are retained; missing established
-credentials fail closed rather than resetting the runtime. These jobs do not
-deploy images or retire Azure resources.
+The protected main-only runtime credential workflow checks weekly on Monday
+at 06:40 UTC, with manual dispatch retained. Entra certificates renew only
+within 30 days of expiry. Existing database passwords and unrelated/unexpired
+Entra credentials are retained; missing established credentials fail closed
+rather than resetting the runtime. This job does not deploy images or retire
+Azure resources.
 
 ## Persistence, readiness and restart
 

@@ -20,10 +20,9 @@ dispatch:
 
 ```powershell
 gh workflow run bootstrap-runtime.yml --repo frasermolyneux/talkwithtiles --ref main
-gh workflow run renew-origin-tls.yml --repo frasermolyneux/talkwithtiles --ref main
 ```
 
-The first workflow discovers the exact registration and dedicated vault from
+The workflow discovers the exact registration and dedicated vault from
 the approved runtime example and validation policy, checks ownership, tenant
 and account audience, and creates a database password only if missing. It
 generates an ephemeral RSA key, appends the public certificate, authenticates
@@ -37,15 +36,15 @@ Existing database passwords are never implicitly rotated. An unchanged
 reviewed configuration creates no new secret version. Trusted Caddy
 addresses are resolved and injected only by the host.
 
-Credential and TLS workflows are manual-only during initial rollout. Enable
-their weekly renewal schedules in a reviewed post-acceptance change.
-Certificate checks renew 180-day Entra certificates within 30 days of expiry.
+The runtime credential workflow checks weekly and can also be dispatched
+manually. Certificate checks renew 180-day Entra certificates within 30 days
+of expiry.
 Unrelated public keys and unexpired previous certificates are retained; only
 this workflow's expired keys are eligible for removal after seven days.
-The independent origin workflow requests a 365-day Origin CA certificate for
-`talkwithtiles.com` and `www.talkwithtiles.com` and renews within 30 days. It
-does not modify DNS or routes. Its separate exact-zone
-`CLOUDFLARE_ORIGIN_API_TOKEN` is read from the repository Actions secret.
+The planned host configuration relies on Caddy's automatic HTTPS for
+`talkwithtiles.com` and `www.talkwithtiles.com`, with certificates stored and
+renewed in its persistent `/data`. Production rollout and subsequent cleanup
+of the old origin bundle and vault secret require separate authorization.
 
 Missing established credentials, unexpected ownership, disabled secrets,
 expiring database passwords or changed
