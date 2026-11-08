@@ -5,7 +5,7 @@ applyTo: "e2e/**/*.ts,fixtures/**/*.ts,helpers/**/*.ts,pages/**/*.ts,playwright.
 
 # Playwright TypeScript
 
-- Keep `workers: 1`; browser tests share game state in disposable PostgreSQL 18.
+- Keep `workers: 1`; browser tests share game state in disposable PostgreSQL.
 - Use relative navigation and URL assertions. `baseURL` is defined in
   `playwright.config.ts`.
 - Authenticate with `signIn` from `helpers/auth.helper.ts`. Use

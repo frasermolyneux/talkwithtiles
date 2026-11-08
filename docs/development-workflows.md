@@ -1,16 +1,18 @@
 # Development workflows
 
-- Feature pushes retain `build-and-test`; PR Verify retains its build/test summary.
-- Docker, deployment, manifest and CI changes also execute runtime validation.
+- Pushes to the feature, bugfix and hotfix branch patterns run `build-and-test`
+  with change detection; non-draft PRs run PR Verify and its test summary.
+- Runtime and Playwright inputs trigger Runtime Quality on those branch pushes;
+  non-draft PRs call it after the build.
   PR concurrency is isolated by exact head, never cancelling an older stateful run.
-- `e2e-tests` calls Runtime Quality: real PostgreSQL 18 persistence tests,
+- `e2e-tests` calls Runtime Quality: real PostgreSQL persistence tests,
   single-worker deterministic Playwright multiplayer flows, builds of both
   constrained images and read-only/non-root persisted-restart checks.
 - PR Runtime Quality never receives private App credentials or executes private
   contract code, including for same-repository Dependabot PRs.
 - `Validate Workload Contract` runs only through default-branch `workflow_run`.
   It checks out reviewed default-branch code/policy and private compiler
-  `3088169b94996801e42e10d008776f4b1390e49f`, fetching only the tested SHA's
+  at the pin in the workflow, fetching only the tested SHA's
   `workload.json` as data (also for forks and Dependabot). Its isolated Python
   never imports PR-controlled workspace files. The Production-only read-only App
   token is not forwarded to a PR workflow. Its validation fixture grants no host
@@ -23,7 +25,7 @@
   cannot recursively publish images.
 - Publish Image consumes only successful same-repository `main` push validation,
   additionally requires exact-source Code Quality and `workload-contract` from
-  GitHub Actions App15368. It verifies the latter's trusted workflow-run producer
+  GitHub Actions. It verifies the latter's trusted workflow-run producer
   and SHA-bound job, not just its name or App slug. Missing, spoofed, stale or
   failed results fail closed before cloud login/publication. It builds both
   images, uses OIDC with repository-scoped ACR tokens, and locks source tags and
@@ -34,12 +36,13 @@
   Promotion requires the repository GitHub App credentials and Production ACR
   variables configured in repository Actions settings.
 
-Azure Deploy Dev/Deploy Prd now fail explicitly on dispatch and have no push or
+Azure Deploy Dev/Deploy Prd fail explicitly on dispatch and have no push or
 scheduled triggers: PostgreSQL builds must not overwrite the old App Service.
-Development plans are disabled; a retained Production plan is opt-in through
-`run-prd-plan` for retirement work. Terraform resources, app registrations,
-provider locks and both destroy workflows are retained unchanged. Retirement and
-host activation are separately reviewed operations, not application CI effects.
+Development plans are disabled. PR Verify has an opt-in Production plan via
+`run-prd-plan`; Runtime Infrastructure separately plans eligible Terraform PRs
+and applies only on approved `main` dispatch. Review workflow permissions and
+outputs before use. Destroy workflows are operator-only. Retirement and host
+activation require separate authorization.
 
 ## Local commands
 
@@ -57,17 +60,7 @@ npx playwright test --project=chromium
 The Playwright test-runner MCP in `.vscode/mcp.json` uses the pinned local package.
 Do not enable a second Playwright server for the same workspace.
 
-## Initial trusted-validator bootstrap
-
-The new trusted workflow is inactive until its PR merges into the default branch;
-do not bypass this by dispatching privileged candidate code or adding
-`pull_request_target`. For initial review, fetch the compiler, both schemas and
-its hash-locked requirements at the exact pin above into an ignored project
-directory, and use an isolated virtual environment there. Compile the candidate
-`workload.json` as data against the **reviewed default branch's**
-`.github/validation/policy.json`, writing output only under that ignored project
-directory. This performs no deployment and does not synthesize a trusted GitHub
-check; publication remains blocked until the default-branch workflow reports.
+## Script tests
 
 ```powershell
 python -m unittest discover -s .github\scripts -p 'test_*.py'

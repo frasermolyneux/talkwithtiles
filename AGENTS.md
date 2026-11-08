@@ -1,9 +1,8 @@
 # Talk With Tiles agent brief
 
-Talk With Tiles is an ASP.NET Core 10 MVC application with PostgreSQL 18,
+Talk With Tiles is an ASP.NET Core MVC application with PostgreSQL,
 certificate-backed Microsoft/Entra authentication and constrained container
-packaging. Retained Azure Terraform/destroy workflows are retirement context,
-not the new runtime. See `docs/container-runtime.md` before runtime changes.
+packaging. See `docs/container-runtime.md` before runtime changes.
 
 ## Repository layout
 
@@ -12,7 +11,7 @@ not the new runtime. See `docs/container-runtime.md` before runtime changes.
 - `src/*.Tests` - xUnit test projects
 - `e2e`, `fixtures`, `helpers`, `pages` - Playwright tests and support code
 - `specs` - Playwright test plans
-- `terraform` - Azure infrastructure
+- `terraform` - Azure identity and runtime infrastructure
 - `.github/workflows` - CI and deployment workflows
 
 ## Common commands
@@ -31,7 +30,7 @@ terraform -chdir=terraform validate
 ```
 
 Use the narrowest relevant build, test, or format command while iterating. The
-Playwright configuration starts the app against a disposable PostgreSQL 18
+Playwright configuration starts the app against a disposable PostgreSQL
 database. Set `TEST_POSTGRES_PASSWORD` and `TEST_POSTGRES_PASSWORD_FILE`; retain
 one worker. Runtime Quality provides real PostgreSQL and constrained image tests.
 
@@ -45,8 +44,8 @@ one worker. Runtime Quality provides real PostgreSQL and constrained image tests
   loaded from a base64 text secret. Do not introduce client secrets.
 - Playwright tests share PostgreSQL state and must remain single-worker.
 - Never trust arbitrary forwarded headers; Production requires explicit Caddy IPs.
-- Keep Azure deploy workflows blocked; do not remove legacy resources, identity
-  ownership or destroy workflows without a separately approved retirement.
+- Keep Azure deploy workflows blocked; do not change infrastructure, identity
+  ownership or destroy workflows without separate authorization.
 - Keep infrastructure changes within the existing Terraform environment,
   naming, backend, and variable layout.
 
@@ -56,8 +55,3 @@ one worker. Runtime Quality provides real PostgreSQL and constrained image tests
 - [Architecture overview](docs/architecture-overview.md)
 - [Development workflows](docs/development-workflows.md)
 - [Playwright configuration](playwright.config.ts)
-
-
-Azure application deployments are explicitly blocked during migration, including
-scheduled and dispatched deployments. Development is local/CI only. Keep legacy
-destroy workflows and Terraform identity ownership until coordinated retirement.
