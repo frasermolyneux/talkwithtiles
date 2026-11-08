@@ -2,19 +2,16 @@
 
 ## Deployment boundary
 
-Following verified off-server restores and operator acceptance, legacy Azure
-App Service, Table Storage, Application Insights, Azure-only DNS/certificates
-and the old application password are retired. The production-only Terraform
-root protects and retains the existing Entra application/service principal and
-runtime vault/host access. Cloudflare ingress is still owned by the platform.
-Runtime Infrastructure is the supported full-plan/manual-apply path; this
-cleanup does not promote images or modify the live PostgreSQL database.
+Azure App Service deployment is blocked. The Terraform root defines the Entra
+application/service principal and Production runtime vault/host access. Check
+live state and the reviewed plan before any infrastructure or retirement
+action; the repository alone does not prove which legacy resources remain.
+The host owns ingress, secret delivery, backups and activation.
 
 Production is `https://talkwithtiles.com`, through Cloudflare and the host's
 trusted Caddy proxy. Anonymous landing pages and authenticated game flows are
-preserved. The host owns ingress, certificate/secret delivery, backups and
-activation. `workload.json` is compile-only until **both** zero digest placeholders
-are replaced by reviewed published digests; pulling a placeholder must fail.
+preserved. [`workload.json`](../workload.json) specifies the image digests;
+publication and promotion do not activate the host.
 There is no hosted Development or database host port in production.
 Production also accepts `www.talkwithtiles.com` and redirects it with HTTP 308 to
 the HTTPS apex, preserving path/query and method, before starting authentication.
@@ -43,9 +40,8 @@ See the exact non-secret schema in
 - `Database:Host/Port/Name/Username/PasswordFile`: defaults use database/user
   `talkwithtiles`; host is `talkwithtiles-postgres` in production.
 - `AzureAd:Instance/TenantId/ClientId/CallbackPath/SignedOutCallbackPath/ClientCertificateFile`:
-  existing app `72ea5049-afe4-452a-92cc-a2c204a049e4`, tenant `common`,
-  `AzureADandPersonalMicrosoftAccount` registration. Both organisational Entra and
-  personal Microsoft accounts remain supported. Canonical callback is
+  the existing `common` tenant registration supports both organisational Entra and
+  personal Microsoft accounts. The canonical callback is
   `https://talkwithtiles.com/signin-oidc`.
   Authorization codes are redeemed through MSAL using the certificate; the
   personal-account `offline_access` scope is retained. The token cache is
@@ -61,8 +57,8 @@ Text secrets:
 1. `runtime-configuration`: web-only JSON.
 2. `client-certificate`: web-only **base64 passwordless PFX with private key**.
    The app loads it with ephemeral key storage; no runtime binary decoding or
-   persistent private-key store is needed. The parent registers the public
-   certificate and manages rotation. Do not supply a client secret.
+   persistent private-key store is needed. The credential workflow registers the
+   public certificate and manages rotation. Do not supply a client secret.
 3. `database-password`: web and PostgreSQL; password is read from the mounted
    file and never stored in JSON or the manifest. Rotate by recreating database
    then web with the same new mount; PostgreSQL reapplies the app-role password
@@ -76,12 +72,9 @@ Disabling GSS also avoids Windows domain-discovery stalls in the local harness.
 Recreate containers after secret/configuration changes. Do not put secret values
 or private certificates in source control or CI artefacts.
 
-The protected main-only runtime credential workflow checks weekly on Monday
-at 06:40 UTC, with manual dispatch retained. Entra certificates renew only
-within 30 days of expiry. Existing database passwords and unrelated/unexpired
-Entra credentials are retained; missing established credentials fail closed
-rather than resetting the runtime. This job does not deploy images or retire
-Azure resources.
+See [runtime credentials](runtime-credentials.md) for bootstrap, rotation and
+recovery safeguards. This workflow does not deploy images or retire Azure
+resources.
 
 ## Persistence, readiness and restart
 
@@ -116,8 +109,8 @@ must restrict and back up the unencrypted-at-rest keyring; lost keys require
 users to sign in again.
 
 The initial cutover is **fresh state**, with no Azure Table data transfer. To
-restore later, stop/fence web writes, restore a verified PostgreSQL 18 logical
-backup into the dedicated database or restore its stopped, consistent data
+restore later, stop/fence web writes, restore a verified compatible PostgreSQL
+logical backup into the dedicated database or restore its stopped, consistent data
 directory, retain the corresponding keyring, then start database and web and
 verify readiness and a persisted game. Never downgrade a data directory across
 PostgreSQL major versions. App rollback is safe only while schema versions are
@@ -126,17 +119,26 @@ compatible; host rollback is not a database rollback.
 ## Disposable local/CI database
 
 Generate test-only credentials in an ignored project directory (never use the
-production vault or a live database). For example in PowerShell:
+production vault or a live database). This PowerShell example uses the base
+image selected by [`deployment/postgres.Dockerfile`](../deployment/postgres.Dockerfile):
 
 ```powershell
 New-Item -ItemType Directory -Force .local | Out-Null
 $env:TEST_POSTGRES_PASSWORD = [guid]::NewGuid().ToString('N')
-$env:TEST_POSTGRES_PASSWORD_FILE = "$PWD\.local\database-password"
+$env:TEST_POSTGRES_PASSWORD_FILE = "$PWD\.local\database-password-$([guid]::NewGuid().ToString('N'))"
 Set-Content -Path $env:TEST_POSTGRES_PASSWORD_FILE -Value $env:TEST_POSTGRES_PASSWORD -NoNewline
+$postgresImage = ((Get-Content deployment\postgres.Dockerfile -TotalCount 1) -split '\s+')[1]
 docker run --detach --name talkwithtiles-local-postgres `
   --publish 127.0.0.1:5432:5432 `
   --env POSTGRES_DB=talkwithtiles --env POSTGRES_USER=talkwithtiles `
-  --env "POSTGRES_PASSWORD=$env:TEST_POSTGRES_PASSWORD" postgres:18-bookworm
+  --env "POSTGRES_PASSWORD=$env:TEST_POSTGRES_PASSWORD" $postgresImage
+```
+
+Wait until `docker exec talkwithtiles-local-postgres pg_isready -h 127.0.0.1
+-U talkwithtiles -d talkwithtiles` reports that the server is accepting
+connections, then run:
+
+```powershell
 dotnet test src\MX.TalkWithTiles.slnx
 npm ci
 npx playwright install chromium
@@ -152,8 +154,9 @@ and `DataProtection__KeyPath` to an ignored local directory. Test sign-in requir
 both explicit opt-in **and** Development; it remains disabled in Production even
 when `Testing:Enabled=true`.
 
-Cleanup only the named local test container with `docker rm --force
-talkwithtiles-local-postgres` and remove `.local` when finished. CI runs real
-PostgreSQL tests plus non-root/read-only image initialization, data survival
+When finished, remove only the named local test container with
+`docker rm --force talkwithtiles-local-postgres` and delete the test credentials
+you created if no longer needed. Do not remove unrelated files in `.local`.
+CI runs real PostgreSQL tests plus non-root/read-only image initialization, data survival
 across recreation and failed readiness after database loss. A Docker daemon is
 required for image tests; they are not simulated when it is unavailable locally.

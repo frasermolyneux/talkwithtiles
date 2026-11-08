@@ -7,13 +7,13 @@ certificate for the confidential web client, never a new client secret.
 `Runtime Infrastructure` plans the complete Production Terraform configuration
 on infrastructure pull requests. Its input-free manual dispatch applies only
 approved `main`; it never publishes application code or creates Development.
-Review the full plan before dispatch. Retain legacy resources until the server,
-authentication and isolated restores have passed acceptance.
+Review the full plan before dispatch. Legacy resource retirement requires
+separate authorization and verified server, authentication and restore acceptance.
 
-PR plans are redacted log output only: no binary plan/state artifact is
-published. The shared setup still enforces the committed CLI/provider pins.
-The approved-main apply creates and consumes its saved plan in one isolated
-job, without uploading it for repository-wide download.
+The Runtime Infrastructure PR plan runs without publishing a binary plan
+artifact. PR Verify also has a separately configured opt-in Production plan;
+inspect its workflow and artifact handling before using it. Terraform pins are
+maintained in the root and workflow configuration.
 
 After the scoped delegation and reviewed vault/host permissions are applied,
 dispatch:
@@ -36,15 +36,16 @@ Existing database passwords are never implicitly rotated. An unchanged
 reviewed configuration creates no new secret version. Trusted Caddy
 addresses are resolved and injected only by the host.
 
-The runtime credential workflow checks weekly and can also be dispatched
-manually. Certificate checks renew 180-day Entra certificates within 30 days
-of expiry.
+The runtime credential workflow runs on the schedule in
+[`bootstrap-runtime.yml`](../.github/workflows/bootstrap-runtime.yml) and can
+also be dispatched manually. Certificate rotation thresholds are implemented in
+[`bootstrap_runtime.py`](../.github/scripts/bootstrap_runtime.py).
 Unrelated public keys and unexpired previous certificates are retained; only
 this workflow's expired keys are eligible for removal after seven days.
-The planned host configuration relies on Caddy's automatic HTTPS for
+The host configuration relies on Caddy's automatic HTTPS for
 `talkwithtiles.com` and `www.talkwithtiles.com`, with certificates stored and
-renewed in its persistent `/data`. Production rollout and subsequent cleanup
-of the old origin bundle and vault secret require separate authorization.
+renewed in its persistent `/data`. Production changes and legacy cleanup
+require separate authorization.
 
 Missing established credentials, unexpected ownership, disabled secrets,
 expiring database passwords or changed

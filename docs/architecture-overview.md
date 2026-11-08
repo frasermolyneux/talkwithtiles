@@ -1,12 +1,12 @@
 # Architecture Overview
 
-See [container-runtime.md](container-runtime.md) for the authoritative persistence,
-proxy, container and recovery contracts. Legacy Azure resources remain intact
-until separately coordinated retirement; no cloud deployment is enabled here.
+See [container-runtime.md](container-runtime.md) for persistence, proxy,
+container and recovery details. Configuration and workflows are the source of
+truth for the deployed contract.
 
 ## Application
 
-Talk With Tiles is an ASP.NET Core 10 MVC web application that provides an online platform for playing tile-based word games (Scrabble-style). The solution is structured as a multi-project .NET solution:
+Talk With Tiles is an ASP.NET Core MVC web application for tile-based word games (Scrabble-style). The solution is structured as a multi-project .NET solution:
 
 | Project | Purpose |
 |---|---|
@@ -26,7 +26,7 @@ The application uses Microsoft Entra ID (via `Microsoft.Identity.Web`) for authe
 
 ## Data Storage
 
-Dedicated PostgreSQL 18 stores JSONB game snapshots, including board/bag/player
+Dedicated PostgreSQL stores JSONB game snapshots, including board/bag/player
 tiles, alongside relational player indexes, invitations and contacts. Aggregate
 saves update related rows in one transaction, preserve optimistic versions and
 reject conflicting writes. The existing game engine and repository interfaces
@@ -46,35 +46,27 @@ assume those App Service settings are present.
 
 ## Container runtime
 
-The proposed Production runtime runs `talkwithtiles-web` and
+The Production runtime contract runs `talkwithtiles-web` and
 `talkwithtiles-postgres` as distinct non-root services. Only the web service
 joins the host's public proxy network; PostgreSQL is private with no published
 host port. Forwarded headers are accepted only from configured Caddy IPs.
 Cloudflare fronts the canonical `https://talkwithtiles.com` address.
 
-`workload.json` intentionally contains non-deployable zero digest placeholders.
-Immutable publication and exact-head quality/Copilot-reviewed digest promotion
-must complete before the parent-owned host policy is enabled.
+[`workload.json`](../workload.json) specifies image digests and resource
+constraints. Image publication and promotion do not activate the host.
 
-## Retained legacy infrastructure
+## Azure infrastructure
 
-Infrastructure is defined in Terraform under the `terraform/` directory and includes:
-
-- **Azure App Service** (Linux, .NET 10.0) using a workload-owned B1 plan in development and the shared `platform-hosting` plan in production
-- **Azure Storage Account** with the five game tables
-- **Microsoft Entra ID** app registration with client credentials
-- **Application Insights** instance
-- **DNS records** (CNAME and TXT) for custom domain
-
-Terraform state is stored remotely in Azure Storage with per-environment backend configurations (`backends/dev.backend.hcl`, `backends/prd.backend.hcl`).
-Development Terraform owns its App Service plan and does not read
-`platform-hosting` state. Production continues to select the existing shared
-production plan from `platform-hosting` remote state.
+The [Terraform root](../terraform/) defines the Entra application and service
+principal, and the Production runtime vault and host access. Its backends are
+configured per environment. This configuration does not establish the current
+state of live or legacy resources; review the actual state and plan before any
+operator action.
 
 ## Deployment and retirement
 
 Azure application deployment workflows are explicitly blocked, so the migrated
 build cannot overwrite the incompatible legacy runtime. Hosted Development is
-not part of the target design. Existing Terraform resources, identities and
-destroy workflows remain until a separate coordinated retirement. See
+not part of the target design. Destroy workflows remain operator-only; identity,
+infrastructure and retirement changes require separate authorization. See
 [Development Workflows](development-workflows.md) for CI/CD details.

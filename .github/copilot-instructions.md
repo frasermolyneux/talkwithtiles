@@ -1,10 +1,9 @@
 # Talk With Tiles
 
 Talk With Tiles is an online Scrabble-style word-game platform. It is an
-ASP.NET Core 10 MVC application with xUnit/Playwright tests and transactional
-PostgreSQL 18 persistence. Constrained runtime/identity/recovery contracts are in
-`docs/container-runtime.md`. Legacy Terraform resources and destroy workflows
-remain intact until separately coordinated retirement; Azure deploys are blocked.
+ASP.NET Core MVC application with xUnit/Playwright tests and transactional
+PostgreSQL persistence. Constrained runtime/identity/recovery contracts are in
+`docs/container-runtime.md`. Azure App Service deployments are blocked.
 
 ## Layout
 
@@ -16,7 +15,7 @@ remain intact until separately coordinated retirement; Azure deploys are blocked
 - `src/MX.TalkWithTiles.Common` - shared utilities
 - `src/*.Tests` - xUnit test projects
 - `e2e`, `fixtures`, `helpers`, `pages`, `specs` - Playwright tests and plans
-- `terraform` - Azure infrastructure for development and production
+- `terraform` - Azure identity and runtime infrastructure
 
 ## Architecture and security
 
