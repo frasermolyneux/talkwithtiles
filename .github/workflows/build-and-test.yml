@@ -21,7 +21,7 @@ jobs:
     steps:
       - id: changes
         # detect-changes/v1.0.4 @ 8e7ca58b7821e01192ee4f23756c55e4ee057496
-        uses: frasermolyneux/actions/detect-changes@8e7ca58b7821e01192ee4f23756c55e4ee057496
+        uses: frasermolyneux/actions/detect-changes@f335f9f14d0062304978193d016f4a43a2e797f4
         # The shared action exposes fixed output names; src covers all runtime inputs.
         with:
           filters: |
@@ -66,7 +66,7 @@ jobs:
       group: ${{ github.repository }}-dev
     steps:
       # terraform-plan/v5.0.0 @ 027d7e31bb32b734090aaed01b36d74f1d658b61
-      - uses: frasermolyneux/actions/terraform-plan@027d7e31bb32b734090aaed01b36d74f1d658b61
+      - uses: frasermolyneux/actions/terraform-plan@977ddbedf7f5c6e2fae98ff1d6ec6a9c7669d778
         with:
           terraform-version: 1.17.0
           terraform-environment: dev
